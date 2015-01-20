@@ -1316,7 +1316,7 @@ double Mat::compute_sa_delay(double inrisetime)
   power_sa.readOp.dynamic = C_ld * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd /* num_sa_subarray
                             num_subarrays_per_mat * num_act_mats_hor_dir*/;
   power_sa.readOp.leakage = lkgIdle * g_tp.peri_global.Vdd;
-  power_sa.readOp.power_gated_leakage = power_sa.readOp.leakage;
+  power_sa.readOp.power_gated_leakage = lkgIdle * g_tp.peri_global.Vcc_min;
 
   double outrisetime = 0;
   return outrisetime;
@@ -1474,7 +1474,7 @@ double Mat::compute_comparator_delay(double inrisetime)
   }
   delay_comparator = Tcomparatorni+st1del+st2del+st3del;
   power_comparator.readOp.leakage = lkgCurrent * g_tp.peri_global.Vdd;
-  power_comparator.readOp.power_gated_leakage = lkgCurrent * g_tp.peri_global.Vdd;
+  power_comparator.readOp.power_gated_leakage = lkgCurrent * g_tp.peri_global.Vcc_min;
   power_comparator.readOp.gate_leakage = gatelkgCurrent * g_tp.peri_global.Vdd;
 
   return Tcomparatorni / (1.0 - VTHMUXNAND);;
@@ -1656,7 +1656,7 @@ void Mat::compute_power_energy()
 	power_bitline.readOp.power_gated_leakage *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
     power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
     //bl precharge drv is not power gated to turn off the precharge and equalization circuit (PMOS, thus turn-off signal is "1") for bitline floating
-    power_bl_precharge_eq_drv.readOp.power_gated_leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.readOp.power_gated_leakage = bl_precharge_eq_drv->power.readOp.power_gated_leakage * num_subarrays_per_mat;
     power_sa.readOp.leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP);
 
     //num_sa_subarray             = subarray.num_cols / deg_bl_muxing;
@@ -1682,7 +1682,7 @@ void Mat::compute_power_energy()
     power.readOp.leakage += power_comparator.readOp.leakage;
 
     power_comparator.readOp.power_gated_leakage *= num_do_b_mat * (RWP + ERP);
-    power.readOp.power_gated_leakage += power_comparator.readOp.leakage;
+    power.readOp.power_gated_leakage += power_comparator.readOp.power_gated_leakage;
 
     array_leakage = power_bitline.readOp.leakage;
 

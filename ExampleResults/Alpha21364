@@ -1,4 +1,4 @@
-McPAT (version 1.1 of March, 2014) is computing the target processor...
+McPAT (version 1.2 of June, 2014) is computing the target processor...
  
 Warning: icache array structure cannot satisfy throughput constraint.
 Warning: icache array structure cannot satisfy latency constraint.
@@ -11,7 +11,7 @@ Warning: Predictor Chooser array structure cannot satisfy latency constraint.
 Warning: dcache array structure cannot satisfy throughput constraint.
 Warning: dcache array structure cannot satisfy latency constraint.
 
-McPAT (version 1.1 of March, 2014) results  (current print level is 5)
+McPAT (version 1.2 of June, 2014) results  (current print level is 5)
 *****************************************************************************************
   Technology 180 nm
   Interconnect metal projection= aggressive interconnect technology projection
@@ -25,7 +25,7 @@ Processor:
   Peak Dynamic = 85.6799 W
   Subthreshold Leakage = 0.139382 W
   Gate Leakage = 0.00395798 W
-  Runtime Dynamic = 78.6696 W
+  Runtime Dynamic = 83.7641 W
 
   Total Cores: 1 cores 
   Device Type= ITRS high performance device type
@@ -33,7 +33,7 @@ Processor:
     Peak Dynamic = 51.4112 W
     Subthreshold Leakage = 0.055469 W
     Gate Leakage = 0.0034567 W
-    Runtime Dynamic = 67.352 W
+    Runtime Dynamic = 72.4465 W
 
   Total L2s: 
   Device Type= ITRS high performance device type
@@ -73,14 +73,14 @@ Core:
       Peak Dynamic = 51.4112 W
       Subthreshold Leakage = 0.055469 W
       Gate Leakage = 0.0034567 W
-      Runtime Dynamic = 67.352 W
+      Runtime Dynamic = 72.4465 W
 
       Instruction Fetch Unit:
         Area = 27.2036 mm^2
         Peak Dynamic = 8.67944 W
         Subthreshold Leakage = 0.00635173 W
         Gate Leakage = 0.000348289 W
-        Runtime Dynamic = 9.62993 W
+        Runtime Dynamic = 10.3092 W
 
           Instruction Cache:
             Area = 11.4744 mm^2
@@ -158,7 +158,7 @@ Core:
         Peak Dynamic = 8.45305 W
         Subthreshold Leakage = 0.000528443 W
         Gate Leakage = 6.21963e-05 W
-        Runtime Dynamic = 6.06641 W
+        Runtime Dynamic = 7.42495 W
 
           Int Front End RAT:
             Area = 1.53495 mm^2
@@ -207,7 +207,7 @@ Core:
         Peak Dynamic = 8.72462 W
         Subthreshold Leakage = 0.00719447 W
         Gate Leakage = 0.000429292 W
-        Runtime Dynamic = 27.3645 W
+        Runtime Dynamic = 28.0438 W
 
           Data Cache:
             Area = 38.3148 mm^2
@@ -234,7 +234,7 @@ Core:
         Area = 10.917 mm^2
         Peak Dynamic = 2.6167 W
         Subthreshold Leakage = 0.00171591 W
-        Runtime Dynamic = 6.39119 W
+        Runtime Dynamic = 7.41009 W
 
           Itlb:
             Area = 3.51477 mm^2
@@ -254,7 +254,7 @@ Core:
         Area = 29.3084 mm^2
         Peak Dynamic = 22.9374 W
         Subthreshold Leakage = 0.0199822 W
-        Runtime Dynamic = 17.8999 W
+        Runtime Dynamic = 19.2585 W
 
           Register Files:
             Area = 9.92473 mm^2

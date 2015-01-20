@@ -145,11 +145,14 @@ class InputParameter
     double   lstp_Vdd;
     bool     specific_lop_vdd;     // whether to have user defined vdd that is different from ITRS
     double   lop_Vdd;
+    bool     specific_vcc_min;     // whether to have user defined vcc_min for power-gating that is different from the value constrained by technology for maintaining states
+    double   user_defined_vcc_min;
+    bool     user_defined_vcc_underflow; //flag to indicate when user defined vcc is too low for the circuit to retain state
     unsigned int num_rw_ports;
     unsigned int num_rd_ports;
     unsigned int num_wr_ports;
     unsigned int num_se_rd_ports;  // number of single ended read ports
-    unsigned int num_search_ports;  // Sheng: number of search ports for CAM
+    unsigned int num_search_ports;  // number of search ports for CAM
     bool     is_main_mem;
     bool     is_cache;
     bool     pure_ram;

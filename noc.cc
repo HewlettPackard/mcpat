@@ -105,7 +105,7 @@ void NoC::init_router()
 	area.set_area(area.get_area()+ router->area.get_area()*nocdynp.total_nodes);
 
 	double long_channel_device_reduction = longer_channel_device_reduction(Uncore_device);
-	double pg_reduction_retain = power_gating_leakage_reduction(true);//state retaining array structure;
+	double pg_reduction_retain = power_gating_leakage_reduction(false);//state retaining array structure;
 	double pg_reduction_nonretain = power_gating_leakage_reduction(false);//non-state-retaining array structure;
 
 	router->power.readOp.longer_channel_leakage          = router->power.readOp.leakage * long_channel_device_reduction;
@@ -385,6 +385,13 @@ void NoC::set_noc_param()
 		interface_ip.hp_Vdd   = XML->sys.NoC[ithNoC].vdd;
 		interface_ip.lop_Vdd  = XML->sys.NoC[ithNoC].vdd;
 		interface_ip.lstp_Vdd = XML->sys.NoC[ithNoC].vdd;
+	}
+
+	if ( XML->sys.NoC[ithNoC].power_gating_vcc > -1)
+	{
+		interface_ip.specific_vcc_min = true;
+		interface_ip.user_defined_vcc_min   = XML->sys.NoC[ithNoC].power_gating_vcc;
+
 	}
 
 }

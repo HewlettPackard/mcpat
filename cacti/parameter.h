@@ -58,7 +58,8 @@ class TechnologyParameter
     double Vdd;
     double Vdd_default;
     double Vth;
-    double Vcc_min;//allowed min vcc; for memory cell it is the lowest vcc for data retention. for logic it is the vcc to balance the leakage reduction and wakeup latency
+    double Vcc_min_default;//allowed min vcc; for memory cell it is the lowest vcc for data retention. for logic it is the vcc to balance the leakage reduction and wakeup latency; This is the value constrained by the IC technology and cannot by changed by external/user voltage supply
+    double Vcc_min;//same meaning as Vcc_min_default, however, this value is set by user, once it is lower than Vcc_min_default; circuit (e.g. SRAM cells) cannot retain state.
     double I_on_n;
     double I_on_p;
     double I_off_n;
@@ -90,6 +91,7 @@ class TechnologyParameter
       Vdd       = 0;
       Vdd_default =0;
       Vth       = 0;
+      Vcc_min_default = 0;
       Vcc_min   = 0;
       I_on_n    = 0;
       I_on_p    = 0;

@@ -356,7 +356,7 @@ void init_tech_params(double technology, bool is_tag)
 
       //ITRS LSTP device type
       vdd[1]   = 1.3;
-      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];//TODO
+      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];
       alpha_power_law[1]=1.47;
       Lphy[1]  = 0.075;
       Lelec[1] = 0.0486;
@@ -402,7 +402,7 @@ void init_tech_params(double technology, bool is_tag)
 
       //ITRS LOP device type
       vdd[2] = 0.9;
-      vdd_real[2] = g_ip->specific_lop_vdd ? g_ip->lop_Vdd : vdd[2];//TODO
+      vdd_real[2] = g_ip->specific_lop_vdd ? g_ip->lop_Vdd : vdd[2];
       alpha_power_law[2]=1.55;
       Lphy[2] = 0.053;
       Lelec[2] = 0.0354;
@@ -569,7 +569,7 @@ void init_tech_params(double technology, bool is_tag)
       SENSE_AMP_D = .2e-9; // s
       SENSE_AMP_P = 5.7e-15; // J
       vdd[0] = 1.1;
-      vdd_real[0] = g_ip->specific_hp_vdd ? g_ip->hp_Vdd : vdd[0];//TODO
+      vdd_real[0] = g_ip->specific_hp_vdd ? g_ip->hp_Vdd : vdd[0];
       alpha_power_law[0]=1.27;
       Lphy[0] = 0.025;
       Lelec[0] = 0.019;
@@ -663,7 +663,7 @@ void init_tech_params(double technology, bool is_tag)
       //ITRS LOP device type
       vdd[2] = 0.8;
       alpha_power_law[2]=1.43;
-      vdd_real[2] = g_ip->specific_lop_vdd ? g_ip->lop_Vdd : vdd[2];//TODO
+      vdd_real[2] = g_ip->specific_lop_vdd ? g_ip->lop_Vdd : vdd[2];
       Lphy[2] = 0.032;
       Lelec[2] = 0.0216;
       t_ox[2] = 1.2e-3;
@@ -875,7 +875,7 @@ void init_tech_params(double technology, bool is_tag)
 
       //ITRS LSTP device type
       vdd[1] = 1.1;
-      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];//TODO
+      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];
       alpha_power_law[1]=1.33;
       Lphy[1] =  0.028;
       Lelec[1] = 0.0212;
@@ -1089,7 +1089,7 @@ void init_tech_params(double technology, bool is_tag)
       //technology i.e. FEATURESIZE = 0.032). Using the SOI process numbers for
       //HP and LSTP.
       vdd[0] = 0.9;
-      vdd_real[0] = g_ip->specific_hp_vdd ? g_ip->hp_Vdd : vdd[0];//TODO
+      vdd_real[0] = g_ip->specific_hp_vdd ? g_ip->hp_Vdd : vdd[0];
       alpha_power_law[0]=1.19;
       Lphy[0] = 0.013;
       Lelec[0] = 0.01013;
@@ -1150,7 +1150,7 @@ void init_tech_params(double technology, bool is_tag)
 
       //LSTP device type
       vdd[1] = 1;
-      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];//TODO
+      vdd_real[1] = g_ip->specific_lstp_vdd ? g_ip->lstp_Vdd : vdd[1];
       alpha_power_law[1]=1.27;
       Lphy[1] = 0.020;
       Lelec[1] = 0.0173;
@@ -1763,7 +1763,7 @@ void init_tech_params(double technology, bool is_tag)
     g_tp.peri_global.Vdd       += curr_alpha * vdd_real[peri_global_tech_type];//real vdd, user defined or itrs
     g_tp.peri_global.Vdd_default  += curr_alpha * vdd[peri_global_tech_type];//itrs vdd this does not have to do within line interpolation loop, can be assigned directly
     g_tp.peri_global.Vth       += curr_alpha * v_th[peri_global_tech_type];
-    g_tp.peri_global.Vcc_min   += g_tp.peri_global.Vdd_default * 0.45;// Use minimal voltage to keep the device conducted.//g_tp.peri_global.Vth;
+    g_tp.peri_global.Vcc_min_default   += g_tp.peri_global.Vdd_default * 0.45;// Use minimal voltage to keep the device conducted.//g_tp.peri_global.Vth;
     g_tp.peri_global.t_ox      += curr_alpha * t_ox[peri_global_tech_type];
     g_tp.peri_global.C_ox      += curr_alpha * c_ox[peri_global_tech_type];
     g_tp.peri_global.C_g_ideal += curr_alpha * c_g_ideal[peri_global_tech_type];
@@ -1790,7 +1790,8 @@ void init_tech_params(double technology, bool is_tag)
     g_tp.sleep_tx.Vdd       += curr_alpha * vdd_real[1];
     g_tp.sleep_tx.Vdd_default  += curr_alpha * vdd[1];
     g_tp.sleep_tx.Vth       += curr_alpha * v_th[1];
-    g_tp.sleep_tx.Vcc_min   += g_tp.sleep_tx.Vdd;
+    g_tp.sleep_tx.Vcc_min_default   += g_tp.sleep_tx.Vdd;
+    g_tp.sleep_tx.Vcc_min = g_tp.sleep_tx.Vcc_min_default;//user cannot change this, has to be decided by technology
     g_tp.sleep_tx.t_ox      += curr_alpha * t_ox[1];
     g_tp.sleep_tx.C_ox      += curr_alpha * c_ox[1];
     g_tp.sleep_tx.C_g_ideal += curr_alpha * c_g_ideal[1];
@@ -1816,7 +1817,7 @@ void init_tech_params(double technology, bool is_tag)
     g_tp.sram_cell.Vdd       += curr_alpha * vdd_real[ram_cell_tech_type];
     g_tp.sram_cell.Vdd_default       += curr_alpha * vdd[ram_cell_tech_type];
     g_tp.sram_cell.Vth       += curr_alpha * v_th[ram_cell_tech_type];
-    g_tp.sram_cell.Vcc_min   += g_tp.sram_cell.Vdd_default * 0.6;
+    g_tp.sram_cell.Vcc_min_default   += g_tp.sram_cell.Vdd_default * 0.6;
     g_tp.sram_cell.l_phy     += curr_alpha * Lphy[ram_cell_tech_type];
     g_tp.sram_cell.l_elec    += curr_alpha * Lelec[ram_cell_tech_type];
     g_tp.sram_cell.t_ox      += curr_alpha * t_ox[ram_cell_tech_type];
@@ -1911,14 +1912,6 @@ void init_tech_params(double technology, bool is_tag)
     g_tp.sckt_co_eff           += curr_alpha * curr_sckt_co_eff;
   }
 
-  if (g_tp.sram_cell.Vcc_min > g_tp.sram_cell.Vdd
-		  || g_tp.peri_global.Vdd < g_tp.peri_global.Vdd_default*0.75
-		  || g_tp.sram_cell.Vdd < g_tp.sram_cell.Vdd_default*0.75)
-    {
-      cerr << "User defined Vdd is too low.\n\n"<< endl;
-      exit(0);
-    }
-
 
   //Currently we are not modeling the resistance/capacitance of poly anywhere.
   //following data are continuous function (or data have been processed) does not need linear interpolation
@@ -1983,16 +1976,57 @@ void init_tech_params(double technology, bool is_tag)
   g_tp.cam.b_w =  sqrt(area_cell_cam / (asp_ratio_cell_cam));//Sheng
   g_tp.cam.b_h = asp_ratio_cell_cam * g_tp.cam.b_w;
 
-  //TODO: This code has problem for linear intertation
   g_tp.dram.Vbitpre = g_tp.dram_cell_Vdd;
   g_tp.sram.Vbitpre = g_tp.sram_cell.Vdd;//vdd[ram_cell_tech_type];
-  g_tp.sram.Vbitfloating = g_tp.sram.Vbitpre*0.7;
   g_tp.cam.Vbitpre = g_tp.cam_cell.Vdd;//vdd[ram_cell_tech_type];//Sheng
   pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
   g_tp.w_pmos_bl_precharge = 6 * pmos_to_nmos_sizing_r * g_tp.min_w_nmos_;
   g_tp.w_pmos_bl_eq = pmos_to_nmos_sizing_r * g_tp.min_w_nmos_;
 
+  //DVS and power-gating voltage finalization
+  if (g_tp.sram_cell.Vcc_min_default > g_tp.sram_cell.Vdd
+		  || g_tp.peri_global.Vdd < g_tp.peri_global.Vdd_default*0.75
+		  || g_tp.sram_cell.Vdd < g_tp.sram_cell.Vdd_default*0.75)
+    {
+      cerr << "User defined Vdd is too low.\n\n"<< endl;
+      exit(0);
+    }
 
+  if (g_ip->specific_vcc_min)
+  {
+	  g_tp.sram_cell.Vcc_min = g_ip->user_defined_vcc_min;
+	  g_tp.peri_global.Vcc_min = g_ip->user_defined_vcc_min;
+	  g_tp.sram.Vbitfloating = g_tp.sram.Vbitpre*0.7*(g_tp.sram_cell.Vcc_min/g_tp.peri_global.Vcc_min_default);
+//	  if (g_ip->user_defined_vcc_min < g_tp.peri_global.Vcc_min_default)
+//	  {
+//		  g_tp.peri_global.Vcc_min = g_ip->user_defined_vcc_min;
+//	  }
+//	  else {
+//
+//	  }
+  }
+  else
+  {
+	  g_tp.sram_cell.Vcc_min = g_tp.sram_cell.Vcc_min_default;
+	  g_tp.peri_global.Vcc_min = g_tp.peri_global.Vcc_min_default;
+	  g_tp.sram.Vbitfloating = g_tp.sram.Vbitpre*0.7;
+  }
+
+  if (g_tp.sram_cell.Vcc_min < g_tp.sram_cell.Vcc_min_default )//if want to compute multiple power-gating vdd settings in one run, should have multiple results copies (each copy containing such flag) in update_pg ()
+  {
+	  g_ip->user_defined_vcc_underflow = true;
+  }
+  else
+  {
+	  g_ip->user_defined_vcc_underflow = false;
+  }
+
+  if (g_tp.sram_cell.Vcc_min > g_tp.sram_cell.Vdd
+		  || g_tp.peri_global.Vcc_min > g_tp.peri_global.Vdd)
+    {
+      cerr << "User defined power-saving supply voltage cannot be lower than Vdd (DVS0).\n\n"<< endl;
+      exit(0);
+    }
   double wire_pitch       [NUMBER_INTERCONNECT_PROJECTION_TYPES][NUMBER_WIRE_TYPES],
          wire_r_per_micron[NUMBER_INTERCONNECT_PROJECTION_TYPES][NUMBER_WIRE_TYPES],
          wire_c_per_micron[NUMBER_INTERCONNECT_PROJECTION_TYPES][NUMBER_WIRE_TYPES],

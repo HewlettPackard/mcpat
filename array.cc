@@ -224,7 +224,7 @@ void ArrayST::optimize_array()
 	}
 
 	double long_channel_device_reduction = longer_channel_device_reduction(device_ty,core_ty);
-	double pg_reduction = power_gating_leakage_reduction(true);//array structure all retain state;
+	double pg_reduction = power_gating_leakage_reduction(false);//array structure all retain state;
 
 	double macro_layout_overhead   = g_tp.macro_layout_overhead;
 	double chip_PR_overhead        = g_tp.chip_layout_overhead;

@@ -723,6 +723,12 @@ void MemoryController::set_mc_param()
 			interface_ip.lop_Vdd  = XML->sys.mc.vdd;
 			interface_ip.lstp_Vdd = XML->sys.mc.vdd;
 		}
+		if ( XML->sys.mc.power_gating_vcc > -1)
+		{
+			interface_ip.specific_vcc_min = true;
+			interface_ip.user_defined_vcc_min   = XML->sys.mc.power_gating_vcc;
+
+		}
 	}
 //	else if (mc_type==FLASHC)
 //	{

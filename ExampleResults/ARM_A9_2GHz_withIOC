@@ -1,7 +1,7 @@
-McPAT (version 1.1 of March, 2014) is computing the target processor...
+McPAT (version 1.2 of June, 2014) is computing the target processor...
  
 
-McPAT (version 1.1 of March, 2014) results  (current print level is 5)
+McPAT (version 1.2 of June, 2014) results  (current print level is 5)
 *****************************************************************************************
   Technology 40 nm
   Using Long Channel Devices When Appropriate
@@ -16,7 +16,7 @@ Processor:
   Peak Dynamic = 2.40043 W
   Subthreshold Leakage = 0.0562103 W
   Gate Leakage = 0.0694959 W
-  Runtime Dynamic = 5.5909 W
+  Runtime Dynamic = 5.61233 W
 
   Total Cores: 2 cores 
   Device Type= ITRS low operating power device type
@@ -24,7 +24,7 @@ Processor:
     Peak Dynamic = 1.60172 W
     Subthreshold Leakage = 0.0487531 W
     Gate Leakage = 0.0503589 W
-    Runtime Dynamic = 1.08523 W
+    Runtime Dynamic = 1.10666 W
 
   Total First Level Directory: 
   Device Type= ITRS low operating power device type
@@ -80,14 +80,14 @@ Core:
       Peak Dynamic = 0.800861 W
       Subthreshold Leakage = 0.0243766 W
       Gate Leakage = 0.0251795 W
-      Runtime Dynamic = 1.08523 W
+      Runtime Dynamic = 1.10666 W
 
       Instruction Fetch Unit:
         Area = 0.524458 mm^2
         Peak Dynamic = 0.336176 W
         Subthreshold Leakage = 0.0040912 W
         Gate Leakage = 0.00274435 W
-        Runtime Dynamic = 0.324428 W
+        Runtime Dynamic = 0.328993 W
 
           Instruction Cache:
             Area = 0.320478 mm^2
@@ -165,7 +165,7 @@ Core:
         Peak Dynamic = 0.0461996 W
         Subthreshold Leakage = 0.00021129 W
         Gate Leakage = 0.000227438 W
-        Runtime Dynamic = 0.0786867 W
+        Runtime Dynamic = 0.0837594 W
 
           Int Front End RAT:
             Area = 0.054575 mm^2
@@ -214,7 +214,7 @@ Core:
         Peak Dynamic = 0.0755208 W
         Subthreshold Leakage = 0.00291231 W
         Gate Leakage = 0.00223072 W
-        Runtime Dynamic = 0.175252 W
+        Runtime Dynamic = 0.178854 W
 
           Data Cache:
             Area = 0.328266 mm^2
@@ -234,7 +234,7 @@ Core:
         Area = 0.0235719 mm^2
         Peak Dynamic = 0.0134081 W
         Subthreshold Leakage = 0.00020835 W
-        Runtime Dynamic = 0.0418868 W
+        Runtime Dynamic = 0.0462239 W
 
           Itlb:
             Area = 0.0109629 mm^2
@@ -254,7 +254,7 @@ Core:
         Area = 1.4265 mm^2
         Peak Dynamic = 0.329556 W
         Subthreshold Leakage = 0.0159605 W
-        Runtime Dynamic = 0.464973 W
+        Runtime Dynamic = 0.468828 W
 
           Register Files:
             Area = 0.172904 mm^2

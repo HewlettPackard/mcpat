@@ -279,6 +279,7 @@ typedef struct{
 	double FPU_cdb_duty_cycle ;
 
 	double vdd;
+	double power_gating_vcc;
 
 	//all subnodes at the level of system.core(0-n)
 	predictor_systemcore predictor;
@@ -300,6 +301,7 @@ typedef struct{
 	int cache_policy;//0 no write or write-though with non-write allocate;1 write-back with write-allocate
 	char threeD_stack[20];
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double total_accesses;
 	double read_accesses;
@@ -320,6 +322,7 @@ typedef struct{
 	int cache_policy;//0 no write or write-though with non-write allocate;1 write-back with write-allocate
 	char threeD_stack[20];
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double total_accesses;
 	double read_accesses;
@@ -339,6 +342,7 @@ typedef struct{
 	char threeD_stack[20];
 	int buffer_sizes[20];
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double total_accesses;
 	double read_accesses;
@@ -381,6 +385,7 @@ typedef struct{
 	char threeD_stack[20];
 	int buffer_sizes[20];
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double total_accesses;
 	double read_accesses;
@@ -447,6 +452,7 @@ typedef struct{
 	int arbiter_type;
 	double chip_coverage;
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double total_accesses;
 	double duty_cycle;
@@ -494,6 +500,7 @@ typedef struct{
 	int addressbus_width;
 	bool LVDS;
 	double vdd;
+	double power_gating_vcc;
 
 	//stats
 	double memory_accesses;
@@ -507,6 +514,7 @@ typedef struct{
 	int number_units;
 	int type;
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double duty_cycle;
 	double total_load_perc;
@@ -520,6 +528,7 @@ typedef struct{
 	int type;
 	bool withPHY;
 	double vdd;
+	double power_gating_vcc;
 	//stats
 	double duty_cycle;
 	double total_load_perc;
@@ -570,6 +579,7 @@ typedef struct{
 	int virtual_memory_page_size;
     double total_cycles;
     double vdd;
+    double power_gating_vcc;
 	//system.core(0-n):3rd level
 	system_core core[64];
 	system_L1Directory L1Directory[64];

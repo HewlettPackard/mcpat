@@ -205,6 +205,21 @@ InputParameter::parse_cfg(const string & in_file)
     	continue;
     }
 
+    if (!strncmp("-Powergating voltage", line, strlen("-Powergating voltage"))) {
+      sscanf(line, "-Powergating voltage%[^\"]\"%[^\"]\"", jk, temp_var);
+      if (!strncmp("default", temp_var, sizeof("default"))) {
+        specific_vcc_min= false;
+        user_defined_vcc_min = 1.0; /*
+                     * if this is by default, then the vdd value in g_ip here does not matter
+                     */
+      }
+      else {
+    	specific_vcc_min = true;
+        sscanf(line, "-Powergating voltage (V) %lf", &(user_defined_vcc_min));
+      }
+      continue;
+    }
+
 
     if (!strncmp("-output/input", line, strlen("-output/input"))) {
       sscanf(line, "-output/input bus %[(:-~)*]%d", jk, &(out_w));
@@ -780,7 +795,7 @@ InputParameter::display_ip()
     cout << "Ndsam1                        : " << g_ip->ndsam1 << endl;
     cout << "Ndsam2                        : " << g_ip->ndsam2 << endl;
   }
-  cout << "Placing subarray out driver vertical?     : " << g_ip->cl_vertical << endl;
+ // cout << "Placing subarray out driver vertical?     : " << g_ip->cl_vertical << endl;
 }
 
 
@@ -1856,17 +1871,17 @@ bool dvs  = !g_ip->dvs_voltage.empty();
   }
   else {
     if (g_ip->data_arr_ram_cell_tech_type == 3) {
-      cout << "\n---------- CACTI-P,  (with new features: "<<VER_COMMENT_CACTI
+      cout << "\n---------- CACTI-P,  with new features: "<<VER_COMMENT_CACTI
     		  << " of " << VER_UPDATE_CACTI << "), Uniform Cache Access " <<
         "Logic Process Based DRAM Model ----------\n";
     }
     else if (g_ip->data_arr_ram_cell_tech_type == 4) {
-        cout << "\n---------- CACTI-P,  (with new features: "<<VER_COMMENT_CACTI
+        cout << "\n---------- CACTI-P,  with new features: "<<VER_COMMENT_CACTI
     		  << " of " << VER_UPDATE_CACTI << "), Uniform" <<
         "Cache Access Commodity DRAM Model ----------\n";
     }
     else {
-        cout << "\n---------- CACTI-P,  (with new features: "<<VER_COMMENT_CACTI
+        cout << "\n---------- CACTI-P,  with new features: "<<VER_COMMENT_CACTI
     		  << " of " << VER_UPDATE_CACTI << "), Uniform Cache Access "
         "SRAM Model ----------\n";
     }
@@ -1973,12 +1988,21 @@ bool dvs  = !g_ip->dvs_voltage.empty();
 	  //	  }
 	  if (g_ip->power_gating)
 	  {
-		  cout << "    Total leakage power of a bank, power gated with retaining memory content, including its network outside"
-				  " (mW): " << (g_ip->long_channel_device ? fr->power.readOp.power_gated_leakage*long_channel_leakage_reduction : fr->power.readOp.power_gated_leakage)*1e3<<endl;
+		  cout << "    Total leakage power of a bank, with power-gating ";
+		  if (!g_ip->user_defined_vcc_underflow)
+		  {
+			  cout << "(state retained)";
+		  }
+		  else
+		  {
+			  cout << "(non state retained)";
+		  }
 
+		  cout <<", including its network outside" //power gated with retaining memory content
+				  " (mW): " << (g_ip->long_channel_device ? fr->power.readOp.power_gated_leakage*long_channel_leakage_reduction : fr->power.readOp.power_gated_leakage)*1e3<<endl;
 	  }
 	  cout << "    Total leakage power of a bank without power gating, including its network outside"
-		  	  " (mW): " << (g_ip->long_channel_device ? fr->power.readOp.leakage*long_channel_leakage_reduction : fr->power.readOp.leakage)*1e3;
+			  " (mW): " << (g_ip->long_channel_device ? fr->power.readOp.leakage*long_channel_leakage_reduction : fr->power.readOp.leakage)*1e3;
 
 	  if (dvs)
 	  {
@@ -2001,6 +2025,14 @@ bool dvs  = !g_ip->dvs_voltage.empty();
 	  /* Energy/Power stats */
 	  cout << "    Power-gating results (The virtual power supply for gated circuit can only retain the state of idle circuit, not for operating the circuit):" << endl;
 	  /* Data array power-gating stats */
+	  if (g_ip->user_defined_vcc_underflow)
+	  {
+		 cout<<"    Warning: user defined power gating voltage is too low to retain state; Please understand the implications of deep sleep state on non state retaining and cold start effects when waking up the structure."<<endl;
+	  }
+	  else
+	  {
+		  cout<<"    Power-gating results when retaining state"<<endl;
+	  }
 	  areaoverhead = (fr->cache_ht*fr->cache_len/fr->uca_pg_reference->cache_ht/fr->uca_pg_reference->cache_len-1)*100;//%
 	  cout <<  "    \tPower gating circuits (sleep transistors) induced area overhead: " <<
 			  areaoverhead << " % " <<  endl ;
@@ -2439,11 +2471,21 @@ if(0){ //detailed power-gating output
         }
         cout<< endl;
 
-    	if (g_ip->power_gating)
-    	{
-    		cout << "\tTotal leakage power of a bank, power gated with retaining memory content, including its network outside (mW): " <<
-    				(g_ip->long_channel_device ? fr->data_array2->power.readOp.power_gated_leakage*long_channel_leakage_reduction : fr->data_array2->power.readOp.power_gated_leakage)*1e3 << endl;
-    	}
+        if (g_ip->power_gating)
+        {
+        	cout << "\tTotal leakage power of a bank, power gated ";
+
+        	if (!g_ip->user_defined_vcc_underflow)
+        	{
+        		cout << "with ";
+        	}
+        	else
+        	{
+        		cout << "without ";
+        	}
+        	cout<<"retaining memory content, including its network outside (mW): " <<
+        			(g_ip->long_channel_device ? fr->data_array2->power.readOp.power_gated_leakage*long_channel_leakage_reduction : fr->data_array2->power.readOp.power_gated_leakage)*1e3 << endl;
+        }
 //    	else
 //    	{
     		cout << "\tTotal leakage power of a bank without power gating, including its network outside (mW): " <<
@@ -2965,7 +3007,16 @@ if(0){ //detailed power-gating output
 
       if (g_ip->power_gating)
             {
-          	  cout << "\tTotal leakage power of a bank, power gated with retaining memory content, including its network outside (mW): " <<
+          	  cout << "\tTotal leakage power of a bank, power gated ";
+                  	if (!g_ip->user_defined_vcc_underflow)
+                  	{
+                  		cout << "with ";
+                  	}
+                  	else
+                  	{
+                  		cout << "without ";
+                  	}
+                  	cout<<"retaining memory content, including its network outside (mW): " <<
           			  (g_ip->long_channel_device ? fr->tag_array2->power.readOp.power_gated_leakage*long_channel_leakage_reduction :  fr->tag_array2->power.readOp.power_gated_leakage)* 1e3 << endl;
           	 }
 //            else

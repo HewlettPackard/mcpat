@@ -31,6 +31,15 @@ The inclosed Cacti-P can run stand-alone if users want to use these features.
  * Support user defined voltage supply (Vdd)
  * Dynamic voltage scaling (DVS)
  
+In the output results, either ITRS default or user defined vdd is used as baseline supply vdd. 
+When DVS is enabled, this vdd is denoted as @DVS_Level0. The user defined DVS voltage levels are
+denoted as @DVS_Level1~@DVS_Leveln. 
+
+Power-gating and DVS cannot happen at the same time. Because power-gating happens when circuit is idle,
+while DVS happens when circuit is active.
+When waking up from power-gating status, it is assumed that the system will first wakeup to DVS0 (full speed) state, 
+if DVS is enabled in the system.
+ 
 For complete documentation of Cacti-P, please refer to the following paper,
 "CACTI-P: Architecture-Level Modeling for SRAM-based Structures with Advanced Leakage Reduction Techniques", 
 that appeared in ICCAD2011. Please cite the paper, if you use

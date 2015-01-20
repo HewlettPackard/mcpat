@@ -217,6 +217,13 @@ void NIUController::set_niu_param()
 		interface_ip.lop_Vdd  = XML->sys.niu.vdd;
 		interface_ip.lstp_Vdd = XML->sys.niu.vdd;
 	}
+
+	if ( XML->sys.niu.power_gating_vcc > -1)
+	{
+		interface_ip.specific_vcc_min = true;
+		interface_ip.user_defined_vcc_min   = XML->sys.niu.power_gating_vcc;
+
+	}
 //	  niup.executionTime   = XML->sys.total_cycles/(XML->sys.target_core_clockrate*1e6);
 }
 
@@ -364,6 +371,13 @@ void PCIeController::set_pcie_param()
 			interface_ip.lop_Vdd  = XML->sys.pcie.vdd;
 			interface_ip.lstp_Vdd = XML->sys.pcie.vdd;
 		}
+
+		if ( XML->sys.pcie.power_gating_vcc > -1)
+		{
+			interface_ip.specific_vcc_min = true;
+			interface_ip.user_defined_vcc_min   = XML->sys.pcie.power_gating_vcc;
+
+		}
 //	  pciep.executionTime   = XML->sys.total_cycles/(XML->sys.target_core_clockrate*1e6);
 
 }
@@ -489,5 +503,11 @@ void FlashController::set_fc_param()
 		  interface_ip.lop_Vdd  = XML->sys.flashc.vdd;
 		  interface_ip.lstp_Vdd = XML->sys.flashc.vdd;
 	  }
+		if ( XML->sys.flashc.power_gating_vcc > -1)
+		{
+			interface_ip.specific_vcc_min = true;
+			interface_ip.user_defined_vcc_min   = XML->sys.flashc.power_gating_vcc;
+
+		}
 
 }

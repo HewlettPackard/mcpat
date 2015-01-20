@@ -40,6 +40,7 @@
 			<!-- Core property -->
 			<param name="clock_rate" value="3400"/>
 			<param name="vdd" value="1.25"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<param name="opt_local" value="0"/> <!-- for cores with unknown timing, set to 0 to force off the opt flag -->
 			<param name="instruction_length" value="32"/>
 			<param name="opcode_width" value="16"/>
@@ -264,6 +265,7 @@
 				<!-- all the buffer related are optional -->
 			    <param name="clockrate" value="3400"/>
 			    <param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			    <param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 				<param name="ports" value="1,1,1"/>
 				<!-- number of r, w, and rw search ports -->
 				<param name="device_type" value="0"/>
@@ -285,7 +287,8 @@
 				<!-- all the buffer related are optional -->
 			    <param name="clockrate" value="3400"/>
 			    <param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
-				<param name="ports" value="1,1,1"/>
+			    <param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
+			    <param name="ports" value="1,1,1"/>
 				<!-- number of r, w, and rw search ports -->
 				<param name="device_type" value="0"/>
 				<!-- altough there are multiple access types, 
@@ -305,6 +308,7 @@
 				<!-- cache controller buffer sizes: miss_buffer_size(MSHR),fill_buffer_size,prefetch_buffer_size,wb_buffer_size-->	
 				<param name="clockrate" value="3400"/>
 				<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+				<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 				<param name="ports" value="1,1,1"/>
 				<!-- number of r, w, and rw ports -->
 				<param name="device_type" value="0"/>
@@ -325,6 +329,7 @@
 				<!-- number of r, w, and rw ports -->
 				<param name="device_type" value="0"/>
 				<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+				<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 				<param name="buffer_sizes" value="16, 16, 16, 16"/>
 				<!-- cache controller buffer sizes: miss_buffer_size(MSHR),fill_buffer_size,prefetch_buffer_size,wb_buffer_size-->	
 				<stat name="read_accesses" value="11824"/>
@@ -338,6 +343,7 @@
 		<component id="system.NoC0" name="noc0">
 			<param name="clockrate" value="3400"/>
 			<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<param name="type" value="0"/>
 			<!--0:bus, 1:NoC , for bus no matter how many nodes sharing the bus
 				at each time only one node can send req -->
@@ -372,6 +378,7 @@
 			<param name="type" value="0"/> <!-- 1: low power; 0 high performance -->
 			<param name="mc_clock" value="200"/><!--DIMM IO bus clock rate MHz--> 
 			<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<param name="peak_transfer_rate" value="3200"/><!--MB/S-->
 			<param name="block_size" value="64"/><!--B-->
 			<param name="number_mcs" value="0"/>
@@ -400,6 +407,7 @@
 			<param name="type" value="0"/> <!-- 1: low power; 0 high performance -->
 			<param name="clockrate" value="350"/>
 			<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<param name="number_units" value="0"/> <!-- unlike PCIe and memory controllers, each Ethernet controller only have one port -->
 			<stat name="duty_cycle" value="1.0"/> <!-- achievable max load <= 1.0 -->
 			<stat name="total_load_perc" value="0.7"/> <!-- ratio of total achieved load to total achieve-able bandwidth  -->
@@ -415,6 +423,7 @@
 			<param name="withPHY" value="1"/>
 			<param name="clockrate" value="350"/>
 			<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<param name="number_units" value="0"/>
 			<param name="num_channels" value="8"/> <!-- 2 ,4 ,8 ,16 ,32 -->
 			<stat name="duty_cycle" value="1.0"/> <!-- achievable max load <= 1.0 -->
@@ -429,6 +438,7 @@
             <param name="withPHY" value="1"/>
 			<param name="peak_transfer_rate" value="200"/><!--Per controller sustain-able peak rate MB/S -->
 			<param name="vdd" value="0"/><!-- 0 means using ITRS default vdd -->
+			<param name="power_gating_vcc" value="-1"/><!-- "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically -->
 			<stat name="duty_cycle" value="1.0"/> <!-- achievable max load <= 1.0 -->
 			<stat name="total_load_perc" value="0.7"/> <!-- Percentage of total achieved load to total achieve-able bandwidth  -->
 			<!-- McPAT does not track individual flash controller, instead, it takes the total accesses and calculate 

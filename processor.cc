@@ -750,6 +750,8 @@ void Processor::set_proc_param()
 	interface_ip.specific_lop_vdd = false;
 	interface_ip.specific_lstp_vdd = false;
 
+	interface_ip.specific_vcc_min = false;
+
 	interface_ip.ic_proj_type     = debug?0:XML->sys.interconnect_projection_type;
 	interface_ip.delay_wt                = 100;//Fixed number, make sure timing can be satisfied.
 	interface_ip.area_wt                 = 0;//Fixed number, This is used to exhaustive search for individual components.

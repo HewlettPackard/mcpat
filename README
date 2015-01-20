@@ -5,7 +5,7 @@
  |_|  |_|\___|_| /_/   \_\_|    
                                         
 McPAT: (M)ulti(c)ore (P)ower, (A)rea, and (T)iming
-Current version: 1.1 
+Current version 1.2
 ==================================================
 
 McPAT is an architectural modeling tool for chip multiprocessors (CMP)
@@ -27,7 +27,7 @@ McPAT in your work. The bibtex entry is provided below for your convenience.
  year = {2009},
  pages = {469--480},
  }
-
+ 
 The following are the list of features supported by McPAT:
 
 * Power, area, and timing models for CMPs with:
@@ -182,6 +182,20 @@ which could be even higher than TDP.
    Xeon Tulsa processor), and ARM_A9_2GHz.xml (for ARM Cortex A9 hard core 2GHz implementation from 
    ARM) 
    
+7. Modeling of power management techniques:   
+   McPAT supports both DVS and power-gating. For DVS, users can use default ITRS projected vdd 
+   at each technology node as supply voltage at DVS level 0 (DVS0) or define voltage at DVS0. 
+   For power-gating, McPAT supports both default power-saving virtual supply voltage computed 
+   automatically using technology parameters. Default means using technology (ITRS based) 
+   lowest value for state-retaining power-gating User can also defined voltage for Power-saving states, 
+   as shown in example file of Xeon.xml (search for power_gating_vcc). When using user-defined power-saving 
+   virtual supply voltage, please understand the implications when setting up voltage for different sleep states. 
+   For example, when deep sleep state is used (voltage lower than the technology allowed state retaining supply voltage), 
+   the effects of losing data and cold start effects (beyond the scope of McPAT) must be considered when waking up the architecture.  
+   Power-gating and DVS cannot happen at the same time. Because power-gating happens when circuit is idle, while DVS happens when 
+   circuit blocks are active. 
+    
+   
 ====================   
 McPAT includes its special version of Cacti (called Cacti-P) based on Cacti6.5 release. The major changes of 
 the special Cacti, called Cacti-P in this distro, (compared to cacti6.5) include the following new features. 
@@ -210,13 +224,14 @@ Cacti-P in your work. The bibtex entry is provided below for your convenience.
 
  
 ====================
-McPAT uses an opensource XML parser written by Mr. Frank Vanden Berghen. 
-The detailed information about this XML parser can be found at the license
-information in xmlParse.cc/xmlParse.h       
+McPAT uses an opensource XML parser written and kindly specially licensed by Mr. Frank Vanden Berghen. 
+The detailed information about this XML parser can be found at the license information in xmlParse.cc/xmlParse.h       
 
-====================
-McPAT is in its beginning stage. We are still improving 
-the tool. Please come back to its website for newer versions. 
+====================            
+McPAT is in its beginning stage. We are still improving the tool. 
+Please come back to its website for newer versions.
+McPAT has been constantly and rapidly improved with new models and latest technology. 
+Please always refer to its code for most up-to-date and most accurate information. 
 If you have any comments, questions, or suggestions, please write to us:
 
 

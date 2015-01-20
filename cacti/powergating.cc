@@ -38,10 +38,29 @@
 
 using namespace std;
 
-//TODO: although DTSN is used,since for memory array, the number of sleep txs
-//is related to the number of rows and cols. so All calculations are still base on
-//single sleep tx cases
-
+/*
+ * Sizing of sleep tx is independent of sleep/power-saving supply voltage, sleep/power-saving supply voltage only affects wake-up energy and time
+ *
+ * While using DSTN (Distributed sleep tx network), worst case sizing is used.
+ * For DSTN, the network can help to reduce the runtime latency (or achieve the same latency with smaller transistor size)
+ * For example, during write access, if not all bits are toggled, the sleep tx in the non-toggled path can work as the extra
+ * discharge paths of all the toggled bits, in addition to the sleep tx in the bitlines with the toggled bits. Since CACTI itself
+ * assumes worst case with all bits toggled, sleep txs are assumed to work all the time with all bits toggled,
+ * Therefore, although DTSN is used, for memory array, the number of sleep txs is related to the number of rows and cols.,
+ * and all calculations are still base on single sleep tx for each discharge case. Of couse in each discharge path, the sleep
+ * tx is the charge path of all the devices in the same path (row or col).
+ *
+ * Even in the worse case sizing, the wakeup time will not change
+ * since all paths need to charge/discharge---each sleep tx is just do its own portion of the work during wakeup or entering sleep state.
+ *
+ * Power-gating and DVS cannot happen at the same time! Because power-gating happens when circuit is idle,
+ * while DVS happens when circuit is active.
+ * When waking up from power-gating status, it is assumed that the system will first wakeup to DVS0 (full speed) state, if DVS is enabled in
+ * the system.
+ *
+ *
+ *
+*/
 Sleep_tx::Sleep_tx(
 			double  _perf_with_sleep_tx,
 			double  _active_Isat,//of circuit block, not sleep tx

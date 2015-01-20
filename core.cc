@@ -3728,6 +3728,10 @@ void EXECU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 
 void Core::computeEnergy(bool is_tdp)
 {
+	/*
+	 * When computing TDP, power = energy_per_cycle (the value computed in this function) * clock_rate (in the display_energy function)
+	 * When computing dyn_power; power = total energy (the value computed in this function) / Total execution time (cycle count / clock rate)
+	 */
 	//power_point_product_masks
 	double pppm_t[4]    = {1,1,1,1};
     double rtp_pipeline_coe;
@@ -3743,7 +3747,7 @@ void Core::computeEnergy(bool is_tdp)
 		{
 			num_units = 5.0;
 			rnu->computeEnergy(is_tdp);
-			set_pppm(pppm_t, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
+			set_pppm(pppm_t, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);//User need to feed a duty cycle to improve accuracy
 			if (rnu->exist)
 			{
 				rnu->power = rnu->power + corepipe->power*pppm_t;
@@ -3796,6 +3800,7 @@ void Core::computeEnergy(bool is_tdp)
 			//l2cache->power = l2cache->power*pppm_t;
 			power = power  + l2cache->power*pppm_t;
 		}
+
 	}
 	else
 	{
@@ -3803,11 +3808,20 @@ void Core::computeEnergy(bool is_tdp)
 		lsu->computeEnergy(is_tdp);
 		mmu->computeEnergy(is_tdp);
 		exu->computeEnergy(is_tdp);
+
 		if (coredynp.core_ty==OOO)
 		{
 			num_units = 5.0;
 			rnu->computeEnergy(is_tdp);
-        	set_pppm(pppm_t, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
+			if (XML->sys.homogeneous_cores==1)
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * XML->sys.total_cycles * XML->sys.number_of_cores;
+			}
+			else
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.total_cycles;
+			}
+        	set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
 			if (rnu->exist)
 			{
         	rnu->rt_power = rnu->rt_power + corepipe->power*pppm_t;
@@ -3817,36 +3831,66 @@ void Core::computeEnergy(bool is_tdp)
 		}
 		else
 		{
-			if (XML->sys.homogeneous_cores==1)
-			{
-				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * XML->sys.total_cycles * XML->sys.number_of_cores;
-			}
-			else
-			{
-				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.total_cycles;
-			}
-		set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
+			num_units = 4.0;
 		}
 
 		if (ifu->exist)
 		{
+			if (XML->sys.homogeneous_cores==1)
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.IFU_duty_cycle * XML->sys.total_cycles * XML->sys.number_of_cores;
+			}
+			else
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.IFU_duty_cycle * coredynp.total_cycles;
+			}
+			set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
 			ifu->rt_power = ifu->rt_power + corepipe->power*pppm_t;
 			rt_power     = rt_power + ifu->rt_power ;
 		}
 		if (lsu->exist)
 		{
+			if (XML->sys.homogeneous_cores==1)
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.LSU_duty_cycle * XML->sys.total_cycles * XML->sys.number_of_cores;
+			}
+			else
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.LSU_duty_cycle * coredynp.total_cycles;
+			}
+			set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
+
 			lsu->rt_power = lsu->rt_power + corepipe->power*pppm_t;
 			rt_power     = rt_power  + lsu->rt_power;
 		}
 		if (exu->exist)
 		{
+			if (XML->sys.homogeneous_cores==1)
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.ALU_duty_cycle * XML->sys.total_cycles * XML->sys.number_of_cores;
+			}
+			else
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.ALU_duty_cycle * coredynp.total_cycles;
+			}
+			set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
 			exu->rt_power = exu->rt_power + corepipe->power*pppm_t;
 			rt_power     = rt_power  + exu->rt_power;
 		}
 		if (mmu->exist)
 		{
+			if (XML->sys.homogeneous_cores==1)
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * (0.5+0.5*coredynp.LSU_duty_cycle) * XML->sys.total_cycles * XML->sys.number_of_cores;
+			}
+			else
+			{
+				rtp_pipeline_coe = coredynp.pipeline_duty_cycle * (0.5+0.5*coredynp.LSU_duty_cycle) * coredynp.total_cycles;
+			}
+			set_pppm(pppm_t, coredynp.num_pipelines*rtp_pipeline_coe/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units, coredynp.num_pipelines/num_units);
 			mmu->rt_power = mmu->rt_power + corepipe->power*pppm_t;
 			rt_power     = rt_power +  mmu->rt_power ;
+
 		}
 
 		rt_power     = rt_power +  undiffCore->power;
@@ -4121,6 +4165,8 @@ void Core::set_core_param()
     coredynp.num_fpus      = XML->sys.core[ithCore].FPU_per_core;
     coredynp.num_muls      = XML->sys.core[ithCore].MUL_per_core;
     coredynp.vdd	       = XML->sys.core[ithCore].vdd;
+    coredynp.power_gating_vcc	       = XML->sys.core[ithCore].power_gating_vcc;
+
 
 
     coredynp.num_hthreads	     = XML->sys.core[ithCore].number_hardware_threads;
@@ -4238,5 +4284,11 @@ if (coredynp.core_ty==OOO)
 	  interface_ip.hp_Vdd   = coredynp.vdd;
 	  interface_ip.lop_Vdd  = coredynp.vdd;
 	  interface_ip.lstp_Vdd = coredynp.vdd;
+	}
+
+	if (coredynp.power_gating_vcc > -1)
+	{
+	  interface_ip.specific_vcc_min = true;
+	  interface_ip.user_defined_vcc_min   = coredynp.power_gating_vcc;
 	}
 }
