@@ -100,9 +100,12 @@
 			<param name="rename_scheme" value="1"/>
 			<!-- can be RAM based(0) or CAM based(1) rename scheme 
 			RAM-based scheme will have free list, status table;
-			CAM-based scheme have the valid bit in the data field of the CAM 
-			both RAM and CAM need RAM-based checkpoint table, checkpoint_depth=# of in_flight instructions;
-			Detailed RAT Implementation see TR -->
+			CAM-based scheme have the valid bit in the data field of the CAM -->
+			<param name="checkpoint_depth" value="8"/>
+			<!-- RAM and CAM RAT contains checkpoints, checkpoint_depth=# of in_flight speculations;
+			RAM-based RAT should not have more than 4 GCs (e.g., MIPS R10000). 
+			McPAT assumes the exsistance of RRAT when the RAM-RAT having no GCs (e.g., Netburst)
+			CAM-based RAT should have at least 1 GC and can have more than 8 GCs. -->
 			<param name="register_windows_size" value="0"/>
 			<!-- how many windows in the windowed register file, sun processors;
 			no register windowing is used when this number is 0 -->

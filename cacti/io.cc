@@ -1339,12 +1339,12 @@ bool InputParameter::error_checking()
     }
   }
 
-
   uint32_t B = line_sz;
 
   if (B < 1)
   {
-    cerr << "Block size must >= 1" << endl;
+
+	cerr << "Block size must >= 1" << endl;
     return false;
   }
   else if (B*8 < out_w)

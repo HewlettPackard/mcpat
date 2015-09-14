@@ -78,7 +78,6 @@ void ArrayST::compute_base_power()
 //    	output_UCA(&local_result);
 //    	cout<<endl;
 //    }
-
     }
 
 void ArrayST::optimize_array()

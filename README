@@ -5,15 +5,46 @@
  |_|  |_|\___|_| /_/   \_\_|    
                                         
 McPAT: (M)ulti(c)ore (P)ower, (A)rea, and (T)iming
-Current version 1.2
+Current version 1.3
 ==================================================
 
-McPAT is an architectural modeling tool for chip multiprocessors (CMP)
-The main focus of McPAT is accurate power and area
-modeling, and a target clock rate is used as a design constraint. 
-McPAT performs automatic extensive search to find optimal designs 
-that satisfy the target clock frequency.  
+* What McPAT is: 
 
+	--Architectural integrated power, area, and timing modeling framework, focuses on power and area modeling, with a target clock rate as a design constraint. 
+	  		-Consider power, area, and timing simultaneously 
+			-Complete power envelope
+			-Power management techniques
+	---Manycore processor modeling framework
+			-Different cores, uncore, and system (I/O) components
+			-Holistically modeling across stacks: Technology models from ITRS projections (also supports user defined vdd), processor modeling based on modern processors
+	---Flexible, extensible, and high (i.e., architecture) level framework
+			-A framework for architecture research
+			-Flexible to make researchers's life easier
+				Pre-populated micro-architecture configurations (can be changed by experienced users too!)
+				Multilevel automatic optimization 
+			-Hierarchical modeling framework for easy extension and porting  
+				Standalone for TDP
+				Paired up with performance simulators (or machine profiling statistics) for fine-grained study
+
+* What McPAT is NOT
+
+	---a hardware design EDA platform; nor a performance simulator
+			-Use RTL/SPICE/...(not McPAT) if focusing on details of complex logic or analog components 
+				Empirical and curve-fitting based modeling for complex logic and analog building blocks (the most practical modeling methodology for high level framework). 
+					Solution1: Users replace those models with in-house models obtained from EDA tools
+ 					Solution2: Users contribute their EDA based detailed models back to the community for sharing
+			-Use performance simulators for performance (McPAT cannot do performance simulations)
+	---a restrictive environment 
+			-It is a framework (rather than a black-box tool)
+			-Its built-in models are for references and for providing methodological examples. 
+				McPAT's built-in model includes simplified assumptions (e.g. unified instruction window for all instruction types)
+				McPAT provides building blocks so that it is composable 
+				Users should always understand the methodology when using the built-in models or compose their own models.				
+	---finished!
+			-There is always room for improvement . . .
+			-Thanks for the continueous contributing from the user community!  
+
+====================
 For complete documentation of the McPAT, please refer to the following paper,
 "McPAT: An Integrated Power, Area, and Timing Modeling
  Framework for Multicore and Manycore Architectures", 
@@ -27,53 +58,7 @@ McPAT in your work. The bibtex entry is provided below for your convenience.
  year = {2009},
  pages = {469--480},
  }
- 
-The following are the list of features supported by McPAT:
 
-* Power, area, and timing models for CMPs with:
-      Inorder cores both single and multithreaded
-      OOO cores both single and multithreaded
-      low power embedded processor and core
-      Shared/coherent caches with directory hardware:
-      	including directory cache, shadowed tag directory
-      	and static bank mapped tag directory
-      Network-on-Chip
-      On-chip memory controllers
-      On-chip I/O controllers (SoC modules).
-    
-* Internal models are based on real modern processors:
-  Inorder models are based on Sun Niagara family;
-  OOO models are based on Intel P6 for reservation 
-  station based OOO cores, and on Intel Netburst and 
-  Alpha 21264 for physical register file based OOO cores;
-  low power embedded processor models are based on ARM Cortex A9.     
-
-* Leakage power modeling considers both sub-threshold leakage 
-  and gate leakage power. The impact of operating temperature 
-  on both leakage power are considered. Longer channel devices 
-  that can reduce leakage significantly with modest performance 
-  penalty are also modeled.
-  
-* McPAT supports automatic extensive search to find optimal designs 
-  that satisfy the target clock frequency. The timing constraint 
-  include both throughput and latency.
-
-* Interconnect model with different delay, power, and area 
-  properties, as well as both the aggressive and conservative 
-  interconnect projections on wire technologies. 
-
-* All process specific values used by the McPAT are obtained
-  from ITRS and currently, the McPAT supports 90nm, 65nm, 45nm, 
-  32nm, and 22nm technology nodes. At 32nm and 22nm nodes, DG devices 
-  are used. After 45nm, Hi-K metal gates are used.
-
-* McPAT models sleep transistor based power-gating techniques that can 
-  reduce leakage power of idle circuit blocks and architecture components.  
-
-* McPAT supports user defined supply voltages that is different from ITRS 
-  standard vdd, without the need of special technology files.
-
-* McPAT supports fine-grained voltage domains/islands and dynamic voltage scaling (DVS).  
 
 How to use the tool?
 ====================

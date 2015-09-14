@@ -1984,9 +1984,9 @@ void init_tech_params(double technology, bool is_tag)
   g_tp.w_pmos_bl_eq = pmos_to_nmos_sizing_r * g_tp.min_w_nmos_;
 
   //DVS and power-gating voltage finalization
-  if (g_tp.sram_cell.Vcc_min_default > g_tp.sram_cell.Vdd
+  if ((g_tp.sram_cell.Vcc_min_default > g_tp.sram_cell.Vdd
 		  || g_tp.peri_global.Vdd < g_tp.peri_global.Vdd_default*0.75
-		  || g_tp.sram_cell.Vdd < g_tp.sram_cell.Vdd_default*0.75)
+		  || g_tp.sram_cell.Vdd < g_tp.sram_cell.Vdd_default*0.75) && (!g_ip->is_main_mem))
     {
       cerr << "User defined Vdd is too low.\n\n"<< endl;
       exit(0);
@@ -2021,8 +2021,8 @@ void init_tech_params(double technology, bool is_tag)
 	  g_ip->user_defined_vcc_underflow = false;
   }
 
-  if (g_tp.sram_cell.Vcc_min > g_tp.sram_cell.Vdd
-		  || g_tp.peri_global.Vcc_min > g_tp.peri_global.Vdd)
+  if ((g_tp.sram_cell.Vcc_min > g_tp.sram_cell.Vdd
+		  || g_tp.peri_global.Vcc_min > g_tp.peri_global.Vdd)&& (!g_ip->is_main_mem))
     {
       cerr << "User defined power-saving supply voltage cannot be lower than Vdd (DVS0).\n\n"<< endl;
       exit(0);

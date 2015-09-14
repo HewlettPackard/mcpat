@@ -158,7 +158,7 @@ public:
 	enum Renaming_type rm_ty;
     enum Scheduler_type scheu_ty;
     double clockRate,executionTime;
-    int  arch_ireg_width, arch_freg_width, phy_ireg_width, phy_freg_width;
+    int  arch_ireg_width, arch_freg_width, phy_ireg_width, phy_freg_width, hthread_width;
     int  num_IRF_entry, num_FRF_entry, num_ifreelist_entries, num_ffreelist_entries;
     int  fetchW, decodeW,issueW,peak_issueW, commitW,peak_commitW, predictionW, fp_issueW, fp_decodeW;
     int  perThreadState, globalCheckpoint, instruction_length, pc_width, opcode_length, micro_opcode_length;

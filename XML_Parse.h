@@ -188,6 +188,7 @@ typedef struct{
 	int phy_Regs_IRF_size;
 	int phy_Regs_FRF_size;
 	int rename_scheme;
+	int checkpoint_depth;
 	int register_windows_size;
 	char LSU_order[20];
 	int store_buffer_size;

@@ -313,7 +313,7 @@ BranchPredictor::BranchPredictor(ParseXML* XML_interface, int ithCore_, InputPar
 	 * McPAT's branch predictor model is the tournament branch predictor used in Alpha 21264,
 	 * including global predictor, local two level predictor, and Chooser.
 	 * The Branch predictor also includes a RAS (return address stack) for function calls
-	 * Branch predictors are tagged by thread ID and modeled as 1-way associative $
+	 * Branch predictors are tagged by thread ID and modeled as 1-way associative cache.
 	 * However RAS return address stacks are duplicated for each thread.
 	 * TODO:Data Width need to be computed more precisely	 *
 	 */
@@ -623,29 +623,60 @@ SchedulerU::SchedulerU(ParseXML* XML_interface, int ithCore_, InputParameter* in
 			 *
 			 *  ROB.ROB size = inflight inst. ROB is unified for int and fp inst.
 			 *  One old approach is to combine the RAT and ROB as a huge CAM structure as in AMD K7.
-			 *  However, this approach is abandoned due to its high power and poor scalablility.
+			 *  However, this approach is abandoned due to its high power and poor scalability.
 			 *	McPAT uses current implementation of ROB as circular buffer.
 			 *	ROB is written once when instruction is issued and read once when the instruction is committed.         *
 			 */
+
 			int robExtra = int(ceil(5 + log2(coredynp.num_hthreads)));
-			//5 bits are: busy, Issued, Finished, speculative, valid
+			data = int(ceil((robExtra+coredynp.pc_width + ((coredynp.rm_ty ==RAMbased)? (coredynp.phy_ireg_width + coredynp.phy_freg_width) : fmax(coredynp.phy_ireg_width, coredynp.phy_freg_width)) + ((coredynp.scheu_ty==PhysicalRegFile)? 0 :  coredynp.fp_data_width ))/8.0));
+			/*
+			 * 	5 bits are: busy, Issued, Finished, speculative, valid;
+			 * 	PC is to id the instruction for recover exception/mis-prediction.
+			 * 	When using RAM-based RAT, ROB needs to contain the ARF-PRF mapping to index the correct entry in the RAT,
+			 * 	so that the correct architecture register (and freelist) can be found and the RAT can be appropriately updated;
+			 * 	otherwise, the RAM-based RAT needs to support search ops to identify the target architecture register that needs to be updated, or the physical resigner that needs to be recycled;
+			 * 	When using CAM-based RAT, ROB only needs to contain destination physical register since the CAM-base RAT can search for the corresponding ARF-PRF mapping
+			 * 	to find the correct entry in the RAT, so that the correct architecture register (and freelist/bits) can be found and the RAT can be appropriately updated.
+			 * 	ROB phy_reg entry should use the larger one from phy_ireg and phy_freg; fdata_width is always larger.
+			 * 	Latest Intel Processors may have different ROB/RS designs.
+			 */
+
+
+
+/*
 			if(coredynp.scheu_ty==PhysicalRegFile)
 			{
 				//PC is to id the instruction for recover exception.
 				//inst is used to map the renamed dest. registers.so that commit stage can know which reg/RRAT to update
 //				data = int(ceil((robExtra+coredynp.pc_width +
 //						coredynp.instruction_length + 2*coredynp.phy_ireg_width)/8.0));
-				data = int(ceil((robExtra+coredynp.pc_width +
-							coredynp.phy_ireg_width)/8.0));
+
+				if (coredynp.rm_ty ==RAMbased)
+				{
+					data = int(ceil((robExtra + coredynp.pc_width + (coredynp.phy_ireg_width, coredynp.phy_freg_width))/8.0));
+					//When using RAM-based RAT, ROB needs to contain the ARF-PRF mapping to index the correct entry in the RAT,
+					//so that the correct architecture register (and freelist) can be found and the RAT can be appropriately updated.
+				}
+				else if ((coredynp.rm_ty ==CAMbased))
+				{
+					data = int(ceil((robExtra+coredynp.pc_width + fmax(coredynp.phy_ireg_width, coredynp.phy_freg_width))/8.0));
+					//When using CAM-based RAT, ROB needs to contain the ARF-PRF mapping to index the correct entry in the RAT,
+										//so that the correct architecture register (and freelist) can be found and the RAT can be appropriately updated.
+				}
 			}
 			else
 			{
 				//in RS based OOO, ROB also contains value of destination reg
 //				data  = int(ceil((robExtra+coredynp.pc_width +
 //						coredynp.instruction_length + 2*coredynp.phy_ireg_width + coredynp.fp_data_width)/8.0));
-				data  = int(ceil((robExtra + coredynp.pc_width +
-						coredynp.phy_ireg_width + coredynp.fp_data_width)/8.0));
+
+				//using phy_reg number to search in the RAT, the correct architecture register can be found and the RAT can be appropriately updated.
+				//ROB phy_reg entry should use the larger one from ireg and freg; fdata_width is always larger; Latest Intel Processors may have different ROB/RS designs.
+				data  = int(ceil((robExtra + coredynp.pc_width + fmax(coredynp.phy_ireg_width, coredynp.phy_freg_width) + coredynp.fp_data_width)/8.0));
 			}
+*/
+
 			interface_ip.is_cache			 = false;
 			interface_ip.pure_cam            = false;
 			interface_ip.pure_ram            = true;
@@ -850,7 +881,7 @@ LoadStoreU::LoadStoreU(ParseXML* XML_interface, int ithCore_, InputParameter* in
 	  interface_ip.line_sz             = int(ceil(data/32.0))*4;
 	  interface_ip.specific_tag        = 1;
 	  interface_ip.tag_w               = tag;
-	  interface_ip.cache_sz            = XML->sys.core[ithCore].store_buffer_size*interface_ip.line_sz*XML->sys.core[ithCore].number_hardware_threads;
+	  interface_ip.cache_sz            = XML->sys.core[ithCore].store_buffer_size*interface_ip.line_sz;
 	  interface_ip.assoc               = 0;
 	  interface_ip.nbanks              = 1;
 	  interface_ip.out_w               = interface_ip.line_sz*8;
@@ -877,7 +908,7 @@ LoadStoreU::LoadStoreU(ParseXML* XML_interface, int ithCore_, InputParameter* in
 		  interface_ip.line_sz             = int(ceil(data/32.0))*4;
 		  interface_ip.specific_tag        = 1;
 		  interface_ip.tag_w               = tag;
-		  interface_ip.cache_sz            = XML->sys.core[ithCore].load_buffer_size*interface_ip.line_sz*XML->sys.core[ithCore].number_hardware_threads;
+		  interface_ip.cache_sz            = XML->sys.core[ithCore].load_buffer_size*interface_ip.line_sz;
 		  interface_ip.assoc               = 0;
 		  interface_ip.nbanks              = 1;
 		  interface_ip.out_w               = interface_ip.line_sz*8;
@@ -990,6 +1021,7 @@ RegFU::RegFU(ParseXML* XML_interface, int ithCore_, InputParameter* interface_ip
 	 * processors have separate architectural register files for each thread.
 	 * therefore, the bypass buses need to travel across all the register files.
 	 */
+
 	if (!exist) return;
 	int  data;
 
@@ -1017,8 +1049,8 @@ RegFU::RegFU(ParseXML* XML_interface, int ithCore_, InputParameter* interface_ip
 	interface_ip.num_wr_ports    = coredynp.peak_issueW;
 	interface_ip.num_se_rd_ports = 0;
 	IRF = new ArrayST(&interface_ip, "Integer Register File", Core_device, coredynp.opt_local, coredynp.core_ty);
-	IRF->area.set_area(IRF->area.get_area()+ IRF->local_result.area*XML->sys.core[ithCore].number_hardware_threads*coredynp.num_pipelines*cdb_overhead);
-	area.set_area(area.get_area()+ IRF->local_result.area*XML->sys.core[ithCore].number_hardware_threads*coredynp.num_pipelines*cdb_overhead);
+	IRF->area.set_area(IRF->area.get_area()+ IRF->local_result.area*coredynp.num_pipelines*cdb_overhead*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1));
+	area.set_area(area.get_area()+ IRF->local_result.area*coredynp.num_pipelines*cdb_overhead*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1));
 	//area.set_area(area.get_area()*cdb_overhead);
 	//output_data_csv(IRF.RF.local_result);
 
@@ -1044,12 +1076,12 @@ RegFU::RegFU(ParseXML* XML_interface, int ithCore_, InputParameter* interface_ip
 	interface_ip.num_wr_ports    = XML->sys.core[ithCore].issue_width;
 	interface_ip.num_se_rd_ports = 0;
 	FRF = new ArrayST(&interface_ip, "Floating point Register File", Core_device, coredynp.opt_local, coredynp.core_ty);
-	FRF->area.set_area(FRF->area.get_area()+ FRF->local_result.area*XML->sys.core[ithCore].number_hardware_threads*coredynp.num_fp_pipelines*cdb_overhead);
-	area.set_area(area.get_area()+ FRF->local_result.area*XML->sys.core[ithCore].number_hardware_threads*coredynp.num_fp_pipelines*cdb_overhead);
+	FRF->area.set_area(FRF->area.get_area()+ FRF->local_result.area*coredynp.num_fp_pipelines*cdb_overhead*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1));
+	area.set_area(area.get_area()+ FRF->local_result.area*coredynp.num_fp_pipelines*cdb_overhead*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1));
 	//area.set_area(area.get_area()*cdb_overhead);
 	//output_data_csv(FRF.RF.local_result);
-	int_regfile_height= IRF->local_result.cache_ht*XML->sys.core[ithCore].number_hardware_threads*sqrt(cdb_overhead);
-	fp_regfile_height = FRF->local_result.cache_ht*XML->sys.core[ithCore].number_hardware_threads*sqrt(cdb_overhead);
+	int_regfile_height= IRF->local_result.cache_ht*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1)*sqrt(cdb_overhead);
+	fp_regfile_height = FRF->local_result.cache_ht*((coredynp.scheu_ty==ReservationStation)?XML->sys.core[ithCore].number_hardware_threads:1)*sqrt(cdb_overhead);
     //since a EXU is associated with each pipeline, the cdb should not have longer length.
 	if (coredynp.regWindowing)
 	{
@@ -1291,16 +1323,30 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 	 * RAT for all Renaming logic, random accessible checkpointing is used, but only update when instruction retires.
 	 * FRAT will be read twice and written once per instruction;
 	 * RRAT will be write once per instruction when committing and reads out all when context switch
-	 * checkpointing is implicit
-	 * Renaming logic is duplicated for each different hardware threads
 	 *
-	 * No Dual-RAT is needed in RS-based OOO processors,
-	 * however, RAT needs to do associative search in RAT, when instruction commits and ROB release the entry,
-	 * to make sure all the renamings associated with the ROB to be released are updated at the same time.
 	 * RAM scheme has # ARchi Reg entry with each entry hold phy reg tag,
 	 * CAM scheme has # Phy Reg entry with each entry hold ARchi reg tag,
 	 *
+	 * RAM-based RAT is duplicated/partitioned for each different hardware threads
+	 * CAM-based RAT is shared for all hardware threads
+	 * With SMT, RAT is partitioned and tagged. RAM-based RAT needs to have N (N-way SMT) sets of entries, with each set for a thread.
+	 * The RAT control logic will determine different sets to use for different threads. But it does not need extra tag bits in the entries.
+	 * However, CAM-based RAT need extra tag bits to distinguish the architecture register ids for different threads.
+
+	 *
+	 * checkpointing of RAT and RRAT are both for architecture state recovery with events including mis-speculation;
+	 * Checkpointing is easier to implement in CAM than in RAM based RAT, despite of the inferior scalabilty of the CAM-based RATs.
+	 * McPAT assumes at least 1 checkpoint for CAM-based RATs, and no more than 4 checkpoints (based on MIPS designs) for RAM based RATs,
+	 * thus CAM-based RAT does not need RRAT
+	 * Although no Dual-RAT is needed in RS-based OOO processors, since archi RegFile contains the committed register values,
+	 * a RRAT or GC (not both) will speedup the mis-speculation recovery. Thus, when RAM-RAT does not have any GC, McPAT assumes the existence of a RRAT.
+	 *
+	 * RAM-base RAT does not need to scan/search all contents during instruction commit, since the ROB for RAM-based RAT contains the ARF-PRF mapping that is used for index the RAT entry to be updated.
+	 *
 	 * Both RAM and CAM have same DCL
+	 *
+
+	 *
 	 */
 	if (!exist) return;
 	int  tag, data, out_w;
@@ -1315,15 +1361,14 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 	if (coredynp.scheu_ty==PhysicalRegFile)
 	{
 		if (coredynp.rm_ty ==RAMbased)
-		{	  //FRAT with global checkpointing (GCs) please see paper tech report for detailed explaintions
-			data							 = 33;//int(ceil(coredynp.phy_ireg_width*(1+coredynp.globalCheckpoint)/8.0));
-//			data							 = int(ceil(coredynp.phy_ireg_width/8.0));
-			out_w                            = 1;//int(ceil(coredynp.phy_ireg_width/8.0));
+		{	  //FRAT with global checkpointing (GCs) please see paper tech report for detailed explanation.
+			data							 = int(ceil(coredynp.phy_ireg_width*(1+coredynp.globalCheckpoint)/8.0));//33;
+			out_w                            = int(ceil(coredynp.phy_ireg_width/8.0));//bytes
 			interface_ip.is_cache			 = false;
 			interface_ip.pure_cam            = false;
 			interface_ip.pure_ram            = true;
 			interface_ip.line_sz             = data;
-			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*XML->sys.core[ithCore].number_hardware_threads;
 			interface_ip.assoc               = 1;
 			interface_ip.nbanks              = 1;
 			interface_ip.out_w               = out_w*8;
@@ -1339,34 +1384,8 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_wr_ports    = coredynp.decodeW;
 			interface_ip.num_se_rd_ports = 0;
 			iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area);
 			area.set_area(area.get_area()+ iFRAT->area.get_area());
-
-//			//RAHT According to Intel, combine GC with FRAT is very costly.
-//			data							 = int(ceil(coredynp.phy_ireg_width/8.0)*coredynp.num_IRF_entry);
-//			out_w                            = data;
-//			interface_ip.is_cache			 = false;
-//			interface_ip.pure_cam            = false;
-//			interface_ip.pure_ram            = true;
-//			interface_ip.line_sz             = data;
-//			interface_ip.cache_sz            = data*coredynp.globalCheckpoint;
-//			interface_ip.assoc               = 1;
-//			interface_ip.nbanks              = 1;
-//			interface_ip.out_w               = out_w*8;
-//			interface_ip.access_mode         = 0;
-//			interface_ip.throughput          = 1.0/clockRate;
-//			interface_ip.latency             = 1.0/clockRate;
-//			interface_ip.obj_func_dyn_energy = 0;
-//			interface_ip.obj_func_dyn_power  = 0;
-//			interface_ip.obj_func_leak_power = 0;
-//			interface_ip.obj_func_cycle_t    = 1;
-//			interface_ip.num_rw_ports    = 1;//the extra one port is for GCs
-//			interface_ip.num_rd_ports    = 2*coredynp.decodeW;
-//			interface_ip.num_wr_ports    = coredynp.decodeW;
-//			interface_ip.num_se_rd_ports = 0;
-//			iFRAT = new ArrayST(&interface_ip, "Int FrontRAT");
-//			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
-//			area.set_area(area.get_area()+ iFRAT->area.get_area());
 
 			//FRAT floating point
 			data							 = int(ceil(coredynp.phy_freg_width*(1+coredynp.globalCheckpoint)/8.0));
@@ -1375,7 +1394,7 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.pure_cam            = false;
 			interface_ip.pure_ram            = true;
 			interface_ip.line_sz             = data;
-			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*XML->sys.core[ithCore].number_hardware_threads;
 			interface_ip.assoc               = 1;
 			interface_ip.nbanks              = 1;
 			interface_ip.out_w               = out_w*8;
@@ -1391,15 +1410,15 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_wr_ports    = coredynp.fp_decodeW;
 			interface_ip.num_se_rd_ports = 0;
 			fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area);
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
 		else if ((coredynp.rm_ty ==CAMbased))
 		{
 			//FRAT
-			tag							     = coredynp.arch_ireg_width;
-			data							 = int(ceil ((coredynp.arch_ireg_width+1*coredynp.globalCheckpoint)/8.0));//the address of CAM needed to be sent out
+			tag							     = coredynp.arch_ireg_width +  coredynp.hthread_width;
+			data							 = int(ceil ((coredynp.arch_ireg_width+1*coredynp.globalCheckpoint )/8.0));//each checkpoint in the CAM-based RAT design needs only 1 bit, see "a power-aware hybrid ram-cam renaming mechanism for fast recovery"
 			out_w                            = int(ceil (coredynp.arch_ireg_width/8.0));
 			interface_ip.is_cache			 = true;
 			interface_ip.pure_cam            = false;
@@ -1424,12 +1443,12 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_se_rd_ports = 0;
 			interface_ip.num_search_ports= 2*coredynp.decodeW;
 			iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area);
 			area.set_area(area.get_area()+ iFRAT->area.get_area());
 
 			//FRAT for FP
-			tag							     = coredynp.arch_freg_width;
-			data							 = int(ceil ((coredynp.arch_freg_width+1*coredynp.globalCheckpoint)/8.0));//the address of CAM needed to be sent out
+			tag							     = coredynp.arch_freg_width  +  coredynp.hthread_width;
+			data							 = int(ceil ((coredynp.arch_freg_width+1*coredynp.globalCheckpoint)/8.0));//each checkpoint in the CAM-based RAT design needs only 1 bit, see "a power-aware hybrid ram-cam renaming mechanism for fast recovery"
 			out_w                            = int(ceil (coredynp.arch_freg_width/8.0));
 			interface_ip.is_cache			 = true;
 			interface_ip.pure_cam            = false;
@@ -1454,63 +1473,70 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_se_rd_ports = 0;
 			interface_ip.num_search_ports= 2*coredynp.fp_decodeW;
 			fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area);
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
 
 		//RRAT is always RAM based, does not have GCs, and is used only for record latest non-speculative mapping
-		data							 = int(ceil(coredynp.phy_ireg_width/8.0));
-		interface_ip.is_cache			 = false;
-		interface_ip.pure_cam            = false;
-		interface_ip.pure_ram            = true;
-		interface_ip.line_sz             = data;
-		interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*2;//HACK to make it as least 64B
-		interface_ip.assoc               = 1;
-		interface_ip.nbanks              = 1;
-		interface_ip.out_w               = interface_ip.line_sz*8;
-		interface_ip.access_mode         = 1;
-		interface_ip.throughput          = 1.0/clockRate;
-		interface_ip.latency             = 1.0/clockRate;
-		interface_ip.obj_func_dyn_energy = 0;
-		interface_ip.obj_func_dyn_power  = 0;
-		interface_ip.obj_func_leak_power = 0;
-		interface_ip.obj_func_cycle_t    = 1;
-		interface_ip.num_rw_ports    = 0;
-		interface_ip.num_rd_ports    = XML->sys.core[ithCore].commit_width;
-		interface_ip.num_wr_ports    = XML->sys.core[ithCore].commit_width;
-		interface_ip.num_se_rd_ports = 0;
-		iRRAT = new ArrayST(&interface_ip, "Int RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-		iRRAT->area.set_area(iRRAT->area.get_area()+ iRRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
-		area.set_area(area.get_area()+ iRRAT->area.get_area());
+		//RRAT is not needed for CAM-based RAT (McPAT assumes CAM-based RAT to have at least 1 checkpoint), it is not needed for RAM-based RAT with checkpoints
+		//McPAT assumes renaming unit to have RRAT when there is no checkpoints in FRAT, while MIPS R1000 has 4 GCs, according to Intel Netburst Archi, combine GC with FRAT is very costly, especially for high issue width and high clock rate.
 
-		//RRAT for FP
-		data							 = int(ceil(coredynp.phy_freg_width/8.0));
-		interface_ip.is_cache			 = false;
-		interface_ip.pure_cam            = false;
-		interface_ip.pure_ram            = true;
-		interface_ip.line_sz             = data;
-		interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*2;//HACK to make it as least 64B
-		interface_ip.assoc               = 1;
-		interface_ip.nbanks              = 1;
-		interface_ip.out_w               = interface_ip.line_sz*8;
-		interface_ip.access_mode         = 1;
-		interface_ip.throughput          = 1.0/clockRate;
-		interface_ip.latency             = 1.0/clockRate;
-		interface_ip.obj_func_dyn_energy = 0;
-		interface_ip.obj_func_dyn_power  = 0;
-		interface_ip.obj_func_leak_power = 0;
-		interface_ip.obj_func_cycle_t    = 1;
-		interface_ip.num_rw_ports    = 0;
-		interface_ip.num_rd_ports    = coredynp.fp_decodeW;
-		interface_ip.num_wr_ports    = coredynp.fp_decodeW;
-		interface_ip.num_se_rd_ports = 0;
-		fRRAT = new ArrayST(&interface_ip, "FP RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-		fRRAT->area.set_area(fRRAT->area.get_area()+ fRRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
-		area.set_area(area.get_area()+ fRRAT->area.get_area());
+		if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+		{
+			data							 = int(ceil(coredynp.phy_ireg_width/8.0));
+			interface_ip.is_cache			 = false;
+			interface_ip.pure_cam            = false;
+			interface_ip.pure_ram            = true;
+			interface_ip.line_sz             = data;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*2*XML->sys.core[ithCore].number_hardware_threads;//HACK--2 to make it as least 64B
+			interface_ip.assoc               = 1;
+			interface_ip.nbanks              = 1;
+			interface_ip.out_w               = interface_ip.line_sz*8;
+			interface_ip.access_mode         = 1;
+			interface_ip.throughput          = 1.0/clockRate;
+			interface_ip.latency             = 1.0/clockRate;
+			interface_ip.obj_func_dyn_energy = 0;
+			interface_ip.obj_func_dyn_power  = 0;
+			interface_ip.obj_func_leak_power = 0;
+			interface_ip.obj_func_cycle_t    = 1;
+			interface_ip.num_rw_ports    = 0;
+			interface_ip.num_rd_ports    = XML->sys.core[ithCore].commit_width;
+			interface_ip.num_wr_ports    = XML->sys.core[ithCore].commit_width;
+			interface_ip.num_se_rd_ports = 0;
+			iRRAT = new ArrayST(&interface_ip, "Int RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
+			iRRAT->area.set_area(iRRAT->area.get_area()+ iRRAT->local_result.area);
+			area.set_area(area.get_area()+ iRRAT->area.get_area());
 
-		//Freelist of renaming unit always RAM based
-		//Recycle happens at two places: 1)when DCL check there are WAW, the Phyregisters/ROB directly recycles into freelist
+			//RRAT for FP
+			data							 = int(ceil(coredynp.phy_freg_width/8.0));
+			interface_ip.is_cache			 = false;
+			interface_ip.pure_cam            = false;
+			interface_ip.pure_ram            = true;
+			interface_ip.line_sz             = data;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*2*XML->sys.core[ithCore].number_hardware_threads;//HACK--2 to make it as least 64B
+			interface_ip.assoc               = 1;
+			interface_ip.nbanks              = 1;
+			interface_ip.out_w               = interface_ip.line_sz*8;
+			interface_ip.access_mode         = 1;
+			interface_ip.throughput          = 1.0/clockRate;
+			interface_ip.latency             = 1.0/clockRate;
+			interface_ip.obj_func_dyn_energy = 0;
+			interface_ip.obj_func_dyn_power  = 0;
+			interface_ip.obj_func_leak_power = 0;
+			interface_ip.obj_func_cycle_t    = 1;
+			interface_ip.num_rw_ports    = 0;
+			interface_ip.num_rd_ports    = coredynp.fp_decodeW;
+			interface_ip.num_wr_ports    = coredynp.fp_decodeW;
+			interface_ip.num_se_rd_ports = 0;
+			fRRAT = new ArrayST(&interface_ip, "FP RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
+			fRRAT->area.set_area(fRRAT->area.get_area()+ fRRAT->local_result.area);
+			area.set_area(area.get_area()+ fRRAT->area.get_area());
+		}
+		//Freelist of renaming unit always RAM based and needed for RAM-based RATs.
+		//Although it can be implemented within the CAM-based RAT,
+		//Current McPAT does not have the free bits in the CAM but use the same external free list as a close approximation for CAM RAT.
+		//Recycle happens at two places: 1)when DCL check there are WAW, the Phy-registers/ROB directly recycles into freelist
 		// 2)When instruction commits the Phyregisters/ROB needed to be recycled.
 		//therefore num_wr port = decode-1(-1 means at least one phy reg will be used for the current renaming group) + commit width
 		data							 = int(ceil(coredynp.phy_ireg_width/8.0));
@@ -1535,7 +1561,7 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 		//every cycle, (coredynp.decodeW -1) inst may need to send back it dest tags, committW insts needs to update freelist buffers
 		interface_ip.num_se_rd_ports = 0;
 		ifreeL = new ArrayST(&interface_ip, "Int Free List", Core_device, coredynp.opt_local, coredynp.core_ty);
-		ifreeL->area.set_area(ifreeL->area.get_area()+ ifreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+		ifreeL->area.set_area(ifreeL->area.get_area()+ ifreeL->local_result.area);
 		area.set_area(area.get_area()+ ifreeL->area.get_area());
 
 		//freelist for FP
@@ -1560,7 +1586,7 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 		interface_ip.num_wr_ports    = coredynp.fp_decodeW -1 + XML->sys.core[ithCore].commit_width;
 		interface_ip.num_se_rd_ports = 0;
 		ffreeL = new ArrayST(&interface_ip, "FP Free List", Core_device, coredynp.opt_local, coredynp.core_ty);
-		ffreeL->area.set_area(ffreeL->area.get_area()+ ffreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+		ffreeL->area.set_area(ffreeL->area.get_area()+ ffreeL->local_result.area);
 		area.set_area(area.get_area()+ ffreeL->area.get_area());
 
 		idcl  = new dep_resource_conflict_check(&interface_ip,coredynp,coredynp.phy_ireg_width);//TODO:Separate 2 sections See TR
@@ -1569,21 +1595,15 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 	}
 	else if (coredynp.scheu_ty==ReservationStation){
 		if (coredynp.rm_ty ==RAMbased){
-			/*
-			 * however, RAT needs to do associative search in RAT, when instruction commits and ROB release the entry,
-			 * to make sure all the renamings associated with the ROB to be released are updated to ARF at the same time.
-			 * RAM based RAT for RS base OOO does not save the search operations. Its advantage is to have less entries than
-			 * CAM based RAT so that it is more scalable as number of ROB/physical regs increases.
-			 */
-			tag							     = coredynp.phy_ireg_width;
-			data							 = int(ceil(coredynp.phy_ireg_width/8.0));//int(ceil(coredynp.phy_ireg_width*(1+coredynp.globalCheckpoint)/8.0));
-			out_w                            = int(ceil(coredynp.phy_ireg_width/8.0));
-			interface_ip.is_cache			 = true;
+
+			data							 = int(ceil(coredynp.phy_ireg_width*(1+coredynp.globalCheckpoint)/8.0));
+			out_w                            = int(ceil(coredynp.phy_ireg_width/8.0));//GC does not need to be readout
+			interface_ip.is_cache			 = false;
 			interface_ip.pure_cam            = false;
-			interface_ip.pure_ram            = false;
+			interface_ip.pure_ram            = true;
 			interface_ip.line_sz             = data;
-			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*(1+coredynp.globalCheckpoint);//TODO: either putting GC here or at "data" is most accurate implementation, this is limited by current array implementation
-			interface_ip.assoc               = 0;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*XML->sys.core[ithCore].number_hardware_threads;
+			interface_ip.assoc               = 1;
 			interface_ip.nbanks              = 1;
 			interface_ip.out_w               = out_w*8;
 			interface_ip.access_mode         = 2;
@@ -1597,26 +1617,22 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_rd_ports    = 2*coredynp.decodeW;
 			interface_ip.num_wr_ports    = coredynp.decodeW;
 			interface_ip.num_se_rd_ports = 0;
-			interface_ip.num_search_ports= coredynp.commitW;//TODO
-			interface_ip.specific_tag        = 1;
-			interface_ip.tag_w               = tag;
 			iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
 			iFRAT->local_result.adjust_area();
-			iFRAT->local_result.power.readOp.dynamic *=1.5;
-			iFRAT->local_result.power.writeOp.dynamic *=1.5;//compensate for GC
-			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+//			iFRAT->local_result.power.readOp.dynamic *= 1+0.2*0.05;//1+mis-speculation% TODO
+//			iFRAT->local_result.power.writeOp.dynamic *=1+0.2*0.05;//compensate for GC
+			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area);
 			area.set_area(area.get_area()+ iFRAT->area.get_area());
 
 			//FP
-			tag							     = coredynp.phy_freg_width;
-			data							 = int(ceil(coredynp.phy_freg_width/8.0));//int(ceil(coredynp.phy_freg_width*(1+coredynp.globalCheckpoint)/8.0));
+			data							 = int(ceil(coredynp.phy_freg_width*(1+coredynp.globalCheckpoint)/8.0));
 			out_w                            = int(ceil(coredynp.phy_freg_width/8.0));
-			interface_ip.is_cache			 = true;
+			interface_ip.is_cache			 = false;
 			interface_ip.pure_cam            = false;
-			interface_ip.pure_ram            = false;
+			interface_ip.pure_ram            = true;
 			interface_ip.line_sz             = data;
-			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*(1+coredynp.globalCheckpoint);
-			interface_ip.assoc               = 0;
+			interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*XML->sys.core[ithCore].number_hardware_threads;
+			interface_ip.assoc               = 1;
 			interface_ip.nbanks              = 1;
 			interface_ip.out_w               = out_w*8;
 			interface_ip.access_mode         = 2;
@@ -1630,21 +1646,20 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_rd_ports    = 2*coredynp.fp_decodeW;
 			interface_ip.num_wr_ports    = coredynp.fp_decodeW;
 			interface_ip.num_se_rd_ports = 0;
-			interface_ip.num_search_ports= coredynp.fp_decodeW;//actually is fp commit width
 			fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
 			fFRAT->local_result.adjust_area();
-			fFRAT->local_result.power.readOp.dynamic *=1.5;//compensate for GC
-			fFRAT->local_result.power.writeOp.dynamic *=1.5;
-			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+//			fFRAT->local_result.power.readOp.dynamic *= 1+0.2*0.05;//1+mis-speculation% TODO
+//			fFRAT->local_result.power.writeOp.dynamic *=1+0.2*0.05;//compensate for GC
+			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area);
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
 		else if ((coredynp.rm_ty ==CAMbased))
 		{
 			//FRAT
-			tag							     = coredynp.arch_ireg_width;
-			data							 = int(ceil (coredynp.arch_ireg_width+1*coredynp.globalCheckpoint/8.0));//the address of CAM needed to be sent out
-			out_w                            = int(ceil (coredynp.arch_ireg_width/8.0));
+			tag							     = coredynp.arch_ireg_width  +  coredynp.hthread_width;
+			data							 = int(ceil ((coredynp.arch_ireg_width+1*coredynp.globalCheckpoint)/8.0));
+			out_w                            = int(ceil (coredynp.arch_ireg_width/8.0));//GC bits does not need to be sent out
 			interface_ip.is_cache			 = true;
 			interface_ip.pure_cam            = false;
 			interface_ip.pure_ram            = false;
@@ -1663,17 +1678,17 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.obj_func_leak_power = 0;
 			interface_ip.obj_func_cycle_t    = 1;
 			interface_ip.num_rw_ports    = 1;//for GCs
-			interface_ip.num_rd_ports    = XML->sys.core[ithCore].decode_width;//0;TODO
-			interface_ip.num_wr_ports    = XML->sys.core[ithCore].decode_width;
+			interface_ip.num_rd_ports    = coredynp.decodeW;
+			interface_ip.num_wr_ports    = coredynp.decodeW;
 			interface_ip.num_se_rd_ports = 0;
-			interface_ip.num_search_ports= 2*XML->sys.core[ithCore].decode_width;
+			interface_ip.num_search_ports= 2*coredynp.decodeW;
 			iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			iFRAT->area.set_area(iFRAT->area.get_area()+ iFRAT->local_result.area);
 			area.set_area(area.get_area()+ iFRAT->area.get_area());
 
 			//FRAT
-			tag							     = coredynp.arch_freg_width;
-			data							 = int(ceil (coredynp.arch_freg_width+1*coredynp.globalCheckpoint/8.0));//the address of CAM needed to be sent out
+			tag							     = coredynp.arch_freg_width  +  coredynp.hthread_width;
+			data							 = int(ceil ((coredynp.arch_freg_width+1*coredynp.globalCheckpoint)/8.0));//the address of CAM needed to be sent out
 			out_w                            = int(ceil (coredynp.arch_freg_width/8.0));
 			interface_ip.is_cache			 = true;
 			interface_ip.pure_cam            = false;
@@ -1698,11 +1713,64 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			interface_ip.num_se_rd_ports = 0;
 			interface_ip.num_search_ports= 2*coredynp.fp_decodeW;
 			fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
-			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+			fFRAT->area.set_area(fFRAT->area.get_area()+ fFRAT->local_result.area);
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
-		//No RRAT for RS based OOO
+		//Although no RRAT for RS based OOO is really needed since the archiRF always holds the non-speculative data, having the RRAT or GC (not both) can help the recovery of mis-speculations.
+
+		if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					data							 = int(ceil(coredynp.phy_ireg_width/8.0));
+					interface_ip.is_cache			 = false;
+					interface_ip.pure_cam            = false;
+					interface_ip.pure_ram            = true;
+					interface_ip.line_sz             = data;
+					interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_IRF_size*2*XML->sys.core[ithCore].number_hardware_threads;//HACK--2 to make it as least 64B
+					interface_ip.assoc               = 1;
+					interface_ip.nbanks              = 1;
+					interface_ip.out_w               = interface_ip.line_sz*8;
+					interface_ip.access_mode         = 1;
+					interface_ip.throughput          = 1.0/clockRate;
+					interface_ip.latency             = 1.0/clockRate;
+					interface_ip.obj_func_dyn_energy = 0;
+					interface_ip.obj_func_dyn_power  = 0;
+					interface_ip.obj_func_leak_power = 0;
+					interface_ip.obj_func_cycle_t    = 1;
+					interface_ip.num_rw_ports    = 0;
+					interface_ip.num_rd_ports    = XML->sys.core[ithCore].commit_width;
+					interface_ip.num_wr_ports    = XML->sys.core[ithCore].commit_width;
+					interface_ip.num_se_rd_ports = 0;
+					iRRAT = new ArrayST(&interface_ip, "Int RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
+					iRRAT->area.set_area(iRRAT->area.get_area()+ iRRAT->local_result.area);
+					area.set_area(area.get_area()+ iRRAT->area.get_area());
+
+					//RRAT for FP
+					data							 = int(ceil(coredynp.phy_freg_width/8.0));
+					interface_ip.is_cache			 = false;
+					interface_ip.pure_cam            = false;
+					interface_ip.pure_ram            = true;
+					interface_ip.line_sz             = data;
+					interface_ip.cache_sz            = data*XML->sys.core[ithCore].archi_Regs_FRF_size*2*XML->sys.core[ithCore].number_hardware_threads;//HACK--2 to make it as least 64B
+					interface_ip.assoc               = 1;
+					interface_ip.nbanks              = 1;
+					interface_ip.out_w               = interface_ip.line_sz*8;
+					interface_ip.access_mode         = 1;
+					interface_ip.throughput          = 1.0/clockRate;
+					interface_ip.latency             = 1.0/clockRate;
+					interface_ip.obj_func_dyn_energy = 0;
+					interface_ip.obj_func_dyn_power  = 0;
+					interface_ip.obj_func_leak_power = 0;
+					interface_ip.obj_func_cycle_t    = 1;
+					interface_ip.num_rw_ports    = 0;
+					interface_ip.num_rd_ports    = coredynp.fp_decodeW;
+					interface_ip.num_wr_ports    = coredynp.fp_decodeW;
+					interface_ip.num_se_rd_ports = 0;
+					fRRAT = new ArrayST(&interface_ip, "FP RetireRAT", Core_device, coredynp.opt_local, coredynp.core_ty);
+					fRRAT->area.set_area(fRRAT->area.get_area()+ fRRAT->local_result.area);
+					area.set_area(area.get_area()+ fRRAT->area.get_area());
+				}
+
 		//Freelist of renaming unit of RS based OOO is unifed for both int and fp renaming unit since the ROB is unified
 		data							 = int(ceil(coredynp.phy_ireg_width/8.0));
 		interface_ip.is_cache			 = false;
@@ -1721,11 +1789,11 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 		interface_ip.obj_func_leak_power = 0;
 		interface_ip.obj_func_cycle_t    = 1;
 		interface_ip.num_rw_ports    = 1;//TODO
-		interface_ip.num_rd_ports    = XML->sys.core[ithCore].decode_width;
-		interface_ip.num_wr_ports    = XML->sys.core[ithCore].decode_width -1 + XML->sys.core[ithCore].commit_width;
+		interface_ip.num_rd_ports    = coredynp.decodeW;
+		interface_ip.num_wr_ports    = coredynp.decodeW -1 + XML->sys.core[ithCore].commit_width;
 		interface_ip.num_se_rd_ports = 0;
 		ifreeL = new ArrayST(&interface_ip, "Unified Free List", Core_device, coredynp.opt_local, coredynp.core_ty);
-		ifreeL->area.set_area(ifreeL->area.get_area()+ ifreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+		//ifreeL->area.set_area(ifreeL->area.get_area()+ ifreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
 		area.set_area(area.get_area()+ ifreeL->area.get_area());
 
 		idcl  = new dep_resource_conflict_check(&interface_ip,coredynp,coredynp.phy_ireg_width);//TODO:Separate 2 sections See TR
@@ -2343,15 +2411,16 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.writeAc.access  = fFRAT->l_ip.num_wr_ports;
 					fFRAT->tdp_stats = fFRAT->stats_t;
 				}
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->stats_t.readAc.access   = iRRAT->l_ip.num_rd_ports;
+					iRRAT->stats_t.writeAc.access  = iRRAT->l_ip.num_wr_ports;
+					iRRAT->tdp_stats = iRRAT->stats_t;
 
-				iRRAT->stats_t.readAc.access   = iRRAT->l_ip.num_rd_ports;
-				iRRAT->stats_t.writeAc.access  = iRRAT->l_ip.num_wr_ports;
-				iRRAT->tdp_stats = iRRAT->stats_t;
-
-				fRRAT->stats_t.readAc.access   = fRRAT->l_ip.num_rd_ports;
-				fRRAT->stats_t.writeAc.access  = fRRAT->l_ip.num_wr_ports;
-				fRRAT->tdp_stats = fRRAT->stats_t;
-
+					fRRAT->stats_t.readAc.access   = fRRAT->l_ip.num_rd_ports;
+					fRRAT->stats_t.writeAc.access  = fRRAT->l_ip.num_wr_ports;
+					fRRAT->tdp_stats = fRRAT->stats_t;
+				}
 				ifreeL->stats_t.readAc.access   = coredynp.decodeW;//ifreeL->l_ip.num_rd_ports;;
 				ifreeL->stats_t.writeAc.access  = coredynp.decodeW;//ifreeL->l_ip.num_wr_ports;
 				ifreeL->tdp_stats = ifreeL->stats_t;
@@ -2365,12 +2434,10 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 				{
 					iFRAT->stats_t.readAc.access    = iFRAT->l_ip.num_rd_ports;
 					iFRAT->stats_t.writeAc.access   = iFRAT->l_ip.num_wr_ports;
-					iFRAT->stats_t.searchAc.access  = iFRAT->l_ip.num_search_ports;
 					iFRAT->tdp_stats = iFRAT->stats_t;
 
 					fFRAT->stats_t.readAc.access    = fFRAT->l_ip.num_rd_ports;
 					fFRAT->stats_t.writeAc.access   = fFRAT->l_ip.num_wr_ports;
-					fFRAT->stats_t.searchAc.access  = fFRAT->l_ip.num_search_ports;
 					fFRAT->tdp_stats = fFRAT->stats_t;
 
 				}
@@ -2383,6 +2450,17 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.readAc.access   = fFRAT->l_ip.num_search_ports;
 					fFRAT->stats_t.writeAc.access  = fFRAT->l_ip.num_wr_ports;
 					fFRAT->tdp_stats = fFRAT->stats_t;
+				}
+
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->stats_t.readAc.access   = iRRAT->l_ip.num_rd_ports;
+					iRRAT->stats_t.writeAc.access  = iRRAT->l_ip.num_wr_ports;
+					iRRAT->tdp_stats = iRRAT->stats_t;
+
+					fRRAT->stats_t.readAc.access   = fRRAT->l_ip.num_rd_ports;
+					fRRAT->stats_t.writeAc.access  = fRRAT->l_ip.num_wr_ports;
+					fRRAT->tdp_stats = fRRAT->stats_t;
 				}
 				//Unified free list for both int and fp
 				ifreeL->stats_t.readAc.access   = coredynp.decodeW;//ifreeL->l_ip.num_rd_ports;
@@ -2431,15 +2509,16 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
 					fFRAT->rtp_stats = fFRAT->stats_t;
 				}
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_writes;//Hack, should be (context switch + branch mispredictions)*16
+					iRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
+					iRRAT->rtp_stats = iRRAT->stats_t;
 
-				iRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_writes;//Hack, should be (context switch + branch mispredictions)*16
-				iRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
-				iRRAT->rtp_stats = iRRAT->stats_t;
-
-				fRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].fp_rename_writes;//Hack, should be (context switch + branch mispredictions)*16
-				fRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
-				fRRAT->rtp_stats = fRRAT->stats_t;
-
+					fRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].fp_rename_writes;//Hack, should be (context switch + branch mispredictions)*16
+					fRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
+					fRRAT->rtp_stats = fRRAT->stats_t;
+				}
 				ifreeL->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads;
 				ifreeL->stats_t.writeAc.access  = 2*XML->sys.core[ithCore].rename_writes;
 				ifreeL->rtp_stats = ifreeL->stats_t;
@@ -2453,12 +2532,12 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 				{
 					iFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads;
 					iFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
-					iFRAT->stats_t.searchAc.access  = XML->sys.core[ithCore].committed_int_instructions;//hack: not all committed instructions use regs.
+//					iFRAT->stats_t.searchAc.access  = XML->sys.core[ithCore].committed_int_instructions;//hack: not all committed instructions use regs.
 					iFRAT->rtp_stats = iFRAT->stats_t;
 
 					fFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].fp_rename_reads;
 					fFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
-					fFRAT->stats_t.searchAc.access  = XML->sys.core[ithCore].committed_fp_instructions;
+//					fFRAT->stats_t.searchAc.access  = XML->sys.core[ithCore].committed_fp_instructions;
 					fFRAT->rtp_stats = fFRAT->stats_t;
 				}
 				else if ((coredynp.rm_ty ==CAMbased))
@@ -2470,6 +2549,17 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].fp_rename_reads;
 					fFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
 					fFRAT->rtp_stats = fFRAT->stats_t;
+				}
+
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_writes;//Hack, should be (context switch + branch mispredictions)*16
+					iRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
+					iRRAT->rtp_stats = iRRAT->stats_t;
+
+					fRRAT->stats_t.readAc.access   = XML->sys.core[ithCore].fp_rename_writes;//Hack, should be (context switch + branch mispredictions)*16
+					fRRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
+					fRRAT->rtp_stats = fRRAT->stats_t;
 				}
 				//Unified free list for both int and fp since the ROB act as physcial registers
 				ifreeL->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads +
@@ -2524,16 +2614,20 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 						*(fFRAT->local_result.power.searchOp.dynamic + fdcl->power.readOp.dynamic)
 						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
+			if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+			{
+				iRRAT->power_t.reset();
+				fRRAT->power_t.reset();
 
-			iRRAT->power_t.reset();
-			fRRAT->power_t.reset();
+
+				iRRAT->power_t.readOp.dynamic  +=  (iRRAT->stats_t.readAc.access*iRRAT->local_result.power.readOp.dynamic
+						+iRRAT->stats_t.writeAc.access*iRRAT->local_result.power.writeOp.dynamic);
+				fRRAT->power_t.readOp.dynamic  +=  (fRRAT->stats_t.readAc.access*fRRAT->local_result.power.readOp.dynamic
+						+fRRAT->stats_t.writeAc.access*fRRAT->local_result.power.writeOp.dynamic);
+			}
+
 			ifreeL->power_t.reset();
 			ffreeL->power_t.reset();
-
-			iRRAT->power_t.readOp.dynamic  +=  (iRRAT->stats_t.readAc.access*iRRAT->local_result.power.readOp.dynamic
-					+iRRAT->stats_t.writeAc.access*iRRAT->local_result.power.writeOp.dynamic);
-			fRRAT->power_t.readOp.dynamic  +=  (fRRAT->stats_t.readAc.access*fRRAT->local_result.power.readOp.dynamic
-					+fRRAT->stats_t.writeAc.access*fRRAT->local_result.power.writeOp.dynamic);
 			ifreeL->power_t.readOp.dynamic  +=  (ifreeL->stats_t.readAc.access*ifreeL->local_result.power.readOp.dynamic
 					+ifreeL->stats_t.writeAc.access*ifreeL->local_result.power.writeOp.dynamic);
 			ffreeL->power_t.readOp.dynamic  +=  (ffreeL->stats_t.readAc.access*ffreeL->local_result.power.readOp.dynamic
@@ -2549,12 +2643,10 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 
 				iFRAT->power_t.readOp.dynamic  +=  (iFRAT->stats_t.readAc.access
 						*(iFRAT->local_result.power.readOp.dynamic + idcl->power.readOp.dynamic)
-						+iFRAT->stats_t.writeAc.access*iFRAT->local_result.power.writeOp.dynamic
-						+iFRAT->stats_t.searchAc.access*iFRAT->local_result.power.searchOp.dynamic);
+						+iFRAT->stats_t.writeAc.access*iFRAT->local_result.power.writeOp.dynamic);
 				fFRAT->power_t.readOp.dynamic  +=  (fFRAT->stats_t.readAc.access
 						*(fFRAT->local_result.power.readOp.dynamic + fdcl->power.readOp.dynamic)
-						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic
-						+fFRAT->stats_t.searchAc.access*fFRAT->local_result.power.searchOp.dynamic);
+						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
 			else if ((coredynp.rm_ty ==CAMbased))
 			{
@@ -2567,6 +2659,19 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 						*(fFRAT->local_result.power.searchOp.dynamic + fdcl->power.readOp.dynamic)
 						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
+
+			if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+			{
+				iRRAT->power_t.reset();
+				fRRAT->power_t.reset();
+
+
+				iRRAT->power_t.readOp.dynamic  +=  (iRRAT->stats_t.readAc.access*iRRAT->local_result.power.readOp.dynamic
+						+iRRAT->stats_t.writeAc.access*iRRAT->local_result.power.writeOp.dynamic);
+				fRRAT->power_t.readOp.dynamic  +=  (fRRAT->stats_t.readAc.access*fRRAT->local_result.power.readOp.dynamic
+						+fRRAT->stats_t.writeAc.access*fRRAT->local_result.power.writeOp.dynamic);
+			}
+
 			ifreeL->power_t.reset();
 			ifreeL->power_t.readOp.dynamic  +=  (ifreeL->stats_t.readAc.access*ifreeL->local_result.power.readOp.dynamic
 					+ifreeL->stats_t.writeAc.access*ifreeL->local_result.power.writeOp.dynamic);
@@ -2594,23 +2699,33 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 		{
 			if (coredynp.scheu_ty==PhysicalRegFile)
 			{
-				iFRAT->power   =  iFRAT->power_t + (iFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + idcl->power_t;
-				fFRAT->power   =  fFRAT->power_t + (fFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + fdcl->power_t;
-				iRRAT->power   =  iRRAT->power_t + iRRAT->local_result.power * coredynp.pppm_lkg_multhread;
-				fRRAT->power   =  fRRAT->power_t + fRRAT->local_result.power * coredynp.pppm_lkg_multhread;
-				ifreeL->power  =  ifreeL->power_t + ifreeL->local_result.power * coredynp.pppm_lkg_multhread;
-				ffreeL->power  =  ffreeL->power_t + ffreeL->local_result.power * coredynp.pppm_lkg_multhread;
+				iFRAT->power   =  iFRAT->power_t + (iFRAT->local_result.power )  + idcl->power_t;
+				fFRAT->power   =  fFRAT->power_t + (fFRAT->local_result.power )  + fdcl->power_t;
+				ifreeL->power  =  ifreeL->power_t + ifreeL->local_result.power ;
+				ffreeL->power  =  ffreeL->power_t + ffreeL->local_result.power ;
 				power	       =  power + (iFRAT->power + fFRAT->power)
-				                 + (iRRAT->power + fRRAT->power)
+				                 //+ (iRRAT->power + fRRAT->power)
 				                 + (ifreeL->power + ffreeL->power);
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->power   =  iRRAT->power_t + iRRAT->local_result.power;
+					fRRAT->power   =  fRRAT->power_t + fRRAT->local_result.power;
+					power	       =  power + (iRRAT->power + fRRAT->power);
+				}
 			}
 			else if (coredynp.scheu_ty==ReservationStation)
 			{
-				iFRAT->power   =  iFRAT->power_t + (iFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + idcl->power_t;
-				fFRAT->power   =  fFRAT->power_t + (fFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + fdcl->power_t;
-				ifreeL->power  =  ifreeL->power_t + ifreeL->local_result.power * coredynp.pppm_lkg_multhread;
+				iFRAT->power   =  iFRAT->power_t + (iFRAT->local_result.power )  + idcl->power_t;
+				fFRAT->power   =  fFRAT->power_t + (fFRAT->local_result.power )  + fdcl->power_t;
+				ifreeL->power  =  ifreeL->power_t + ifreeL->local_result.power ;
 				power	       =  power + (iFRAT->power + fFRAT->power)
 				                 + ifreeL->power;
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->power   =  iRRAT->power_t + iRRAT->local_result.power ;
+					fRRAT->power   =  fRRAT->power_t + fRRAT->local_result.power ;
+					power	       =  power + (iRRAT->power + fRRAT->power);
+				}
 			}
 		}
 		else
@@ -2625,23 +2740,35 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 		{
 			if (coredynp.scheu_ty==PhysicalRegFile)
 			{
-				iFRAT->rt_power   =  iFRAT->power_t + (iFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + idcl->power_t;
-				fFRAT->rt_power   =  fFRAT->power_t + (fFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + fdcl->power_t;
-				iRRAT->rt_power   =  iRRAT->power_t + iRRAT->local_result.power * coredynp.pppm_lkg_multhread;
-				fRRAT->rt_power   =  fRRAT->power_t + fRRAT->local_result.power * coredynp.pppm_lkg_multhread;
-				ifreeL->rt_power  =  ifreeL->power_t + ifreeL->local_result.power * coredynp.pppm_lkg_multhread;
-				ffreeL->rt_power  =  ffreeL->power_t + ffreeL->local_result.power * coredynp.pppm_lkg_multhread;
+				iFRAT->rt_power   =  iFRAT->power_t + (iFRAT->local_result.power )  + idcl->power_t;
+				fFRAT->rt_power   =  fFRAT->power_t + (fFRAT->local_result.power )  + fdcl->power_t;
+
+				ifreeL->rt_power  =  ifreeL->power_t + ifreeL->local_result.power ;
+				ffreeL->rt_power  =  ffreeL->power_t + ffreeL->local_result.power ;
 				rt_power	      =  rt_power + (iFRAT->rt_power + fFRAT->rt_power)
-				                   + (iRRAT->rt_power + fRRAT->rt_power)
+	//			                   + (iRRAT->rt_power + fRRAT->rt_power)
 				                   + (ifreeL->rt_power + ffreeL->rt_power);
+
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->rt_power   =  iRRAT->power_t + iRRAT->local_result.power ;
+					fRRAT->rt_power   =  fRRAT->power_t + fRRAT->local_result.power ;
+					rt_power	      =  rt_power +  (iRRAT->rt_power + fRRAT->rt_power);
+				}
 			}
 			else if (coredynp.scheu_ty==ReservationStation)
 			{
-				iFRAT->rt_power   =  iFRAT->power_t + (iFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + idcl->power_t;
-				fFRAT->rt_power   =  fFRAT->power_t + (fFRAT->local_result.power ) * coredynp.pppm_lkg_multhread + fdcl->power_t;
-				ifreeL->rt_power  =  ifreeL->power_t + ifreeL->local_result.power * coredynp.pppm_lkg_multhread;
+				iFRAT->rt_power   =  iFRAT->power_t + (iFRAT->local_result.power )  + idcl->power_t;
+				fFRAT->rt_power   =  fFRAT->power_t + (fFRAT->local_result.power )  + fdcl->power_t;
+				ifreeL->rt_power  =  ifreeL->power_t + ifreeL->local_result.power ;
 				rt_power	      =  rt_power + (iFRAT->rt_power + fFRAT->rt_power)
 				                   + ifreeL->rt_power;
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					iRRAT->rt_power   =  iRRAT->power_t + iRRAT->local_result.power ;
+					fRRAT->rt_power   =  fRRAT->power_t + fRRAT->local_result.power ;
+					rt_power	      =  rt_power +  (iRRAT->rt_power + fRRAT->rt_power);
+				}
 			}
 		}
 		else
@@ -2665,7 +2792,7 @@ void RENAMINGU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 
 		if (coredynp.core_ty==OOO)
 		{
-			cout << indent_str<< "Int Front End RAT:" << endl;
+			cout << indent_str<< "Int Front End RAT with " << coredynp.globalCheckpoint <<" internal checkpoints:" << endl;
 			cout << indent_str_next << "Area = " << iFRAT->area.get_area()*1e-6<< " mm^2" << endl;
 			cout << indent_str_next << "Peak Dynamic = " << iFRAT->power.readOp.dynamic*clockRate << " W" << endl;
 			cout << indent_str_next << "Subthreshold Leakage = "
@@ -2675,7 +2802,7 @@ void RENAMINGU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 			cout << indent_str_next << "Gate Leakage = " << iFRAT->power.readOp.gate_leakage << " W" << endl;
 			cout << indent_str_next << "Runtime Dynamic = " << iFRAT->rt_power.readOp.dynamic/executionTime << " W" << endl;
 			cout <<endl;
-			cout << indent_str<< "FP Front End RAT:" << endl;
+			cout << indent_str<< "FP Front End RAT with " << coredynp.globalCheckpoint <<" internal checkpoints:" << endl;
 			cout << indent_str_next << "Area = " << fFRAT->area.get_area()*1e-6  << " mm^2" << endl;
 			cout << indent_str_next << "Peak Dynamic = " << fFRAT->power.readOp.dynamic*clockRate  << " W" << endl;
 			cout << indent_str_next << "Subthreshold Leakage = "
@@ -2695,14 +2822,13 @@ void RENAMINGU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 			cout << indent_str_next << "Gate Leakage = " << ifreeL->power.readOp.gate_leakage  << " W" << endl;
 			cout << indent_str_next << "Runtime Dynamic = " << ifreeL->rt_power.readOp.dynamic/executionTime << " W" << endl;
 			cout <<endl;
-
-			if (coredynp.scheu_ty==PhysicalRegFile)
+			if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
 			{
 				cout << indent_str<< "Int Retire RAT: " << endl;
 				cout << indent_str_next << "Area = " << iRRAT->area.get_area() *1e-6 << " mm^2" << endl;
 				cout << indent_str_next << "Peak Dynamic = " << iRRAT->power.readOp.dynamic*clockRate  << " W" << endl;
 				cout << indent_str_next << "Subthreshold Leakage = "
-					<< (long_channel? iRRAT->power.readOp.longer_channel_leakage:iRRAT->power.readOp.leakage)  << " W" << endl;
+						<< (long_channel? iRRAT->power.readOp.longer_channel_leakage:iRRAT->power.readOp.leakage)  << " W" << endl;
 				if (power_gating) cout << indent_str_next << "Subthreshold Leakage with power gating = "
 						<< (long_channel? iRRAT->power.readOp.power_gated_with_long_channel_leakage : iRRAT->power.readOp.power_gated_leakage)  << " W" << endl;
 				cout << indent_str_next << "Gate Leakage = " << iRRAT->power.readOp.gate_leakage  << " W" << endl;
@@ -2712,12 +2838,15 @@ void RENAMINGU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 				cout << indent_str_next << "Area = " << fRRAT->area.get_area()  *1e-6<< " mm^2" << endl;
 				cout << indent_str_next << "Peak Dynamic = " << fRRAT->power.readOp.dynamic*clockRate  << " W" << endl;
 				cout << indent_str_next << "Subthreshold Leakage = "
-					<< (long_channel? fRRAT->power.readOp.longer_channel_leakage:fRRAT->power.readOp.leakage)  << " W" << endl;
+						<< (long_channel? fRRAT->power.readOp.longer_channel_leakage:fRRAT->power.readOp.leakage)  << " W" << endl;
 				if (power_gating) cout << indent_str_next << "Subthreshold Leakage with power gating = "
 						<< (long_channel? fRRAT->power.readOp.power_gated_with_long_channel_leakage : fRRAT->power.readOp.power_gated_leakage)  << " W" << endl;
 				cout << indent_str_next << "Gate Leakage = " << fRRAT->power.readOp.gate_leakage  << " W" << endl;
 				cout << indent_str_next << "Runtime Dynamic = " << fRRAT->rt_power.readOp.dynamic/executionTime << " W" << endl;
 				cout <<endl;
+			}
+			if (coredynp.scheu_ty==PhysicalRegFile)
+			{
 				cout << indent_str<< "FP Free List:" << endl;
 				cout << indent_str_next << "Area = " << ffreeL->area.get_area()*1e-6  << " mm^2" << endl;
 				cout << indent_str_next << "Peak Dynamic = " << ffreeL->power.readOp.dynamic*clockRate  << " W" << endl;
@@ -2765,12 +2894,15 @@ void RENAMINGU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 			cout << indent_str_next << "Free List   Gate Leakage = " << fFRAT->rt_power.readOp.gate_leakage  << " W" << endl;
 			if (coredynp.scheu_ty==PhysicalRegFile)
 			{
-				cout << indent_str_next << "Int Retire RAT   Peak Dynamic = " << iRRAT->rt_power.readOp.dynamic*clockRate  << " W" << endl;
-				cout << indent_str_next << "Int Retire RAT   Subthreshold Leakage = " << iRRAT->rt_power.readOp.leakage  << " W" << endl;
-				cout << indent_str_next << "Int Retire RAT   Gate Leakage = " << iRRAT->rt_power.readOp.gate_leakage  << " W" << endl;
-				cout << indent_str_next << "FP Retire RAT   Peak Dynamic = " << fRRAT->rt_power.readOp.dynamic*clockRate  << " W" << endl;
-				cout << indent_str_next << "FP Retire RAT   Subthreshold Leakage = " << fRRAT->rt_power.readOp.leakage  << " W" << endl;
-				cout << indent_str_next << "FP Retire RAT   Gate Leakage = " << fRRAT->rt_power.readOp.gate_leakage  << " W" << endl;
+				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				{
+					cout << indent_str_next << "Int Retire RAT   Peak Dynamic = " << iRRAT->rt_power.readOp.dynamic*clockRate  << " W" << endl;
+					cout << indent_str_next << "Int Retire RAT   Subthreshold Leakage = " << iRRAT->rt_power.readOp.leakage  << " W" << endl;
+					cout << indent_str_next << "Int Retire RAT   Gate Leakage = " << iRRAT->rt_power.readOp.gate_leakage  << " W" << endl;
+					cout << indent_str_next << "FP Retire RAT   Peak Dynamic = " << fRRAT->rt_power.readOp.dynamic*clockRate  << " W" << endl;
+					cout << indent_str_next << "FP Retire RAT   Subthreshold Leakage = " << fRRAT->rt_power.readOp.leakage  << " W" << endl;
+					cout << indent_str_next << "FP Retire RAT   Gate Leakage = " << fRRAT->rt_power.readOp.gate_leakage  << " W" << endl;
+				}
 				cout << indent_str_next << "FP Free List   Peak Dynamic = " << ffreeL->rt_power.readOp.dynamic*clockRate  << " W" << endl;
 				cout << indent_str_next << "FP Free List   Subthreshold Leakage = " << ffreeL->rt_power.readOp.leakage  << " W" << endl;
 				cout << indent_str_next << "FP Free List   Gate Leakage = " << fFRAT->rt_power.readOp.gate_leakage  << " W" << endl;
@@ -3504,8 +3636,8 @@ void RegFU::computeEnergy(bool is_tdp)
 
 	if (is_tdp)
 	{
-		IRF->power  =  IRF->power_t + IRF->local_result.power *coredynp.pppm_lkg_multhread;
-		FRF->power  =  FRF->power_t + FRF->local_result.power *coredynp.pppm_lkg_multhread;
+		IRF->power  =  IRF->power_t + ((coredynp.scheu_ty==ReservationStation) ? (IRF->local_result.power *coredynp.pppm_lkg_multhread):IRF->local_result.power);
+		FRF->power  =  FRF->power_t + ((coredynp.scheu_ty==ReservationStation) ? (FRF->local_result.power *coredynp.pppm_lkg_multhread):FRF->local_result.power);
 		power	    =  power + (IRF->power + FRF->power);
 		if (coredynp.regWindowing)
 		{
@@ -3515,8 +3647,8 @@ void RegFU::computeEnergy(bool is_tdp)
 	}
 	else
 	{
-		IRF->rt_power  =  IRF->power_t + IRF->local_result.power *coredynp.pppm_lkg_multhread;
-		FRF->rt_power  =  FRF->power_t + FRF->local_result.power *coredynp.pppm_lkg_multhread;
+		IRF->rt_power  =  IRF->power_t + ((coredynp.scheu_ty==ReservationStation) ? (IRF->local_result.power *coredynp.pppm_lkg_multhread):IRF->local_result.power);
+		FRF->rt_power  =  FRF->power_t + ((coredynp.scheu_ty==ReservationStation) ? (FRF->local_result.power *coredynp.pppm_lkg_multhread):FRF->local_result.power);
 		rt_power	   =  rt_power + (IRF->power_t + FRF->power_t);
 		if (coredynp.regWindowing)
 		{
@@ -4171,6 +4303,7 @@ void Core::set_core_param()
 
     coredynp.num_hthreads	     = XML->sys.core[ithCore].number_hardware_threads;
     coredynp.multithreaded       = coredynp.num_hthreads>1? true:false;
+    coredynp.hthread_width       =  int(ceil(log2(XML->sys.core[ithCore].number_hardware_threads)));
     coredynp.instruction_length  = XML->sys.core[ithCore].instruction_length;
     coredynp.pc_width            = XML->sys.virtual_address_width;
 
@@ -4247,26 +4380,36 @@ void Core::set_core_param()
 		exit(0);
 	}
 
-if (coredynp.core_ty==OOO)
-{
-	if (coredynp.scheu_ty==PhysicalRegFile)
+	if (coredynp.core_ty==OOO)
 	{
-	  coredynp.phy_ireg_width  =  int(ceil(log2(XML->sys.core[ithCore].phy_Regs_IRF_size)));
-	  coredynp.phy_freg_width  =  int(ceil(log2(XML->sys.core[ithCore].phy_Regs_FRF_size)));
-	  coredynp.num_ifreelist_entries = coredynp.num_IRF_entry  = XML->sys.core[ithCore].phy_Regs_IRF_size;
-	  coredynp.num_ffreelist_entries = coredynp.num_FRF_entry  = XML->sys.core[ithCore].phy_Regs_FRF_size;
-	}
-	else if (coredynp.scheu_ty==ReservationStation)
-	{//ROB serves as Phy RF in RS based OOO
-      coredynp.phy_ireg_width  =  int(ceil(log2(XML->sys.core[ithCore].ROB_size)));
-	  coredynp.phy_freg_width  =  int(ceil(log2(XML->sys.core[ithCore].ROB_size)));
-	  coredynp.num_ifreelist_entries = XML->sys.core[ithCore].ROB_size;
-	  coredynp.num_ffreelist_entries = XML->sys.core[ithCore].ROB_size;
+		if (coredynp.scheu_ty==PhysicalRegFile)
+		{
+			coredynp.phy_ireg_width  =  int(ceil(log2(XML->sys.core[ithCore].phy_Regs_IRF_size)));
+			coredynp.phy_freg_width  =  int(ceil(log2(XML->sys.core[ithCore].phy_Regs_FRF_size)));
+			coredynp.num_ifreelist_entries = coredynp.num_IRF_entry  = XML->sys.core[ithCore].phy_Regs_IRF_size;
+			coredynp.num_ffreelist_entries = coredynp.num_FRF_entry  = XML->sys.core[ithCore].phy_Regs_FRF_size;
+		}
+		else if (coredynp.scheu_ty==ReservationStation)
+		{//ROB serves as Phy RF in RS based OOO
+			coredynp.phy_ireg_width  =  int(ceil(log2(XML->sys.core[ithCore].ROB_size)));
+			coredynp.phy_freg_width  =  int(ceil(log2(XML->sys.core[ithCore].ROB_size)));
+			coredynp.num_ifreelist_entries = XML->sys.core[ithCore].ROB_size;
+			coredynp.num_ffreelist_entries = XML->sys.core[ithCore].ROB_size;
+
+		}
 
 	}
 
-}
-	coredynp.globalCheckpoint   =  8;//best check pointing entries for a 4~8 issue OOO should be 8~48;See TR for reference.
+	int GC_count=XML->sys.core[ithCore].checkpoint_depth;//best check pointing entries for a 4~8 issue OOO should be 8~48;See TR for reference.
+	if (coredynp.rm_ty ==RAMbased)
+	{
+		coredynp.globalCheckpoint   =  GC_count > 4 ? 4 : GC_count; //RAM-based RAT cannot have more than 4 GCs; see "a power-aware hybrid ram-cam renaming mechanism for fast recovery"
+	}
+	else if(coredynp.rm_ty ==CAMbased)
+	{
+		coredynp.globalCheckpoint   =  GC_count < 1 ? 1 : GC_count;
+	}
+
 	coredynp.perThreadState     =  8;
 	coredynp.instruction_length = 32;
 	coredynp.clockRate          =  XML->sys.core[ithCore].clock_rate;
@@ -4278,17 +4421,17 @@ if (coredynp.core_ty==OOO)
 	//does not care device types, since all core device types are set at sys. level
 	if (coredynp.vdd > 0)
 	{
-	  interface_ip.specific_hp_vdd = true;
-	  interface_ip.specific_lop_vdd = true;
-	  interface_ip.specific_lstp_vdd = true;
-	  interface_ip.hp_Vdd   = coredynp.vdd;
-	  interface_ip.lop_Vdd  = coredynp.vdd;
-	  interface_ip.lstp_Vdd = coredynp.vdd;
+		interface_ip.specific_hp_vdd = true;
+		interface_ip.specific_lop_vdd = true;
+		interface_ip.specific_lstp_vdd = true;
+		interface_ip.hp_Vdd   = coredynp.vdd;
+		interface_ip.lop_Vdd  = coredynp.vdd;
+		interface_ip.lstp_Vdd = coredynp.vdd;
 	}
 
 	if (coredynp.power_gating_vcc > -1)
 	{
-	  interface_ip.specific_vcc_min = true;
-	  interface_ip.user_defined_vcc_min   = coredynp.power_gating_vcc;
+		interface_ip.specific_vcc_min = true;
+		interface_ip.user_defined_vcc_min   = coredynp.power_gating_vcc;
 	}
 }
