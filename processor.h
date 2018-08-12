@@ -67,7 +67,7 @@ class Processor : public Component
     Component core, l2, l3, l1dir, l2dir, noc, mcs, cc, nius, pcies,flashcontrollers;
     int  numCore, numL2, numL3, numNOC, numL1Dir, numL2Dir;
     Processor(ParseXML *XML_interface);
-    void compute();
+    void compute(){};   // TODO: compute processor engry here
     void set_proc_param();
     void displayEnergy(uint32_t indent = 0,int plevel = 100, bool is_tdp=true);
     void displayDeviceType(int device_type_, uint32_t indent = 0);
