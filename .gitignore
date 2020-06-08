@@ -30,3 +30,10 @@
 # McPAT custom
 mcpat
 obj_opt/
+
+# vim
+.*.swo
+.*.swp
+
+# Unit-Test
+unit_test/output
