@@ -73,47 +73,45 @@ Sleep_tx::Sleep_tx(
 //			double  _mobility,//of sleep tx
 //			double  _c_ox,//of sleep tx
 			const  Area & cell_)
-:perf_with_sleep_tx(_perf_with_sleep_tx),
- active_Isat(_active_Isat),
- is_footer(_is_footer),
- c_circuit_wakeup(_c_circuit_wakeup),
- V_delta(_V_delta),
- num_sleep_tx(_num_sleep_tx),
+  :perf_with_sleep_tx(_perf_with_sleep_tx),
+  active_Isat(_active_Isat),
+  is_footer(_is_footer),
+  num_sleep_tx(_num_sleep_tx),
+  c_circuit_wakeup(_c_circuit_wakeup),
 // vt_circuit(_vt_circuit),
 // vt_sleep_tx(_vt_sleep_tx),
 // mobility(_mobility),
 // c_ox(_c_ox)
- cell(cell_),
- is_sleep_tx(true)
+  cell(cell_),
+  is_sleep_tx(true),
+  V_delta(_V_delta)
 {
 
 	//a single sleep tx in a network
 	double raw_area, raw_width, raw_hight;
 	double p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(false, false, true);
-    vdd = g_tp.peri_global.Vdd;
-    vt_circuit = g_tp.peri_global.Vth;
-    vt_sleep_tx = g_tp.sleep_tx.Vth;
-    mobility = g_tp.sleep_tx.Mobility_n;
-    c_ox = g_tp.sleep_tx.C_ox;
+  vdd = g_tp.peri_global.Vdd;
+  vt_circuit = g_tp.peri_global.Vth;
+  vt_sleep_tx = g_tp.sleep_tx.Vth;
+  mobility = g_tp.sleep_tx.Mobility_n;
+  c_ox = g_tp.sleep_tx.C_ox;
 
-    width = active_Isat/(perf_with_sleep_tx*mobility*c_ox*(vdd-vt_circuit)*(vdd-vt_sleep_tx))*g_ip->F_sz_um;//W/L uses physical numbers
-    width /= num_sleep_tx;
+  width = active_Isat/(perf_with_sleep_tx*mobility*c_ox*(vdd-vt_circuit)*(vdd-vt_sleep_tx))*g_ip->F_sz_um;//W/L uses physical numbers
+  width /= num_sleep_tx;
 
 //    double cell_hight = MAX(cell.w*2, g_tp.cell_h_def);
-    raw_area   = compute_gate_area(INV, 1, width, p_to_n_sz_ratio*width, cell.h)/2; //Only single device, assuming device is laid on the side of the circuit block without changing the height of the standard library cells (using the standard cell approach).
-    raw_width = cell.w;
-    raw_hight  = raw_area/cell.w;
-    area.set_h(raw_hight);
-    area.set_w(raw_width);
+  raw_area   = compute_gate_area(INV, 1, width, p_to_n_sz_ratio*width, cell.h)/2; //Only single device, assuming device is laid on the side of the circuit block without changing the height of the standard library cells (using the standard cell approach).
+  raw_width = cell.w;
+  raw_hight  = raw_area/cell.w;
+  area.set_h(raw_hight);
+  area.set_w(raw_width);
 
-    compute_penalty();
-
+  compute_penalty();
 }
 
 double Sleep_tx::compute_penalty()
 {
 	//V_delta = VDD - VCCmin nothing to do with threshold of sleep tx. Although it might be OK to use sleep tx to control the V_delta
-	double c_load;
 	double p_to_n_sz_ratio = pmos_to_nmos_sz_ratio(false, false, true);
 
 	if (is_footer)
@@ -131,7 +129,6 @@ double Sleep_tx::compute_penalty()
 		wakeup_delay = (c_circuit_wakeup + c_intrinsic_sleep)*V_delta/(simplified_pmos_Isat(width, false, false, false,is_sleep_tx)/Ilinear_to_Isat_ratio);
 		wakeup_power.readOp.dynamic = (c_circuit_wakeup + c_intrinsic_sleep)*g_tp.sram_cell.Vdd*V_delta;
 	}
-
 /*
 	The number of cycles in the wake-up latency set the constraint on the
 	minimum number of idle clock cycles needed before a processor
@@ -142,6 +139,6 @@ double Sleep_tx::compute_penalty()
 	just the wakeup latency will be shorter than the wakeup time from full asleep.
 	So, the sleep time and energy does not matter
 */
-
+  return 0.0;
 }
 

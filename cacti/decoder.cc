@@ -55,17 +55,19 @@ Decoder::Decoder(
 :exist(false),
   C_ld_dec_out(_C_ld_dec_out),
   R_wire_dec_out(_R_wire_dec_out),
-  num_gates(0), num_gates_min(2),
+  num_gates(0),
+  num_gates_min(2),
   delay(0),
   //power(),
-  fully_assoc(fully_assoc_), is_dram(is_dram_),
+  fully_assoc(fully_assoc_),
+  is_dram(is_dram_),
   is_wl_tr(is_wl_tr_),
   total_driver_nwidth(0),
   total_driver_pwidth(0),
+  sleeptx(NULL),
   cell(cell_),
-  power_gating(power_gating_),
   nodes_DSTN(nodes_DSTN_),
-  sleeptx(NULL)
+  power_gating(power_gating_)
 {
 
   for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++)
@@ -1575,9 +1577,9 @@ Driver::Driver(double c_gate_load_, double c_wire_load_, double r_wire_load_, bo
   is_dram_(is_dram),
   total_driver_nwidth(0),
   total_driver_pwidth(0),
-  power_gating(power_gating_),
+  sleeptx(NULL),
   nodes_DSTN(nodes_DSTN_),
-  sleeptx(NULL)
+  power_gating(power_gating_)
 {
   for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++)
   {

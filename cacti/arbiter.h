@@ -45,10 +45,10 @@ class Arbiter : public Component
 {
   public:
     Arbiter(
-      double Req,
-      double flit_sz,
-      double output_len,
-      TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
+    double Req,
+    double flit_sz,
+    double output_len,
+    TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
     ~Arbiter();
 
     void print_arbiter();
@@ -69,9 +69,8 @@ class Arbiter : public Component
     double NTtr, PTtr;
     double o_len;
     TechnologyParameter::DeviceType *deviceType;
-    double TriS1, TriS2;
+    //double TriS1, TriS2;
     double min_w_pmos, Vdd;
-
 };
 
 #endif

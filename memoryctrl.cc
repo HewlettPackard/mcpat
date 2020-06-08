@@ -192,7 +192,7 @@ void MCPHY::compute()
    * according to "A 100mW 9.6Gb/s Transceiver in 90nm CMOS for next-generation memory interfaces ," ISSCC 2006;
    * From Cadence ChipEstimator for normal I/O around 0.4~0.8 mW/Gb/s
    */
-  double power_per_gb_per_s, phy_dyn,phy_gates, NMOS_sizing, PMOS_sizing;
+  double power_per_gb_per_s, phy_gates, NMOS_sizing, PMOS_sizing;
 
   if (mc_type == MC)
   {

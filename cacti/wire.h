@@ -52,9 +52,10 @@ class Wire : public Component
          enum Wire_placement wire_placement = outside_mat,
          double resistivity = CU_RESISTIVITY,
          TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
+
     ~Wire();
 
-    Wire( double width_scaling = 1,
+    Wire(double width_scaling = 1,
          double spacing_scaling = 1,
 //         bool reset_repeater_sizing = true,
          enum Wire_placement wire_placement = outside_mat,

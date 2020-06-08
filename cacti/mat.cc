@@ -66,20 +66,20 @@ Mat::Mat(const DynamicParameter & dyn_p)
   wl_leakage(0),
   cl_leakage(0),
   sram_sleep_tx(0)
- {
+{
   assert(num_subarrays_per_mat <= 4);
   assert(num_subarrays_per_row <= 2);
   is_fa = (dp.fully_assoc) ? true : false;
   camFlag = (is_fa || pure_cam);//although cam_cell.w = cell.w for fa, we still differentiate them.
 
   if (is_fa || pure_cam)
-	  num_subarrays_per_row = num_subarrays_per_mat>2?num_subarrays_per_mat/2:num_subarrays_per_mat;
+    num_subarrays_per_row = num_subarrays_per_mat>2?num_subarrays_per_mat/2:num_subarrays_per_mat;
 
   if (dp.use_inp_params == 1) {
-	  RWP  = dp.num_rw_ports;
-	  ERP  = dp.num_rd_ports;
-	  EWP  = dp.num_wr_ports;
-	  SCHP = dp.num_search_ports;
+    RWP  = dp.num_rw_ports;
+    ERP  = dp.num_rd_ports;
+    EWP  = dp.num_wr_ports;
+    SCHP = dp.num_search_ports;
   }
   else {
     RWP = g_ip->num_rw_ports;
@@ -93,16 +93,16 @@ Mat::Mat(const DynamicParameter & dyn_p)
 
   if (!is_fa && !pure_cam)
   {
-	  number_sa_subarray = subarray.num_cols / deg_bl_muxing;
+    number_sa_subarray = subarray.num_cols / deg_bl_muxing;
   }
   else if (is_fa && !pure_cam)
   {
-	  number_sa_subarray =  (subarray.num_cols_fa_cam + subarray.num_cols_fa_ram) / deg_bl_muxing;
+    number_sa_subarray =  (subarray.num_cols_fa_cam + subarray.num_cols_fa_ram) / deg_bl_muxing;
   }
 
   else
   {
-	  number_sa_subarray =  (subarray.num_cols_fa_cam) / deg_bl_muxing;
+    number_sa_subarray =  (subarray.num_cols_fa_cam) / deg_bl_muxing;
   }
 
   int    num_dec_signals           = subarray.num_rows;
@@ -113,15 +113,15 @@ Mat::Mat(const DynamicParameter & dyn_p)
 
   if (!is_fa && !pure_cam)
     {
-	    R_wire_wl_drv_out = subarray.num_cols * cell.w * g_tp.wire_local.R_per_um;
+      R_wire_wl_drv_out = subarray.num_cols * cell.w * g_tp.wire_local.R_per_um;
     }
     else if (is_fa && !pure_cam)
     {
-    	R_wire_wl_drv_out = (subarray.num_cols_fa_cam * cam_cell.w + subarray.num_cols_fa_ram * cell.w) * g_tp.wire_local.R_per_um ;
+      R_wire_wl_drv_out = (subarray.num_cols_fa_cam * cam_cell.w + subarray.num_cols_fa_ram * cell.w) * g_tp.wire_local.R_per_um ;
     }
     else
     {
-    	R_wire_wl_drv_out = (subarray.num_cols_fa_cam * cam_cell.w ) * g_tp.wire_local.R_per_um;
+      R_wire_wl_drv_out = (subarray.num_cols_fa_cam * cam_cell.w ) * g_tp.wire_local.R_per_um;
     }
 
   double R_wire_bit_mux_dec_out = num_subarrays_per_row * subarray.num_cols * g_tp.wire_inside_mat.R_per_um * cell.w;//TODO:revisit for FA
@@ -209,19 +209,19 @@ Mat::Mat(const DynamicParameter & dyn_p)
   if (!is_fa && !pure_cam)
       {
 
-	  C_wire_predec_blk_out  = num_subarrays_per_row * subarray.num_rows * g_tp.wire_inside_mat.C_per_um * cell.h;
-	  R_wire_predec_blk_out  = num_subarrays_per_row * subarray.num_rows * g_tp.wire_inside_mat.R_per_um * cell.h;
+    C_wire_predec_blk_out  = num_subarrays_per_row * subarray.num_rows * g_tp.wire_inside_mat.C_per_um * cell.h;
+    R_wire_predec_blk_out  = num_subarrays_per_row * subarray.num_rows * g_tp.wire_inside_mat.R_per_um * cell.h;
 
       }
       else //for pre-decode block's load is same for both FA and CAM
       {
-    	  C_wire_predec_blk_out  = subarray.num_rows * g_tp.wire_inside_mat.C_per_um * cam_cell.h;
-    	  R_wire_predec_blk_out  = subarray.num_rows * g_tp.wire_inside_mat.R_per_um * cam_cell.h;
+        C_wire_predec_blk_out  = subarray.num_rows * g_tp.wire_inside_mat.C_per_um * cam_cell.h;
+        R_wire_predec_blk_out  = subarray.num_rows * g_tp.wire_inside_mat.R_per_um * cam_cell.h;
       }
 
 
   if (is_fa||pure_cam)
-	  num_dec_signals += _log2(num_subarrays_per_mat);
+    num_dec_signals += _log2(num_subarrays_per_mat);
 
   PredecBlk * r_predec_blk1 = new PredecBlk(
       num_dec_signals,
@@ -273,39 +273,39 @@ Mat::Mat(const DynamicParameter & dyn_p)
   if (is_fa || pure_cam)
 
   {   //Although CAM and RAM use different bl pre-charge driver, assuming the precharge p size is the same
-	  driver_c_gate_load =  (subarray.num_cols_fa_cam )* gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
-	  driver_c_wire_load =  subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.C_per_um;
-	  driver_r_wire_load =  subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.R_per_um;
-	  cam_bl_precharge_eq_drv = new Driver(
-			  driver_c_gate_load,
-			  driver_c_wire_load,
-			  driver_r_wire_load,
-			  is_dram);
+    driver_c_gate_load =  (subarray.num_cols_fa_cam )* gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
+    driver_c_wire_load =  subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.C_per_um;
+    driver_r_wire_load =  subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.R_per_um;
+    cam_bl_precharge_eq_drv = new Driver(
+        driver_c_gate_load,
+        driver_c_wire_load,
+        driver_r_wire_load,
+        is_dram);
 
-	  if (!pure_cam)
-	  {
-		  //This is only used for fully asso not pure CAM
-		  driver_c_gate_load =  (subarray.num_cols_fa_ram )* gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
-		  driver_c_wire_load =  subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.C_per_um;
-		  driver_r_wire_load =  subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.R_per_um;
-		  bl_precharge_eq_drv = new Driver(
-				  driver_c_gate_load,
-				  driver_c_wire_load,
-				  driver_r_wire_load,
-				  is_dram);
-	  }
+    if (!pure_cam)
+    {
+      //This is only used for fully asso not pure CAM
+      driver_c_gate_load =  (subarray.num_cols_fa_ram )* gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
+      driver_c_wire_load =  subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.C_per_um;
+      driver_r_wire_load =  subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.R_per_um;
+      bl_precharge_eq_drv = new Driver(
+          driver_c_gate_load,
+          driver_c_wire_load,
+          driver_r_wire_load,
+          is_dram);
+    }
   }
 
   else
   {
-	  driver_c_gate_load =  subarray.num_cols * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
-	  driver_c_wire_load =  subarray.num_cols * cell.w * g_tp.wire_outside_mat.C_per_um;
-	  driver_r_wire_load =  subarray.num_cols * cell.w * g_tp.wire_outside_mat.R_per_um;
-	  bl_precharge_eq_drv = new Driver(
-			  driver_c_gate_load,
-			  driver_c_wire_load,
-			  driver_r_wire_load,
-			  is_dram);
+    driver_c_gate_load =  subarray.num_cols * gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram, false, false);
+    driver_c_wire_load =  subarray.num_cols * cell.w * g_tp.wire_outside_mat.C_per_um;
+    driver_r_wire_load =  subarray.num_cols * cell.w * g_tp.wire_outside_mat.R_per_um;
+    bl_precharge_eq_drv = new Driver(
+        driver_c_gate_load,
+        driver_c_wire_load,
+        driver_r_wire_load,
+        is_dram);
   }
   double area_row_decoder = row_dec->area.get_area() * subarray.num_rows * (RWP + ERP + EWP);
   double w_row_decoder    = area_row_decoder / subarray.area.get_h();
@@ -341,28 +341,28 @@ Mat::Mat(const DynamicParameter & dyn_p)
   //power-gating circuit
   bool is_footer = false;
   double Isat_subarray = 2* simplified_nmos_Isat(g_tp.sram.cell_nmos_w, is_dram, true);//only one wordline active in a subarray 2 means two inverters in an SRAM cell
-  double detalV_array, deltaV_wl, deltaV_floatingBL;
+  double detalV_array;
   double c_wakeup_array;
 
   if (!(is_fa || pure_cam) && g_ip->power_gating)
   {//for SRAM only at this moment
-	  c_wakeup_array = drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram, true);//1 inv
-	  c_wakeup_array +=  2*drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram, true)
-						  + drain_C_(g_tp.sram.cell_nmos_w, NCH, 1, 1, cell.h, is_dram, true);//1 inv
-	  c_wakeup_array *= subarray.num_rows;//all the SRAM cells in a bitline is connected to the sleep tx to provide Vcc_min
-	  detalV_array = g_tp.sram_cell.Vdd-g_tp.sram_cell.Vcc_min;
+    c_wakeup_array = drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram, true);//1 inv
+    c_wakeup_array +=  2*drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram, true)
+              + drain_C_(g_tp.sram.cell_nmos_w, NCH, 1, 1, cell.h, is_dram, true);//1 inv
+    c_wakeup_array *= subarray.num_rows;//all the SRAM cells in a bitline is connected to the sleep tx to provide Vcc_min
+    detalV_array = g_tp.sram_cell.Vdd-g_tp.sram_cell.Vcc_min;
 
-	  sram_sleep_tx =  new Sleep_tx (g_ip->perfloss,
-			                        Isat_subarray,
-			                        is_footer,
-			                        c_wakeup_array,
-			                        detalV_array,
-			                        1,
-			                        cell);
+    sram_sleep_tx =  new Sleep_tx (g_ip->perfloss,
+                              Isat_subarray,
+                              is_footer,
+                              c_wakeup_array,
+                              detalV_array,
+                              1,
+                              cell);
 
-	  subarray.area.set_h(subarray.area.h+ sram_sleep_tx->area.h);
+    subarray.area.set_h(subarray.area.h+ sram_sleep_tx->area.h);
 
-	  //TODO: add the sleep tx in the wl driver and
+    //TODO: add the sleep tx in the wl driver and
   }
 
 
@@ -400,10 +400,10 @@ Mat::Mat(const DynamicParameter & dyn_p)
 
     if (is_fa || pure_cam)
     {
-    	h_addr_datain_wires = (dp.number_addr_bits_mat + dp.number_way_select_signals_mat +     //TODO: revisit
-    			              (dp.num_di_b_mat+ dp.num_do_b_mat )/num_subarrays_per_row) *
-    			               g_tp.wire_inside_mat.pitch * (RWP + ERP + EWP) +
-    			               (dp.num_si_b_mat + dp.num_so_b_mat )/num_subarrays_per_row * g_tp.wire_inside_mat.pitch * SCHP;
+      h_addr_datain_wires = (dp.number_addr_bits_mat + dp.number_way_select_signals_mat +     //TODO: revisit
+                        (dp.num_di_b_mat+ dp.num_do_b_mat )/num_subarrays_per_row) *
+                         g_tp.wire_inside_mat.pitch * (RWP + ERP + EWP) +
+                         (dp.num_si_b_mat + dp.num_so_b_mat )/num_subarrays_per_row * g_tp.wire_inside_mat.pitch * SCHP;
     }
     //h_non_cell_area = 2 * h_bit_mux_sense_amp_precharge_sa_mux +
     //MAX(h_addr_datain_wires, 2 * h_subarray_out_drv);
@@ -520,7 +520,7 @@ Mat::~Mat()
   }
   if (sram_sleep_tx !=0)
   {
-	  delete sram_sleep_tx;
+    delete sram_sleep_tx;
   }
 }
 
@@ -528,92 +528,92 @@ Mat::~Mat()
 
 double Mat::compute_delays(double inrisetime)
 {
-	int k;
-	double rd, C_intrinsic, C_ld, tf, R_bl_precharge,r_b_metal, R_bl, C_bl;
-	double outrisetime_search, outrisetime, row_dec_outrisetime;
-	// delay calculation for tags of fully associative cache
-	if (is_fa || pure_cam)
-	{
-		//Compute search access time
-		outrisetime_search = compute_cam_delay(inrisetime);
-		if (is_fa)
-		{
-			bl_precharge_eq_drv->compute_delay(0);
-			k = ml_to_ram_wl_drv->number_gates - 1;
-			rd = tr_R_on(ml_to_ram_wl_drv->width_n[k], NCH, 1, is_dram, false, true);
-			C_intrinsic = drain_C_(ml_to_ram_wl_drv->width_n[k], PCH, 1, 1, 4*cell.h, is_dram, false, true) +
-			drain_C_(ml_to_ram_wl_drv->width_n[k], NCH, 1, 1, 4*cell.h, is_dram, false, true);
-			C_ld = ml_to_ram_wl_drv->c_gate_load+ ml_to_ram_wl_drv->c_wire_load;
-			tf = rd * (C_intrinsic + C_ld) + ml_to_ram_wl_drv->r_wire_load * C_ld / 2;
-			delay_wl_reset = horowitz(0, tf, 0.5, 0.5, RISE);
+  int k;
+  double rd, C_intrinsic, C_ld, tf, R_bl_precharge,r_b_metal, R_bl, C_bl;
+  double outrisetime_search, outrisetime, row_dec_outrisetime;
+  // delay calculation for tags of fully associative cache
+  if (is_fa || pure_cam)
+  {
+    //Compute search access time
+    outrisetime_search = compute_cam_delay(inrisetime);
+    if (is_fa)
+    {
+      bl_precharge_eq_drv->compute_delay(0);
+      k = ml_to_ram_wl_drv->number_gates - 1;
+      rd = tr_R_on(ml_to_ram_wl_drv->width_n[k], NCH, 1, is_dram, false, true);
+      C_intrinsic = drain_C_(ml_to_ram_wl_drv->width_n[k], PCH, 1, 1, 4*cell.h, is_dram, false, true) +
+      drain_C_(ml_to_ram_wl_drv->width_n[k], NCH, 1, 1, 4*cell.h, is_dram, false, true);
+      C_ld = ml_to_ram_wl_drv->c_gate_load+ ml_to_ram_wl_drv->c_wire_load;
+      tf = rd * (C_intrinsic + C_ld) + ml_to_ram_wl_drv->r_wire_load * C_ld / 2;
+      delay_wl_reset = horowitz(0, tf, 0.5, 0.5, RISE);
 
-			R_bl_precharge = tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, is_dram, false, false);
-			r_b_metal = cam_cell.h * g_tp.wire_local.R_per_um;//dummy rows in sram are filled in
-			R_bl = subarray.num_rows * r_b_metal;
-			C_bl = subarray.C_bl;
-			delay_bl_restore = bl_precharge_eq_drv->delay +
-			         log((g_tp.sram.Vbitpre - 0.1 * dp.V_b_sense) / (g_tp.sram.Vbitpre - dp.V_b_sense))*
-			         (R_bl_precharge * C_bl + R_bl * C_bl / 2);
-
-
-			outrisetime_search = compute_bitline_delay(outrisetime_search);
-			outrisetime_search = compute_sa_delay(outrisetime_search);
-		}
-			outrisetime_search = compute_subarray_out_drv(outrisetime_search);
-			subarray_out_wire->set_in_rise_time(outrisetime_search);
-			outrisetime_search = subarray_out_wire->signal_rise_time();
-			delay_subarray_out_drv_htree = delay_subarray_out_drv + subarray_out_wire->delay;
+      R_bl_precharge = tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, is_dram, false, false);
+      r_b_metal = cam_cell.h * g_tp.wire_local.R_per_um;//dummy rows in sram are filled in
+      R_bl = subarray.num_rows * r_b_metal;
+      C_bl = subarray.C_bl;
+      delay_bl_restore = bl_precharge_eq_drv->delay +
+               log((g_tp.sram.Vbitpre - 0.1 * dp.V_b_sense) / (g_tp.sram.Vbitpre - dp.V_b_sense))*
+               (R_bl_precharge * C_bl + R_bl * C_bl / 2);
 
 
-			//TODO: this is just for compute plain read/write energy for fa and cam, plain read/write access timing need to be revisited.
-			outrisetime = r_predec->compute_delays(inrisetime);
-			row_dec_outrisetime = row_dec->compute_delays(outrisetime);
-
-			outrisetime = b_mux_predec->compute_delays(inrisetime);
-			bit_mux_dec->compute_delays(outrisetime);
-
-			outrisetime = sa_mux_lev_1_predec->compute_delays(inrisetime);
-			sa_mux_lev_1_dec->compute_delays(outrisetime);
-
-			outrisetime = sa_mux_lev_2_predec->compute_delays(inrisetime);
-			sa_mux_lev_2_dec->compute_delays(outrisetime);
-
-			if (pure_cam)
-			{
-			  outrisetime = compute_bitline_delay(row_dec_outrisetime);
-			  outrisetime = compute_sa_delay(outrisetime);
-			}
-			return outrisetime_search;
+      outrisetime_search = compute_bitline_delay(outrisetime_search);
+      outrisetime_search = compute_sa_delay(outrisetime_search);
     }
-	else
-	{
-		bl_precharge_eq_drv->compute_delay(0);
-		if (row_dec->exist == true)
-		{
-			int k = row_dec->num_gates - 1;
-			double rd = tr_R_on(row_dec->w_dec_n[k], NCH, 1, is_dram, false, true);
-			// TODO: this 4*cell.h number must be revisited
-			double C_intrinsic = drain_C_(row_dec->w_dec_p[k], PCH, 1, 1, 4*cell.h, is_dram, false, true) +
-			drain_C_(row_dec->w_dec_n[k], NCH, 1, 1, 4*cell.h, is_dram, false, true);
-			double C_ld = row_dec->C_ld_dec_out;
-			double tf = rd * (C_intrinsic + C_ld) + row_dec->R_wire_dec_out * C_ld / 2;
-			delay_wl_reset = horowitz(0, tf, 0.5, 0.5, RISE);
-		}
-		double R_bl_precharge = tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, is_dram, false, false);
-		double r_b_metal = cell.h * g_tp.wire_local.R_per_um;
-		double R_bl = subarray.num_rows * r_b_metal;
-		double C_bl = subarray.C_bl;
+      outrisetime_search = compute_subarray_out_drv(outrisetime_search);
+      subarray_out_wire->set_in_rise_time(outrisetime_search);
+      outrisetime_search = subarray_out_wire->signal_rise_time();
+      delay_subarray_out_drv_htree = delay_subarray_out_drv + subarray_out_wire->delay;
 
-		if (is_dram)
-		{
-			delay_bl_restore = bl_precharge_eq_drv->delay + 2.3 * (R_bl_precharge * C_bl + R_bl * C_bl / 2);
-		}
-		else
-		{
-			delay_bl_restore = bl_precharge_eq_drv->delay +
-			log((g_tp.sram.Vbitpre - 0.1 * dp.V_b_sense) / (g_tp.sram.Vbitpre - dp.V_b_sense))*
-			(R_bl_precharge * C_bl + R_bl * C_bl / 2);
-		}
+
+      //TODO: this is just for compute plain read/write energy for fa and cam, plain read/write access timing need to be revisited.
+      outrisetime = r_predec->compute_delays(inrisetime);
+      row_dec_outrisetime = row_dec->compute_delays(outrisetime);
+
+      outrisetime = b_mux_predec->compute_delays(inrisetime);
+      bit_mux_dec->compute_delays(outrisetime);
+
+      outrisetime = sa_mux_lev_1_predec->compute_delays(inrisetime);
+      sa_mux_lev_1_dec->compute_delays(outrisetime);
+
+      outrisetime = sa_mux_lev_2_predec->compute_delays(inrisetime);
+      sa_mux_lev_2_dec->compute_delays(outrisetime);
+
+      if (pure_cam)
+      {
+        outrisetime = compute_bitline_delay(row_dec_outrisetime);
+        outrisetime = compute_sa_delay(outrisetime);
+      }
+      return outrisetime_search;
+    }
+  else
+  {
+    bl_precharge_eq_drv->compute_delay(0);
+    if (row_dec->exist == true)
+    {
+      int k = row_dec->num_gates - 1;
+      double rd = tr_R_on(row_dec->w_dec_n[k], NCH, 1, is_dram, false, true);
+      // TODO: this 4*cell.h number must be revisited
+      double C_intrinsic = drain_C_(row_dec->w_dec_p[k], PCH, 1, 1, 4*cell.h, is_dram, false, true) +
+      drain_C_(row_dec->w_dec_n[k], NCH, 1, 1, 4*cell.h, is_dram, false, true);
+      double C_ld = row_dec->C_ld_dec_out;
+      double tf = rd * (C_intrinsic + C_ld) + row_dec->R_wire_dec_out * C_ld / 2;
+      delay_wl_reset = horowitz(0, tf, 0.5, 0.5, RISE);
+    }
+    double R_bl_precharge = tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, is_dram, false, false);
+    double r_b_metal = cell.h * g_tp.wire_local.R_per_um;
+    double R_bl = subarray.num_rows * r_b_metal;
+    double C_bl = subarray.C_bl;
+
+    if (is_dram)
+    {
+      delay_bl_restore = bl_precharge_eq_drv->delay + 2.3 * (R_bl_precharge * C_bl + R_bl * C_bl / 2);
+    }
+    else
+    {
+      delay_bl_restore = bl_precharge_eq_drv->delay +
+      log((g_tp.sram.Vbitpre - 0.1 * dp.V_b_sense) / (g_tp.sram.Vbitpre - dp.V_b_sense))*
+      (R_bl_precharge * C_bl + R_bl * C_bl / 2);
+    }
   }
 
 
@@ -747,70 +747,70 @@ double Mat::compute_cam_delay(double inrisetime)
 
   if (linear_scaling)
   {
-	  Wdecdrivep    =  450 * g_ip->F_sz_um;//this was 360 micron for the 0.8 micron process
-	  Wdecdriven    =  300 * g_ip->F_sz_um;//this was 240 micron for the 0.8 micron process
-	  Wfadriven     = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfadrivep     =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
-	  Wfadrive2n    =  250 * g_ip->F_sz_um;//this was 200 micron for the 0.8 micron process
-	  Wfadrive2p    =  500 * g_ip->F_sz_um;//this was 400 micron for the 0.8 micron process
-	  Wfadecdrive1n = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
-	  Wfadecdrive1p = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wfadecdrive2n =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfadecdrive2p =   50 * g_ip->F_sz_um;//this was  40 micron for the 0.8 micron process
-	  Wfadecdriven  = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfadecdrivep  =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
-	  Wfaprechn     =  7.5 * g_ip->F_sz_um;//this was   6 micron for the 0.8 micron process
-	  Wfainvn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wfainvp       =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfanandn      =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfanandp      = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
-	  Wdecnandn     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wdecnandp     = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
+    Wdecdrivep    =  450 * g_ip->F_sz_um;//this was 360 micron for the 0.8 micron process
+    Wdecdriven    =  300 * g_ip->F_sz_um;//this was 240 micron for the 0.8 micron process
+    Wfadriven     = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfadrivep     =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
+    Wfadrive2n    =  250 * g_ip->F_sz_um;//this was 200 micron for the 0.8 micron process
+    Wfadrive2p    =  500 * g_ip->F_sz_um;//this was 400 micron for the 0.8 micron process
+    Wfadecdrive1n = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
+    Wfadecdrive1p = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wfadecdrive2n =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfadecdrive2p =   50 * g_ip->F_sz_um;//this was  40 micron for the 0.8 micron process
+    Wfadecdriven  = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfadecdrivep  =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
+    Wfaprechn     =  7.5 * g_ip->F_sz_um;//this was   6 micron for the 0.8 micron process
+    Wfainvn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wfainvp       =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfanandn      =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfanandp      = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
+    Wdecnandn     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wdecnandp     = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
 
-	  Wfaprechp     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wdummyn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wdummyinvn    =   75 * g_ip->F_sz_um;//this was  60 micron for the 0.8 micron process
-	  Wdummyinvp    =  100 * g_ip->F_sz_um;//this was  80 micron for the 0.8 micron process
-	  Waddrnandn    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Waddrnandp    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfanorn       = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
-	  Wfanorp       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  W_hit_miss_n    = Wdummyn;
-	  W_hit_miss_p    = g_tp.min_w_nmos_*p_to_n_sizing_r;
-	  //TODO: this number should updated using new layout; from the NAND to output NOR should be computed using logical effort
+    Wfaprechp     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wdummyn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wdummyinvn    =   75 * g_ip->F_sz_um;//this was  60 micron for the 0.8 micron process
+    Wdummyinvp    =  100 * g_ip->F_sz_um;//this was  80 micron for the 0.8 micron process
+    Waddrnandn    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Waddrnandp    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfanorn       = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
+    Wfanorp       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    W_hit_miss_n    = Wdummyn;
+    W_hit_miss_p    = g_tp.min_w_nmos_*p_to_n_sizing_r;
+    //TODO: this number should updated using new layout; from the NAND to output NOR should be computed using logical effort
   }
   else
   {
-	  Wdecdrivep    =  450 * g_ip->F_sz_um;//this was 360 micron for the 0.8 micron process
-	  Wdecdriven    =  300 * g_ip->F_sz_um;//this was 240 micron for the 0.8 micron process
-	  Wfadriven     = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfadrivep     =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
-	  Wfadrive2n    =  250 * g_ip->F_sz_um;//this was 200 micron for the 0.8 micron process
-	  Wfadrive2p    =  500 * g_ip->F_sz_um;//this was 400 micron for the 0.8 micron process
-	  Wfadecdrive1n = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
-	  Wfadecdrive1p = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wfadecdrive2n =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfadecdrive2p =   50 * g_ip->F_sz_um;//this was  40 micron for the 0.8 micron process
-	  Wfadecdriven  = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfadecdrivep  =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
-	  Wfaprechn     =  7.5 * g_ip->F_sz_um;//this was   6 micron for the 0.8 micron process
-	  Wfainvn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wfainvp       =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfanandn      =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
-	  Wfanandp      = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
-	  Wdecnandn     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  Wdecnandp     = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
+    Wdecdrivep    =  450 * g_ip->F_sz_um;//this was 360 micron for the 0.8 micron process
+    Wdecdriven    =  300 * g_ip->F_sz_um;//this was 240 micron for the 0.8 micron process
+    Wfadriven     = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfadrivep     =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
+    Wfadrive2n    =  250 * g_ip->F_sz_um;//this was 200 micron for the 0.8 micron process
+    Wfadrive2p    =  500 * g_ip->F_sz_um;//this was 400 micron for the 0.8 micron process
+    Wfadecdrive1n = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
+    Wfadecdrive1p = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wfadecdrive2n =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfadecdrive2p =   50 * g_ip->F_sz_um;//this was  40 micron for the 0.8 micron process
+    Wfadecdriven  = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfadecdrivep  =  125 * g_ip->F_sz_um;//this was 100 micron for the 0.8 micron process
+    Wfaprechn     =  7.5 * g_ip->F_sz_um;//this was   6 micron for the 0.8 micron process
+    Wfainvn       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wfainvp       =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfanandn      =   25 * g_ip->F_sz_um;//this was  20 micron for the 0.8 micron process
+    Wfanandp      = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
+    Wdecnandn     = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    Wdecnandp     = 37.5 * g_ip->F_sz_um;//this was  30 micron for the 0.8 micron process
 
-	  Wfaprechp     = g_tp.w_pmos_bl_precharge;//this was  10 micron for the 0.8 micron process
-	  Wdummyn       = g_tp.cam.cell_nmos_w;
-	  Wdummyinvn    =   75 * g_ip->F_sz_um;//this was  60 micron for the 0.8 micron process
-	  Wdummyinvp    =  100 * g_ip->F_sz_um;//this was  80 micron for the 0.8 micron process
-	  Waddrnandn    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Waddrnandp    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
-	  Wfanorn       = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
-	  Wfanorp       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
-	  W_hit_miss_n    = Wdummyn;
-	  W_hit_miss_p    = g_tp.min_w_nmos_*p_to_n_sizing_r;
+    Wfaprechp     = g_tp.w_pmos_bl_precharge;//this was  10 micron for the 0.8 micron process
+    Wdummyn       = g_tp.cam.cell_nmos_w;
+    Wdummyinvn    =   75 * g_ip->F_sz_um;//this was  60 micron for the 0.8 micron process
+    Wdummyinvp    =  100 * g_ip->F_sz_um;//this was  80 micron for the 0.8 micron process
+    Waddrnandn    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Waddrnandp    = 62.5 * g_ip->F_sz_um;//this was  50 micron for the 0.8 micron process
+    Wfanorn       = 6.25 * g_ip->F_sz_um;//this was   5 micron for the 0.8 micron process
+    Wfanorp       = 12.5 * g_ip->F_sz_um;//this was  10 micron for the 0.8 micron process
+    W_hit_miss_n    = Wdummyn;
+    W_hit_miss_p    = g_tp.min_w_nmos_*p_to_n_sizing_r;
   }
 
   Htagbits = (int)(ceil ((double) (subarray.num_cols_fa_cam) / 2.0));
@@ -828,7 +828,7 @@ double Mat::compute_cam_delay(double inrisetime)
 
   sl_precharge_eq_drv = new Driver(
       driver_c_gate_load,
-	  driver_c_wire_load,
+    driver_c_wire_load,
       driver_r_wire_load,
       is_dram);
 
@@ -839,7 +839,7 @@ double Mat::compute_cam_delay(double inrisetime)
   driver_r_wire_load = (subarray.num_rows + 1) * r_searchline_metal;
   sl_data_drv = new Driver(
       driver_c_gate_load,
-	  driver_c_wire_load,
+    driver_c_wire_load,
       driver_r_wire_load,
       is_dram);
 
@@ -866,8 +866,8 @@ double Mat::compute_cam_delay(double inrisetime)
   driver_r_wire_load = (subarray.num_rows + 1) * r_searchline_metal;
 
   ml_precharge_drv = new Driver(
-						  driver_c_gate_load,
-  	                      driver_c_wire_load,
+              driver_c_gate_load,
+                          driver_c_wire_load,
                           driver_r_wire_load,
                           is_dram);
 
@@ -876,7 +876,7 @@ double Mat::compute_cam_delay(double inrisetime)
 
   rd =  tr_R_on(Wdummyn, NCH, 2, is_dram);
   c_intrinsic = Htagbits*(2*drain_C_(Wdummyn, NCH, 2, 1, g_tp.cell_h_def, is_dram)//TODO: the cell_h_def should be revisit
-				  + drain_C_(Wfaprechp, PCH, 1, 1, g_tp.cell_h_def, is_dram)/Htagbits);//since each halve only has one precharge tx per matchline
+          + drain_C_(Wfaprechp, PCH, 1, 1, g_tp.cell_h_def, is_dram)/Htagbits);//since each halve only has one precharge tx per matchline
 
   Cwire = c_matchline_metal * Htagbits;
   Rwire = r_matchline_metal * Htagbits;
@@ -896,7 +896,7 @@ double Mat::compute_cam_delay(double inrisetime)
   out_time_ramp = this_delay / VTHFA3;
 
   dynSearchEng += ((c_intrinsic + Cwire + c_gate_load)*(subarray.num_rows +1)) //+ 2*drain_C_(Wdummyn, NCH, 2, 1, g_tp.cell_h_def, is_dram))//TODO: need to be precise
-					  * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd *2;//* Ntbl;//each subarry has two halves
+            * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd *2;//* Ntbl;//each subarry has two halves
 
   /* third stage, from the NAND2 gates to the drivers in the dummy row */
   rd = tr_R_on(Waddrnandn, NCH, 2, is_dram);
@@ -932,8 +932,8 @@ double Mat::compute_cam_delay(double inrisetime)
   driver_r_wire_load = subarray.R_wl_ram;
 
   ml_to_ram_wl_drv = new Driver(
-						  driver_c_gate_load,
-  	                      driver_c_wire_load,
+              driver_c_gate_load,
+                          driver_c_wire_load,
                           driver_r_wire_load,
                           is_dram);
 
@@ -1208,23 +1208,23 @@ double Mat::compute_bitline_delay(double inrisetime)
 //    cout<<"R_cell_pull_down ="<<R_cell_pull_down<<" R_cell_acc="<<R_cell_acc<<" R_bl="<<R_bl<<" tstep="<<tstep<<" tau="<<tau<<endl;
 
 //   if (g_ip->array_power_gated)
-//	   power_bitline.readOp.leakage =
-//		      leak_power_cc_inverters_sram_cell_gated +
-//		      leak_power_acc_tr_RW_or_WR_port_sram_cell_floating +
-//		      leak_power_acc_tr_RW_or_WR_port_sram_cell_floating * (RWP + EWP - 1) +
-//		      leak_power_RD_port_sram_cell_floating * ERP;
+//     power_bitline.readOp.leakage =
+//          leak_power_cc_inverters_sram_cell_gated +
+//          leak_power_acc_tr_RW_or_WR_port_sram_cell_floating +
+//          leak_power_acc_tr_RW_or_WR_port_sram_cell_floating * (RWP + EWP - 1) +
+//          leak_power_RD_port_sram_cell_floating * ERP;
 //   else
     power_bitline.readOp.leakage =
-    	leak_power_cc_inverters_sram_cell +
-    	leak_power_acc_tr_RW_or_WR_port_sram_cell +
-    	leak_power_acc_tr_RW_or_WR_port_sram_cell * (RWP + EWP - 1) +
-    	leak_power_RD_port_sram_cell * ERP;
+      leak_power_cc_inverters_sram_cell +
+      leak_power_acc_tr_RW_or_WR_port_sram_cell +
+      leak_power_acc_tr_RW_or_WR_port_sram_cell * (RWP + EWP - 1) +
+      leak_power_RD_port_sram_cell * ERP;
 
     power_bitline.readOp.power_gated_leakage =
-    	leak_power_cc_inverters_sram_cell_gated +
-    	leak_power_acc_tr_RW_or_WR_port_sram_cell_gated +
-    	leak_power_acc_tr_RW_or_WR_port_sram_cell_gated * (RWP + EWP - 1) +
-    	leak_power_RD_port_sram_cell_gated * ERP;//TODO:
+      leak_power_cc_inverters_sram_cell_gated +
+      leak_power_acc_tr_RW_or_WR_port_sram_cell_gated +
+      leak_power_acc_tr_RW_or_WR_port_sram_cell_gated * (RWP + EWP - 1) +
+      leak_power_RD_port_sram_cell_gated * ERP;//TODO:
 
     power_bitline.readOp.gate_leakage = gate_leak_power_cc_inverters_sram_cell +
       gate_leak_power_RD_port_sram_cell * ERP;
@@ -1250,16 +1250,16 @@ double Mat::compute_bitline_delay(double inrisetime)
 
 //  double m = V_wl/inrisetime;
 //  if (tstep <= (0.5*(V_wl-v_th_mem_cell)/m)) {
-//	  double  a = m;
-//	  double  b = 2*((V_wl*0.5)-v_th_mem_cell);
-//	  double  c = -2*tstep*(V_wl-v_th_mem_cell)+1/m*((V_wl*0.5)-v_th_mem_cell)*((V_wl*0.5)-v_th_mem_cell);
-//	  delay_bitline = (-b+sqrt(b*b-4*a*c))/(2*a);
-//	  cout<<"here"<<endl;
+//    double  a = m;
+//    double  b = 2*((V_wl*0.5)-v_th_mem_cell);
+//    double  c = -2*tstep*(V_wl-v_th_mem_cell)+1/m*((V_wl*0.5)-v_th_mem_cell)*((V_wl*0.5)-v_th_mem_cell);
+//    delay_bitline = (-b+sqrt(b*b-4*a*c))/(2*a);
+//    cout<<"here"<<endl;
 //  }
 //  else
 //  {
-//	  delay_bitline = tstep + (V_wl+v_th_mem_cell)/(2*m) - (V_wl*0.5)/m;
-//	  cout<<"here2"<<endl;
+//    delay_bitline = tstep + (V_wl+v_th_mem_cell)/(2*m) - (V_wl*0.5)/m;
+//    cout<<"here2"<<endl;
 //  }
 
 //          *outrisetime = Tbit/(log((Vbitpre-Vbitsense)/Vdd));
@@ -1484,9 +1484,9 @@ double Mat::compute_comparator_delay(double inrisetime)
 
 void Mat::compute_power_energy()
 {
-	//for cam and FA, power.readOp is the plain read power, power.searchOp is the associative search related power
+  //for cam and FA, power.readOp is the plain read power, power.searchOp is the associative search related power
     //when search all subarrays and all mats are fully active
-	//when plain read/write only one subarray in a single mat is active.
+  //when plain read/write only one subarray in a single mat is active.
 
     // add energy consumed in predecoder drivers. This unit is shared by all subarrays in a mat.
   power.readOp.dynamic += r_predec->power.readOp.dynamic +
@@ -1502,77 +1502,77 @@ void Mat::compute_power_energy()
   // add energy consumed in bitline prechagers, SAs, and bitlines
   if (!(is_fa||pure_cam))
   {
-	  // add energy consumed in bitline prechagers
-	  power_bl_precharge_eq_drv.readOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic;
-	  power_bl_precharge_eq_drv.readOp.dynamic *= num_subarrays_per_mat;
+    // add energy consumed in bitline prechagers
+    power_bl_precharge_eq_drv.readOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic;
+    power_bl_precharge_eq_drv.readOp.dynamic *= num_subarrays_per_mat;
 
-	  //Add sense amps energy
-	  num_sa_subarray = subarray.num_cols / deg_bl_muxing;
-	  power_sa.readOp.dynamic *= num_sa_subarray*num_subarrays_per_mat ;
+    //Add sense amps energy
+    num_sa_subarray = subarray.num_cols / deg_bl_muxing;
+    power_sa.readOp.dynamic *= num_sa_subarray*num_subarrays_per_mat ;
 
-	  // add energy consumed in bitlines
-	  //cout<<"bitline power"<<power_bitline.readOp.dynamic<<endl;
-	  power_bitline.readOp.dynamic *= num_subarrays_per_mat*subarray.num_cols;
-	  power_bitline.writeOp.dynamic *= num_subarrays_per_mat*subarray.num_cols;
-	  //cout<<"bitline power"<<power_bitline.readOp.dynamic<<"subarray"<<num_subarrays_per_mat<<"cols"<<subarray.num_cols<<endl;
-	  //Add subarray output energy
-	  power_subarray_out_drv.readOp.dynamic =
-		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
+    // add energy consumed in bitlines
+    //cout<<"bitline power"<<power_bitline.readOp.dynamic<<endl;
+    power_bitline.readOp.dynamic *= num_subarrays_per_mat*subarray.num_cols;
+    power_bitline.writeOp.dynamic *= num_subarrays_per_mat*subarray.num_cols;
+    //cout<<"bitline power"<<power_bitline.readOp.dynamic<<"subarray"<<num_subarrays_per_mat<<"cols"<<subarray.num_cols<<endl;
+    //Add subarray output energy
+    power_subarray_out_drv.readOp.dynamic =
+      (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
 
-	  power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
-	                          power_sa.readOp.dynamic +
-	                          power_bitline.readOp.dynamic +
-	                          power_subarray_out_drv.readOp.dynamic;
+    power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
+                            power_sa.readOp.dynamic +
+                            power_bitline.readOp.dynamic +
+                            power_subarray_out_drv.readOp.dynamic;
 
-	  power.readOp.dynamic += power_row_decoders.readOp.dynamic +
-	                          bit_mux_dec->power.readOp.dynamic +
-	                          sa_mux_lev_1_dec->power.readOp.dynamic +
-	                          sa_mux_lev_2_dec->power.readOp.dynamic +
-	                          power_comparator.readOp.dynamic;
+    power.readOp.dynamic += power_row_decoders.readOp.dynamic +
+                            bit_mux_dec->power.readOp.dynamic +
+                            sa_mux_lev_1_dec->power.readOp.dynamic +
+                            sa_mux_lev_2_dec->power.readOp.dynamic +
+                            power_comparator.readOp.dynamic;
   }
 
   else if (is_fa)
   {
-	  //for plain read/write only one subarray in a mat is active
-	  // add energy consumed in bitline prechagers
-	  power_bl_precharge_eq_drv.readOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic
-	           + cam_bl_precharge_eq_drv->power.readOp.dynamic;
-	  power_bl_precharge_eq_drv.searchOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic;
+    //for plain read/write only one subarray in a mat is active
+    // add energy consumed in bitline prechagers
+    power_bl_precharge_eq_drv.readOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic
+             + cam_bl_precharge_eq_drv->power.readOp.dynamic;
+    power_bl_precharge_eq_drv.searchOp.dynamic = bl_precharge_eq_drv->power.readOp.dynamic;
 
-	  //Add sense amps energy
-	  num_sa_subarray = (subarray.num_cols_fa_cam + subarray.num_cols_fa_ram)/ deg_bl_muxing;
-	  num_sa_subarray_search = subarray.num_cols_fa_ram/ deg_bl_muxing;
-	  power_sa.searchOp.dynamic = power_sa.readOp.dynamic*num_sa_subarray_search;
-	  power_sa.readOp.dynamic *= num_sa_subarray;
+    //Add sense amps energy
+    num_sa_subarray = (subarray.num_cols_fa_cam + subarray.num_cols_fa_ram)/ deg_bl_muxing;
+    num_sa_subarray_search = subarray.num_cols_fa_ram/ deg_bl_muxing;
+    power_sa.searchOp.dynamic = power_sa.readOp.dynamic*num_sa_subarray_search;
+    power_sa.readOp.dynamic *= num_sa_subarray;
 
 
-	  // add energy consumed in bitlines
-	  power_bitline.searchOp.dynamic = power_bitline.readOp.dynamic;
-	  power_bitline.readOp.dynamic *= (subarray.num_cols_fa_cam+subarray.num_cols_fa_ram);
-	  power_bitline.writeOp.dynamic *= (subarray.num_cols_fa_cam+subarray.num_cols_fa_ram);
-	  power_bitline.searchOp.dynamic *= subarray.num_cols_fa_ram;
+    // add energy consumed in bitlines
+    power_bitline.searchOp.dynamic = power_bitline.readOp.dynamic;
+    power_bitline.readOp.dynamic *= (subarray.num_cols_fa_cam+subarray.num_cols_fa_ram);
+    power_bitline.writeOp.dynamic *= (subarray.num_cols_fa_cam+subarray.num_cols_fa_ram);
+    power_bitline.searchOp.dynamic *= subarray.num_cols_fa_ram;
 
-	  //Add subarray output energy
+    //Add subarray output energy
       power_subarray_out_drv.searchOp.dynamic =
-		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_so_b_mat;
-	  power_subarray_out_drv.readOp.dynamic =
-		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
+      (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_so_b_mat;
+    power_subarray_out_drv.readOp.dynamic =
+      (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
 
 
-	  power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
-	                          power_sa.readOp.dynamic +
-	                          power_bitline.readOp.dynamic +
-	                          power_subarray_out_drv.readOp.dynamic;
+    power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
+                            power_sa.readOp.dynamic +
+                            power_bitline.readOp.dynamic +
+                            power_subarray_out_drv.readOp.dynamic;
 
-	  power.readOp.dynamic += power_row_decoders.readOp.dynamic +
-	                          bit_mux_dec->power.readOp.dynamic +
-	                          sa_mux_lev_1_dec->power.readOp.dynamic +
-	                          sa_mux_lev_2_dec->power.readOp.dynamic +
-	                          power_comparator.readOp.dynamic;
+    power.readOp.dynamic += power_row_decoders.readOp.dynamic +
+                            bit_mux_dec->power.readOp.dynamic +
+                            sa_mux_lev_1_dec->power.readOp.dynamic +
+                            sa_mux_lev_2_dec->power.readOp.dynamic +
+                            power_comparator.readOp.dynamic;
 
-	  //add energy consumed inside cam
-	  power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
-	  power_searchline_precharge = sl_precharge_eq_drv->power;
+    //add energy consumed inside cam
+    power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
+    power_searchline_precharge = sl_precharge_eq_drv->power;
       power_searchline_precharge.searchOp.dynamic = power_searchline_precharge.readOp.dynamic * num_subarrays_per_mat;
       power_searchline = sl_data_drv->power;
       power_searchline.searchOp.dynamic = power_searchline.readOp.dynamic*subarray.num_cols_fa_cam* num_subarrays_per_mat;;
@@ -1581,52 +1581,52 @@ void Mat::compute_power_energy()
       power_ml_to_ram_wl_drv= ml_to_ram_wl_drv->power;
       power_ml_to_ram_wl_drv.searchOp.dynamic= ml_to_ram_wl_drv->power.readOp.dynamic;
 
-	  power_cam_all_active.searchOp.dynamic = power_matchline.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_searchline_precharge.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_searchline.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_matchline_precharge.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic = power_matchline.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_searchline_precharge.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_searchline.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_matchline_precharge.searchOp.dynamic;
 
-	  power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
-	  //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
+    power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
+    //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
 
   }
   else
   {
-	  // add energy consumed in bitline prechagers
-	  power_bl_precharge_eq_drv.readOp.dynamic = cam_bl_precharge_eq_drv->power.readOp.dynamic;
-	  //power_bl_precharge_eq_drv.readOp.dynamic *= num_subarrays_per_mat;
-	  //power_bl_precharge_eq_drv.searchOp.dynamic = cam_bl_precharge_eq_drv->power.readOp.dynamic;
-	  //power_bl_precharge_eq_drv.searchOp.dynamic *= num_subarrays_per_mat;
+    // add energy consumed in bitline prechagers
+    power_bl_precharge_eq_drv.readOp.dynamic = cam_bl_precharge_eq_drv->power.readOp.dynamic;
+    //power_bl_precharge_eq_drv.readOp.dynamic *= num_subarrays_per_mat;
+    //power_bl_precharge_eq_drv.searchOp.dynamic = cam_bl_precharge_eq_drv->power.readOp.dynamic;
+    //power_bl_precharge_eq_drv.searchOp.dynamic *= num_subarrays_per_mat;
 
-	  //Add sense amps energy
-	  num_sa_subarray = subarray.num_cols_fa_cam/ deg_bl_muxing;
-	  power_sa.readOp.dynamic *= num_sa_subarray;//*num_subarrays_per_mat;
-	  power_sa.searchOp.dynamic = 0;
+    //Add sense amps energy
+    num_sa_subarray = subarray.num_cols_fa_cam/ deg_bl_muxing;
+    power_sa.readOp.dynamic *= num_sa_subarray;//*num_subarrays_per_mat;
+    power_sa.searchOp.dynamic = 0;
 
-	  power_bitline.readOp.dynamic *= subarray.num_cols_fa_cam;
-	  power_bitline.searchOp.dynamic = 0;
-	  power_bitline.writeOp.dynamic *= subarray.num_cols_fa_cam;
+    power_bitline.readOp.dynamic *= subarray.num_cols_fa_cam;
+    power_bitline.searchOp.dynamic = 0;
+    power_bitline.writeOp.dynamic *= subarray.num_cols_fa_cam;
 
-	  power_subarray_out_drv.searchOp.dynamic =
-		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_so_b_mat;
-	  power_subarray_out_drv.readOp.dynamic =
-	  		  (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
+    power_subarray_out_drv.searchOp.dynamic =
+      (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_so_b_mat;
+    power_subarray_out_drv.readOp.dynamic =
+          (power_subarray_out_drv.readOp.dynamic + subarray_out_wire->power.readOp.dynamic) * num_do_b_mat;
 
-	  power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
-	                          power_sa.readOp.dynamic +
-	                          power_bitline.readOp.dynamic +
-	                          power_subarray_out_drv.readOp.dynamic;
+    power.readOp.dynamic += power_bl_precharge_eq_drv.readOp.dynamic +
+                            power_sa.readOp.dynamic +
+                            power_bitline.readOp.dynamic +
+                            power_subarray_out_drv.readOp.dynamic;
 
-	  power.readOp.dynamic += power_row_decoders.readOp.dynamic +
-	                          bit_mux_dec->power.readOp.dynamic +
-	                          sa_mux_lev_1_dec->power.readOp.dynamic +
-	                          sa_mux_lev_2_dec->power.readOp.dynamic +
-	                          power_comparator.readOp.dynamic;
+    power.readOp.dynamic += power_row_decoders.readOp.dynamic +
+                            bit_mux_dec->power.readOp.dynamic +
+                            sa_mux_lev_1_dec->power.readOp.dynamic +
+                            sa_mux_lev_2_dec->power.readOp.dynamic +
+                            power_comparator.readOp.dynamic;
 
 
-	  ////add energy consumed inside cam
-	  power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
-	  power_searchline_precharge = sl_precharge_eq_drv->power;
+    ////add energy consumed inside cam
+    power_matchline.searchOp.dynamic *= num_subarrays_per_mat;
+    power_searchline_precharge = sl_precharge_eq_drv->power;
       power_searchline_precharge.searchOp.dynamic = power_searchline_precharge.readOp.dynamic * num_subarrays_per_mat;
       power_searchline = sl_data_drv->power;
       power_searchline.searchOp.dynamic = power_searchline.readOp.dynamic*subarray.num_cols_fa_cam* num_subarrays_per_mat;;
@@ -1635,13 +1635,13 @@ void Mat::compute_power_energy()
       power_ml_to_ram_wl_drv= ml_to_ram_wl_drv->power;
       power_ml_to_ram_wl_drv.searchOp.dynamic= ml_to_ram_wl_drv->power.readOp.dynamic;
 
-	  power_cam_all_active.searchOp.dynamic = power_matchline.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_searchline_precharge.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_searchline.searchOp.dynamic;
-	  power_cam_all_active.searchOp.dynamic +=power_matchline_precharge.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic = power_matchline.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_searchline_precharge.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_searchline.searchOp.dynamic;
+    power_cam_all_active.searchOp.dynamic +=power_matchline_precharge.searchOp.dynamic;
 
-	  power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
-	  //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
+    power.searchOp.dynamic += power_cam_all_active.searchOp.dynamic;
+    //power.searchOp.dynamic += ml_to_ram_wl_drv->power.readOp.dynamic;
 
   }
 
@@ -1650,10 +1650,10 @@ void Mat::compute_power_energy()
 //  // calculate leakage power
   if (!(is_fa || pure_cam))
   {
-	number_output_drivers_subarray = num_sa_subarray / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
+  number_output_drivers_subarray = num_sa_subarray / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
 
-	power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
-	power_bitline.readOp.power_gated_leakage *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+  power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+  power_bitline.readOp.power_gated_leakage *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
     power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
     //bl precharge drv is not power gated to turn off the precharge and equalization circuit (PMOS, thus turn-off signal is "1") for bitline floating
     power_bl_precharge_eq_drv.readOp.power_gated_leakage = bl_precharge_eq_drv->power.readOp.power_gated_leakage * num_subarrays_per_mat;
@@ -1687,10 +1687,10 @@ void Mat::compute_power_energy()
     array_leakage = power_bitline.readOp.leakage;
 
     cl_leakage =
-		power_bl_precharge_eq_drv.readOp.leakage +
-		power_sa.readOp.leakage +
-		power_subarray_out_drv.readOp.leakage +
-		power_comparator.readOp.leakage;
+    power_bl_precharge_eq_drv.readOp.leakage +
+    power_sa.readOp.leakage +
+    power_subarray_out_drv.readOp.leakage +
+    power_comparator.readOp.leakage;
 
 
 
@@ -1707,50 +1707,50 @@ void Mat::compute_power_energy()
 
 //    if (!g_ip->wl_power_gated)
 //    {
-    	power.readOp.leakage += r_predec->power.readOp.leakage +
-    	b_mux_predec->power.readOp.leakage +
-    	sa_mux_lev_1_predec->power.readOp.leakage +
-    	sa_mux_lev_2_predec->power.readOp.leakage +
-    	power_row_decoders.readOp.leakage +
-    	power_bit_mux_decoders.readOp.leakage +
-    	power_sa_mux_lev_1_decoders.readOp.leakage +
-    	power_sa_mux_lev_2_decoders.readOp.leakage;
+      power.readOp.leakage += r_predec->power.readOp.leakage +
+      b_mux_predec->power.readOp.leakage +
+      sa_mux_lev_1_predec->power.readOp.leakage +
+      sa_mux_lev_2_predec->power.readOp.leakage +
+      power_row_decoders.readOp.leakage +
+      power_bit_mux_decoders.readOp.leakage +
+      power_sa_mux_lev_1_decoders.readOp.leakage +
+      power_sa_mux_lev_2_decoders.readOp.leakage;
 
-    	power.readOp.power_gated_leakage += r_predec->power.readOp.power_gated_leakage +
-    	b_mux_predec->power.readOp.power_gated_leakage +
-    	sa_mux_lev_1_predec->power.readOp.power_gated_leakage +
-    	sa_mux_lev_2_predec->power.readOp.power_gated_leakage +
-    	power_row_decoders.readOp.power_gated_leakage +
-    	power_bit_mux_decoders.readOp.power_gated_leakage +
-    	power_sa_mux_lev_1_decoders.readOp.power_gated_leakage +
-    	power_sa_mux_lev_2_decoders.readOp.power_gated_leakage;
+      power.readOp.power_gated_leakage += r_predec->power.readOp.power_gated_leakage +
+      b_mux_predec->power.readOp.power_gated_leakage +
+      sa_mux_lev_1_predec->power.readOp.power_gated_leakage +
+      sa_mux_lev_2_predec->power.readOp.power_gated_leakage +
+      power_row_decoders.readOp.power_gated_leakage +
+      power_bit_mux_decoders.readOp.power_gated_leakage +
+      power_sa_mux_lev_1_decoders.readOp.power_gated_leakage +
+      power_sa_mux_lev_2_decoders.readOp.power_gated_leakage;
 
 //    }
 //    else
-//    	{
-//    	power.readOp.power_gated_leakage += (r_predec->power.readOp.leakage +
+//      {
+//      power.readOp.power_gated_leakage += (r_predec->power.readOp.leakage +
 //
-//    			b_mux_predec->power.readOp.leakage +
-//    			sa_mux_lev_1_predec->power.readOp.leakage +
-//    			sa_mux_lev_2_predec->power.readOp.leakage +
-//    			power_row_decoders.readOp.leakage +
-//    			power_bit_mux_decoders.readOp.leakage +
-//    			power_sa_mux_lev_1_decoders.readOp.leakage +
-//    			power_sa_mux_lev_2_decoders.readOp.leakage)/g_tp.peri_global.Vdd*g_tp.peri_global.Vcc_min;
+//          b_mux_predec->power.readOp.leakage +
+//          sa_mux_lev_1_predec->power.readOp.leakage +
+//          sa_mux_lev_2_predec->power.readOp.leakage +
+//          power_row_decoders.readOp.leakage +
+//          power_bit_mux_decoders.readOp.leakage +
+//          power_sa_mux_lev_1_decoders.readOp.leakage +
+//          power_sa_mux_lev_2_decoders.readOp.leakage)/g_tp.peri_global.Vdd*g_tp.peri_global.Vcc_min;
 
-//    	}
+//      }
 
     wl_leakage = r_predec->power.readOp.leakage +
-		b_mux_predec->power.readOp.leakage +
-		sa_mux_lev_1_predec->power.readOp.leakage +
-		sa_mux_lev_2_predec->power.readOp.leakage +
-		power_row_decoders.readOp.leakage +
-		power_bit_mux_decoders.readOp.leakage +
-		power_sa_mux_lev_1_decoders.readOp.leakage +
-		power_sa_mux_lev_2_decoders.readOp.leakage;
+    b_mux_predec->power.readOp.leakage +
+    sa_mux_lev_1_predec->power.readOp.leakage +
+    sa_mux_lev_2_predec->power.readOp.leakage +
+    power_row_decoders.readOp.leakage +
+    power_bit_mux_decoders.readOp.leakage +
+    power_sa_mux_lev_1_decoders.readOp.leakage +
+    power_sa_mux_lev_2_decoders.readOp.leakage;
 
     //++++Below is gate leakage
-	power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+  power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
     power_bl_precharge_eq_drv.readOp.gate_leakage = bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
     power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP);
 
@@ -1771,25 +1771,25 @@ void Mat::compute_power_energy()
     if (g_ip->power_gating)
     {
 
-    	//cout<<"leakage1"<<power.readOp.gate_leakage<<endl;
+      //cout<<"leakage1"<<power.readOp.gate_leakage<<endl;
 
-    	//Power gating data summary
-    	array_sleep_tx_area = sram_sleep_tx->area.get_area()*subarray.num_cols * num_subarrays_per_mat*dp.num_mats;
-    	array_wakeup_e.readOp.dynamic = sram_sleep_tx->wakeup_power.readOp.dynamic * num_subarrays_per_mat*subarray.num_cols*dp.num_act_mats_hor_dir;
-    	array_wakeup_t = sram_sleep_tx->wakeup_delay;
+      //Power gating data summary
+      array_sleep_tx_area = sram_sleep_tx->area.get_area()*subarray.num_cols * num_subarrays_per_mat*dp.num_mats;
+      array_wakeup_e.readOp.dynamic = sram_sleep_tx->wakeup_power.readOp.dynamic * num_subarrays_per_mat*subarray.num_cols*dp.num_act_mats_hor_dir;
+      array_wakeup_t = sram_sleep_tx->wakeup_delay;
 
-    	wl_sleep_tx_area = (row_dec->exist ? row_dec->sleeptx->area.get_area() : 0)*subarray.num_rows * num_subarrays_per_mat*dp.num_mats
-    			+ (bit_mux_dec->exist ? bit_mux_dec->sleeptx->area.get_area() : 0)*dp.num_mats
-    			+ (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->area.get_area() : 0)*dp.num_mats
-    			+ (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->area.get_area() : 0)*dp.num_mats;
-    	wl_wakeup_e.readOp.dynamic = (row_dec->exist ? row_dec->sleeptx->wakeup_power.readOp.dynamic :0) * num_subarrays_per_mat*subarray.num_rows*dp.num_act_mats_hor_dir
-    			+ (bit_mux_dec->exist ? bit_mux_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats
-    			+ (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats
-    			+ (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats;
-    	wl_wakeup_t = (row_dec->exist ? row_dec->sleeptx->wakeup_delay : 0)
-    			+ (bit_mux_dec->exist ? bit_mux_dec->sleeptx->wakeup_delay : 0)*dp.num_mats
-    			+ (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->wakeup_delay : 0)*dp.num_mats
-    			+ (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->wakeup_delay : 0)*dp.num_mats;;
+      wl_sleep_tx_area = (row_dec->exist ? row_dec->sleeptx->area.get_area() : 0)*subarray.num_rows * num_subarrays_per_mat*dp.num_mats
+          + (bit_mux_dec->exist ? bit_mux_dec->sleeptx->area.get_area() : 0)*dp.num_mats
+          + (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->area.get_area() : 0)*dp.num_mats
+          + (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->area.get_area() : 0)*dp.num_mats;
+      wl_wakeup_e.readOp.dynamic = (row_dec->exist ? row_dec->sleeptx->wakeup_power.readOp.dynamic :0) * num_subarrays_per_mat*subarray.num_rows*dp.num_act_mats_hor_dir
+          + (bit_mux_dec->exist ? bit_mux_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats
+          + (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats
+          + (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->wakeup_power.readOp.dynamic : 0)*dp.num_mats;
+      wl_wakeup_t = (row_dec->exist ? row_dec->sleeptx->wakeup_delay : 0)
+          + (bit_mux_dec->exist ? bit_mux_dec->sleeptx->wakeup_delay : 0)*dp.num_mats
+          + (sa_mux_lev_1_dec->exist ? sa_mux_lev_1_dec->sleeptx->wakeup_delay : 0)*dp.num_mats
+          + (sa_mux_lev_2_dec->exist ? sa_mux_lev_2_dec->sleeptx->wakeup_delay : 0)*dp.num_mats;;
     }
 
     // gate_leakage power
@@ -1809,146 +1809,146 @@ void Mat::compute_power_energy()
   }
   else if (is_fa) //fully assoc
   {
-	  int number_output_drivers_subarray = num_sa_subarray;// / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
+    int number_output_drivers_subarray = num_sa_subarray;// / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
 
-	  power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
-	  power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
-	  power_bl_precharge_eq_drv.searchOp.leakage = cam_bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
-	  power_sa.readOp.leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
+    power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.searchOp.leakage = cam_bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
+    power_sa.readOp.leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
 
-	  //cout<<"leakage3"<<power.readOp.leakage<<endl;
-
-
-	  power_subarray_out_drv.readOp.leakage =
-		  (power_subarray_out_drv.readOp.leakage + subarray_out_wire->power.readOp.leakage) *
-		  number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
-
-	  power.readOp.leakage += power_bitline.readOp.leakage +
-	                          power_bl_precharge_eq_drv.readOp.leakage +
-	                          power_bl_precharge_eq_drv.searchOp.leakage +
-	                          power_sa.readOp.leakage +
-	                          power_subarray_out_drv.readOp.leakage;
-
-	  //cout<<"leakage4"<<power.readOp.leakage<<endl;
-
-	  // leakage power
-	  power_row_decoders.readOp.leakage = row_dec->power.readOp.leakage * subarray.num_rows * num_subarrays_per_mat;
-	  power.readOp.leakage += r_predec->power.readOp.leakage +
-	                          power_row_decoders.readOp.leakage;
-
-	  //cout<<"leakage5"<<power.readOp.leakage<<endl;
-
-	  //inside cam
-	  power_cam_all_active.searchOp.leakage = power_matchline.searchOp.leakage;
-	  power_cam_all_active.searchOp.leakage +=sl_precharge_eq_drv->power.readOp.leakage;
-	  power_cam_all_active.searchOp.leakage +=sl_data_drv->power.readOp.leakage*subarray.num_cols_fa_cam;
-	  power_cam_all_active.searchOp.leakage +=ml_precharge_drv->power.readOp.dynamic;
-	  power_cam_all_active.searchOp.leakage *= num_subarrays_per_mat;
-
-	  power.readOp.leakage += power_cam_all_active.searchOp.leakage;
-
-//	  cout<<"leakage6"<<power.readOp.leakage<<endl;
-
-	  //+++Below is gate leakage
-	  power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
-	  power_bl_precharge_eq_drv.readOp.gate_leakage = bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
-	  power_bl_precharge_eq_drv.searchOp.gate_leakage = cam_bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
-	  power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
-
-	  //cout<<"leakage3"<<power.readOp.gate_leakage<<endl;
+    //cout<<"leakage3"<<power.readOp.leakage<<endl;
 
 
-	  power_subarray_out_drv.readOp.gate_leakage =
-		  (power_subarray_out_drv.readOp.gate_leakage + subarray_out_wire->power.readOp.gate_leakage) *
-		  number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
+    power_subarray_out_drv.readOp.leakage =
+      (power_subarray_out_drv.readOp.leakage + subarray_out_wire->power.readOp.leakage) *
+      number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
 
-	  power.readOp.gate_leakage += power_bitline.readOp.gate_leakage +
-	  power_bl_precharge_eq_drv.readOp.gate_leakage +
-	  power_bl_precharge_eq_drv.searchOp.gate_leakage +
-	  power_sa.readOp.gate_leakage +
-	  power_subarray_out_drv.readOp.gate_leakage;
+    power.readOp.leakage += power_bitline.readOp.leakage +
+                            power_bl_precharge_eq_drv.readOp.leakage +
+                            power_bl_precharge_eq_drv.searchOp.leakage +
+                            power_sa.readOp.leakage +
+                            power_subarray_out_drv.readOp.leakage;
 
-	  //cout<<"leakage4"<<power.readOp.gate_leakage<<endl;
+    //cout<<"leakage4"<<power.readOp.leakage<<endl;
 
-	  // gate_leakage power
-	  power_row_decoders.readOp.gate_leakage = row_dec->power.readOp.gate_leakage * subarray.num_rows * num_subarrays_per_mat;
-	  power.readOp.gate_leakage += r_predec->power.readOp.gate_leakage +
-	  power_row_decoders.readOp.gate_leakage;
+    // leakage power
+    power_row_decoders.readOp.leakage = row_dec->power.readOp.leakage * subarray.num_rows * num_subarrays_per_mat;
+    power.readOp.leakage += r_predec->power.readOp.leakage +
+                            power_row_decoders.readOp.leakage;
 
-	  //cout<<"leakage5"<<power.readOp.gate_leakage<<endl;
+    //cout<<"leakage5"<<power.readOp.leakage<<endl;
 
-	  //inside cam
-	  power_cam_all_active.searchOp.gate_leakage = power_matchline.searchOp.gate_leakage;
-	  power_cam_all_active.searchOp.gate_leakage +=sl_precharge_eq_drv->power.readOp.gate_leakage;
-	  power_cam_all_active.searchOp.gate_leakage +=sl_data_drv->power.readOp.gate_leakage*subarray.num_cols_fa_cam;
-	  power_cam_all_active.searchOp.gate_leakage +=ml_precharge_drv->power.readOp.dynamic;
-	  power_cam_all_active.searchOp.gate_leakage *= num_subarrays_per_mat;
+    //inside cam
+    power_cam_all_active.searchOp.leakage = power_matchline.searchOp.leakage;
+    power_cam_all_active.searchOp.leakage +=sl_precharge_eq_drv->power.readOp.leakage;
+    power_cam_all_active.searchOp.leakage +=sl_data_drv->power.readOp.leakage*subarray.num_cols_fa_cam;
+    power_cam_all_active.searchOp.leakage +=ml_precharge_drv->power.readOp.dynamic;
+    power_cam_all_active.searchOp.leakage *= num_subarrays_per_mat;
 
-	  power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
+    power.readOp.leakage += power_cam_all_active.searchOp.leakage;
+
+//    cout<<"leakage6"<<power.readOp.leakage<<endl;
+
+    //+++Below is gate leakage
+    power_bitline.readOp.gate_leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.readOp.gate_leakage = bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.searchOp.gate_leakage = cam_bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
+    power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
+
+    //cout<<"leakage3"<<power.readOp.gate_leakage<<endl;
+
+
+    power_subarray_out_drv.readOp.gate_leakage =
+      (power_subarray_out_drv.readOp.gate_leakage + subarray_out_wire->power.readOp.gate_leakage) *
+      number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
+
+    power.readOp.gate_leakage += power_bitline.readOp.gate_leakage +
+    power_bl_precharge_eq_drv.readOp.gate_leakage +
+    power_bl_precharge_eq_drv.searchOp.gate_leakage +
+    power_sa.readOp.gate_leakage +
+    power_subarray_out_drv.readOp.gate_leakage;
+
+    //cout<<"leakage4"<<power.readOp.gate_leakage<<endl;
+
+    // gate_leakage power
+    power_row_decoders.readOp.gate_leakage = row_dec->power.readOp.gate_leakage * subarray.num_rows * num_subarrays_per_mat;
+    power.readOp.gate_leakage += r_predec->power.readOp.gate_leakage +
+    power_row_decoders.readOp.gate_leakage;
+
+    //cout<<"leakage5"<<power.readOp.gate_leakage<<endl;
+
+    //inside cam
+    power_cam_all_active.searchOp.gate_leakage = power_matchline.searchOp.gate_leakage;
+    power_cam_all_active.searchOp.gate_leakage +=sl_precharge_eq_drv->power.readOp.gate_leakage;
+    power_cam_all_active.searchOp.gate_leakage +=sl_data_drv->power.readOp.gate_leakage*subarray.num_cols_fa_cam;
+    power_cam_all_active.searchOp.gate_leakage +=ml_precharge_drv->power.readOp.dynamic;
+    power_cam_all_active.searchOp.gate_leakage *= num_subarrays_per_mat;
+
+    power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
 
   }
   else //pure CAM
   {
-	  int number_output_drivers_subarray = num_sa_subarray;// / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
+    int number_output_drivers_subarray = num_sa_subarray;// / (dp.Ndsam_lev_1 * dp.Ndsam_lev_2);
 
-	  //power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
-	  //power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
-	  power_bl_precharge_eq_drv.searchOp.leakage = cam_bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
-	  power_sa.readOp.leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
-
-
-	  power_subarray_out_drv.readOp.leakage =
-		  (power_subarray_out_drv.readOp.leakage + subarray_out_wire->power.readOp.leakage) *
-		  number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
-
-	  power.readOp.leakage += //power_bitline.readOp.leakage +
-	                          //power_bl_precharge_eq_drv.readOp.leakage +
-	                          power_bl_precharge_eq_drv.searchOp.leakage +
-	                          power_sa.readOp.leakage +
-	                          power_subarray_out_drv.readOp.leakage;
-
-	  // leakage power
-	  power_row_decoders.readOp.leakage = row_dec->power.readOp.leakage * subarray.num_rows * num_subarrays_per_mat*(RWP + ERP + EWP);
-	  power.readOp.leakage += r_predec->power.readOp.leakage +
-	                          power_row_decoders.readOp.leakage;
-
-	  //inside cam
-	  power_cam_all_active.searchOp.leakage = power_matchline.searchOp.leakage;
-	  power_cam_all_active.searchOp.leakage +=sl_precharge_eq_drv->power.readOp.leakage;
-	  power_cam_all_active.searchOp.leakage +=sl_data_drv->power.readOp.leakage*subarray.num_cols_fa_cam;
-	  power_cam_all_active.searchOp.leakage +=ml_precharge_drv->power.readOp.dynamic;
-	  power_cam_all_active.searchOp.leakage *= num_subarrays_per_mat;
-
-	  power.readOp.leakage += power_cam_all_active.searchOp.leakage;
-
-	  //+++Below is gate leakage
-	  power_bl_precharge_eq_drv.searchOp.gate_leakage = cam_bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
-	  power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
+    //power_bitline.readOp.leakage            *= subarray.num_rows * subarray.num_cols * num_subarrays_per_mat;
+    //power_bl_precharge_eq_drv.readOp.leakage = bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
+    power_bl_precharge_eq_drv.searchOp.leakage = cam_bl_precharge_eq_drv->power.readOp.leakage * num_subarrays_per_mat;
+    power_sa.readOp.leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
 
 
-	  power_subarray_out_drv.readOp.gate_leakage =
-		  (power_subarray_out_drv.readOp.gate_leakage + subarray_out_wire->power.readOp.gate_leakage) *
-		  number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
+    power_subarray_out_drv.readOp.leakage =
+      (power_subarray_out_drv.readOp.leakage + subarray_out_wire->power.readOp.leakage) *
+      number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
 
-	  power.readOp.gate_leakage += //power_bitline.readOp.gate_leakage +
-	                          //power_bl_precharge_eq_drv.readOp.gate_leakage +
-	                          power_bl_precharge_eq_drv.searchOp.gate_leakage +
-	                          power_sa.readOp.gate_leakage +
-	                          power_subarray_out_drv.readOp.gate_leakage;
+    power.readOp.leakage += //power_bitline.readOp.leakage +
+                            //power_bl_precharge_eq_drv.readOp.leakage +
+                            power_bl_precharge_eq_drv.searchOp.leakage +
+                            power_sa.readOp.leakage +
+                            power_subarray_out_drv.readOp.leakage;
 
-	  // gate_leakage power
-	  power_row_decoders.readOp.gate_leakage = row_dec->power.readOp.gate_leakage * subarray.num_rows * num_subarrays_per_mat*(RWP + ERP + EWP);
-	  power.readOp.gate_leakage += r_predec->power.readOp.gate_leakage +
-	                          power_row_decoders.readOp.gate_leakage;
+    // leakage power
+    power_row_decoders.readOp.leakage = row_dec->power.readOp.leakage * subarray.num_rows * num_subarrays_per_mat*(RWP + ERP + EWP);
+    power.readOp.leakage += r_predec->power.readOp.leakage +
+                            power_row_decoders.readOp.leakage;
 
-	  //inside cam
-	  power_cam_all_active.searchOp.gate_leakage = power_matchline.searchOp.gate_leakage;
-	  power_cam_all_active.searchOp.gate_leakage +=sl_precharge_eq_drv->power.readOp.gate_leakage;
-	  power_cam_all_active.searchOp.gate_leakage +=sl_data_drv->power.readOp.gate_leakage*subarray.num_cols_fa_cam;
-	  power_cam_all_active.searchOp.gate_leakage +=ml_precharge_drv->power.readOp.dynamic;
-	  power_cam_all_active.searchOp.gate_leakage *= num_subarrays_per_mat;
+    //inside cam
+    power_cam_all_active.searchOp.leakage = power_matchline.searchOp.leakage;
+    power_cam_all_active.searchOp.leakage +=sl_precharge_eq_drv->power.readOp.leakage;
+    power_cam_all_active.searchOp.leakage +=sl_data_drv->power.readOp.leakage*subarray.num_cols_fa_cam;
+    power_cam_all_active.searchOp.leakage +=ml_precharge_drv->power.readOp.dynamic;
+    power_cam_all_active.searchOp.leakage *= num_subarrays_per_mat;
 
-	  power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
+    power.readOp.leakage += power_cam_all_active.searchOp.leakage;
+
+    //+++Below is gate leakage
+    power_bl_precharge_eq_drv.searchOp.gate_leakage = cam_bl_precharge_eq_drv->power.readOp.gate_leakage * num_subarrays_per_mat;
+    power_sa.readOp.gate_leakage                 *= num_sa_subarray*num_subarrays_per_mat*(RWP + ERP + SCHP);
+
+
+    power_subarray_out_drv.readOp.gate_leakage =
+      (power_subarray_out_drv.readOp.gate_leakage + subarray_out_wire->power.readOp.gate_leakage) *
+      number_output_drivers_subarray * num_subarrays_per_mat * (RWP + ERP + SCHP);
+
+    power.readOp.gate_leakage += //power_bitline.readOp.gate_leakage +
+                            //power_bl_precharge_eq_drv.readOp.gate_leakage +
+                            power_bl_precharge_eq_drv.searchOp.gate_leakage +
+                            power_sa.readOp.gate_leakage +
+                            power_subarray_out_drv.readOp.gate_leakage;
+
+    // gate_leakage power
+    power_row_decoders.readOp.gate_leakage = row_dec->power.readOp.gate_leakage * subarray.num_rows * num_subarrays_per_mat*(RWP + ERP + EWP);
+    power.readOp.gate_leakage += r_predec->power.readOp.gate_leakage +
+                            power_row_decoders.readOp.gate_leakage;
+
+    //inside cam
+    power_cam_all_active.searchOp.gate_leakage = power_matchline.searchOp.gate_leakage;
+    power_cam_all_active.searchOp.gate_leakage +=sl_precharge_eq_drv->power.readOp.gate_leakage;
+    power_cam_all_active.searchOp.gate_leakage +=sl_data_drv->power.readOp.gate_leakage*subarray.num_cols_fa_cam;
+    power_cam_all_active.searchOp.gate_leakage +=ml_precharge_drv->power.readOp.dynamic;
+    power_cam_all_active.searchOp.gate_leakage *= num_subarrays_per_mat;
+
+    power.readOp.gate_leakage += power_cam_all_active.searchOp.gate_leakage;
   }
 }
 

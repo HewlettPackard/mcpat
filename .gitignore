@@ -30,3 +30,12 @@
 # McPAT custom
 mcpat
 obj_opt/
+
+# vim
+.*.swp
+.*.swo
+
+# profiling
+gmon.out
+*.out
+*.txt

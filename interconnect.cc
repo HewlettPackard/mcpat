@@ -39,7 +39,7 @@
 interconnect::interconnect(
     string name_,
     enum Device_ty device_ty_,
-	double base_w, double base_h,
+    double base_w, double base_h,
     int data_w, double len,const InputParameter *configure_interface,
     int start_wiring_level_,
     bool pipelinable_ ,
@@ -98,46 +98,46 @@ interconnect::interconnect(
   if (pipelinable == false)
   //Non-pipelinable wires, such as bypass logic, care latency
   {
-	  compute();
-	  if (opt_for_clk && opt_local)
-	  {
-		  while (delay > latency && width_scaling<3.0)
-		  {
-			  width_scaling *= 2;
-			  space_scaling *= 2;
-			  Wire winit(width_scaling, space_scaling);
-			  compute();
-		  }
-		  if (delay > latency)
-		  {
-			  latency_overflow=true;
-		  }
-	  }
+    compute();
+    if (opt_for_clk && opt_local)
+    {
+      while (delay > latency && width_scaling<3.0)
+      {
+        width_scaling *= 2;
+        space_scaling *= 2;
+        Wire winit(width_scaling, space_scaling);
+        compute();
+      }
+      if (delay > latency)
+      {
+        latency_overflow=true;
+      }
+    }
   }
   else //Pipelinable wires, such as bus, does not care latency but throughput
   {
-	  /*
-	   * TODO: Add pipe regs power, area, and timing;
-	   * Pipelinable wires optimize latency first.
-	   */
-	  compute();
-	  if (opt_for_clk && opt_local)
-	  {
-		  while (delay > throughput && width_scaling<3.0)
-		  {
-			  width_scaling *= 2;
-			  space_scaling *= 2;
-			  Wire winit(width_scaling, space_scaling);
-			  compute();
-		  }
-		  if (delay > throughput)
-			  // insert pipeline stages
-		  {
-			  num_pipe_stages = (int)ceil(delay/throughput);
-			  assert(num_pipe_stages>0);
-			  delay = delay/num_pipe_stages + num_pipe_stages*0.05*delay;
-		  }
-	  }
+    /*
+     * TODO: Add pipe regs power, area, and timing;
+     * Pipelinable wires optimize latency first.
+     */
+    compute();
+    if (opt_for_clk && opt_local)
+    {
+      while (delay > throughput && width_scaling<3.0)
+      {
+        width_scaling *= 2;
+        space_scaling *= 2;
+        Wire winit(width_scaling, space_scaling);
+        compute();
+      }
+      if (delay > throughput)
+        // insert pipeline stages
+      {
+        num_pipe_stages = (int)ceil(delay/throughput);
+        assert(num_pipe_stages>0);
+        delay = delay/num_pipe_stages + num_pipe_stages*0.05*delay;
+      }
+    }
   }
 
   power_bit = power;
@@ -148,7 +148,7 @@ interconnect::interconnect(
   no_device_under_wire_area.h *= data_width;
 
   if (latency_overflow==true)
-  		cout<< "Warning: "<< name <<" wire structure cannot satisfy latency constraint." << endl;
+      cout<< "Warning: "<< name <<" wire structure cannot satisfy latency constraint." << endl;
 
 
   assert(power.readOp.dynamic > 0);
@@ -164,18 +164,18 @@ interconnect::interconnect(
   power.searchOp.dynamic *= sckRation;
 
   power.readOp.longer_channel_leakage =
-	  power.readOp.leakage*long_channel_device_reduction;
+    power.readOp.leakage*long_channel_device_reduction;
 
   power.readOp.power_gated_leakage =
-	  power.readOp.leakage*pg_reduction;
+    power.readOp.leakage*pg_reduction;
 
   power.readOp.power_gated_with_long_channel_leakage =
-	  power.readOp.power_gated_leakage*long_channel_device_reduction;
+    power.readOp.power_gated_leakage*long_channel_device_reduction;
 
   if (pipelinable)//Only global wires has the option to choose whether routing over or not
-	  area.set_area(area.get_area()*route_over_perc + no_device_under_wire_area.get_area()*(1-route_over_perc));
+    area.set_area(area.get_area()*route_over_perc + no_device_under_wire_area.get_area()*(1-route_over_perc));
 
-  Wire wreset();
+  Wire wreset(4,4);
 }
 
 

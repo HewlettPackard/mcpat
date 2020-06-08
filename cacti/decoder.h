@@ -76,7 +76,7 @@ class Decoder : public Component
     Sleep_tx * sleeptx;
 
     const  Area & cell;
-    int nodes_DSTN;
+    int    nodes_DSTN;
     bool   power_gating;
 
     void   compute_widths();
@@ -243,8 +243,8 @@ class Driver : public Component
  public:
   Driver(double c_gate_load_, double c_wire_load_,
 		 double r_wire_load_, bool is_dram,
-	     bool power_gating_ = false,
-	     int nodes_DSTN_ = 1 );
+     bool power_gating_ = false,
+     int nodes_DSTN_ = 1 );
 
   int    number_gates;
   int    min_number_gates;
@@ -261,7 +261,7 @@ class Driver : public Component
   double total_driver_pwidth;
   Sleep_tx * sleeptx;
 
-  int nodes_DSTN;
+  int    nodes_DSTN;
   bool   power_gating;
 
   void   compute_widths();

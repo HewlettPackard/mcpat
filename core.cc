@@ -658,7 +658,7 @@ SchedulerU::SchedulerU(ParseXML* XML_interface, int ithCore_, InputParameter* in
 					//When using RAM-based RAT, ROB needs to contain the ARF-PRF mapping to index the correct entry in the RAT,
 					//so that the correct architecture register (and freelist) can be found and the RAT can be appropriately updated.
 				}
-				else if ((coredynp.rm_ty ==CAMbased))
+				else if (coredynp.rm_ty == CAMbased)
 				{
 					data = int(ceil((robExtra+coredynp.pc_width + fmax(coredynp.phy_ireg_width, coredynp.phy_freg_width))/8.0));
 					//When using CAM-based RAT, ROB needs to contain the ARF-PRF mapping to index the correct entry in the RAT,
@@ -1134,7 +1134,6 @@ EXECU::EXECU(ParseXML* XML_interface, int ithCore_, InputParameter* interface_ip
  fpTagBypass(0),
  exist(exist_)
 {
-	  bool exist_flag = true;
 	  if (!exist) return;
 	  double fu_height = 0.0;
       clockRate = coredynp.clockRate;
@@ -1414,7 +1413,7 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
-		else if ((coredynp.rm_ty ==CAMbased))
+		else if (coredynp.rm_ty == CAMbased)
 		{
 			//FRAT
 			tag							     = coredynp.arch_ireg_width +  coredynp.hthread_width;
@@ -1654,7 +1653,7 @@ RENAMINGU::RENAMINGU(ParseXML* XML_interface, int ithCore_, InputParameter* inte
 			area.set_area(area.get_area()+ fFRAT->area.get_area());
 
 		}
-		else if ((coredynp.rm_ty ==CAMbased))
+		else if (coredynp.rm_ty == CAMbased)
 		{
 			//FRAT
 			tag							     = coredynp.arch_ireg_width  +  coredynp.hthread_width;
@@ -2347,8 +2346,8 @@ void InstFetchU::displayEnergy(uint32_t indent,int plevel,bool is_tdp)
 							ID_operand->power.readOp.leakage +
 							ID_misc->power.readOp.leakage))  << " W" << endl;
 
-		double tot_leakage = (ID_inst->power.readOp.leakage + ID_operand->power.readOp.leakage + ID_misc->power.readOp.leakage);
-		double tot_leakage_longchannel = (ID_inst->power.readOp.longer_channel_leakage + ID_operand->power.readOp.longer_channel_leakage + ID_misc->power.readOp.longer_channel_leakage);
+		//double tot_leakage = (ID_inst->power.readOp.leakage + ID_operand->power.readOp.leakage + ID_misc->power.readOp.leakage);
+		//double tot_leakage_longchannel = (ID_inst->power.readOp.longer_channel_leakage + ID_operand->power.readOp.longer_channel_leakage + ID_misc->power.readOp.longer_channel_leakage);
 		double tot_leakage_pg = (ID_inst->power.readOp.power_gated_leakage + ID_operand->power.readOp.power_gated_leakage + ID_misc->power.readOp.power_gated_leakage);
 		double tot_leakage_pg_with_long_channel = (ID_inst->power.readOp.power_gated_with_long_channel_leakage + ID_operand->power.readOp.power_gated_with_long_channel_leakage + ID_misc->power.readOp.power_gated_with_long_channel_leakage);
 
@@ -2387,10 +2386,10 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 	double pppm_t[4]    = {1,1,1,1};
 	if (is_tdp)
 	{//init stats for Peak
-		if (coredynp.core_ty==OOO){
-			if (coredynp.scheu_ty==PhysicalRegFile)
+		if (coredynp.core_ty == OOO){
+			if (coredynp.scheu_ty == PhysicalRegFile)
 			{
-				if (coredynp.rm_ty ==RAMbased)
+				if (coredynp.rm_ty == RAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = iFRAT->l_ip.num_rd_ports;
 					iFRAT->stats_t.writeAc.access  = iFRAT->l_ip.num_wr_ports;
@@ -2401,7 +2400,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->tdp_stats = fFRAT->stats_t;
 
 				}
-				else if ((coredynp.rm_ty ==CAMbased))
+				else if (coredynp.rm_ty == CAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = iFRAT->l_ip.num_search_ports;
 					iFRAT->stats_t.writeAc.access  = iFRAT->l_ip.num_wr_ports;
@@ -2411,7 +2410,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.writeAc.access  = fFRAT->l_ip.num_wr_ports;
 					fFRAT->tdp_stats = fFRAT->stats_t;
 				}
-				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint<1))
 				{
 					iRRAT->stats_t.readAc.access   = iRRAT->l_ip.num_rd_ports;
 					iRRAT->stats_t.writeAc.access  = iRRAT->l_ip.num_wr_ports;
@@ -2429,7 +2428,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 				ffreeL->stats_t.writeAc.access  = coredynp.decodeW;//ffreeL->l_ip.num_wr_ports;
 				ffreeL->tdp_stats = ffreeL->stats_t;
 			}
-			else if (coredynp.scheu_ty==ReservationStation){
+			else if (coredynp.scheu_ty == ReservationStation) {
 				if (coredynp.rm_ty ==RAMbased)
 				{
 					iFRAT->stats_t.readAc.access    = iFRAT->l_ip.num_rd_ports;
@@ -2441,7 +2440,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->tdp_stats = fFRAT->stats_t;
 
 				}
-				else if ((coredynp.rm_ty ==CAMbased))
+				else if (coredynp.rm_ty == CAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = iFRAT->l_ip.num_search_ports;
 					iFRAT->stats_t.writeAc.access  = iFRAT->l_ip.num_wr_ports;
@@ -2452,7 +2451,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->tdp_stats = fFRAT->stats_t;
 				}
 
-				if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+				if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint<1))
 				{
 					iRRAT->stats_t.readAc.access   = iRRAT->l_ip.num_rd_ports;
 					iRRAT->stats_t.writeAc.access  = iRRAT->l_ip.num_wr_ports;
@@ -2486,10 +2485,10 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 	}
 	else
 	{//init stats for Runtime Dynamic (RTP)
-		if (coredynp.core_ty==OOO){
-			if (coredynp.scheu_ty==PhysicalRegFile)
+		if (coredynp.core_ty == OOO){
+			if (coredynp.scheu_ty == PhysicalRegFile)
 			{
-				if (coredynp.rm_ty ==RAMbased)
+				if (coredynp.rm_ty == RAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads;
 					iFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
@@ -2499,7 +2498,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 					fFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].fp_rename_writes;
 					fFRAT->rtp_stats = fFRAT->stats_t;
 				}
-				else if ((coredynp.rm_ty ==CAMbased))
+				else if (coredynp.rm_ty == CAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads;
 					iFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
@@ -2540,7 +2539,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 //					fFRAT->stats_t.searchAc.access  = XML->sys.core[ithCore].committed_fp_instructions;
 					fFRAT->rtp_stats = fFRAT->stats_t;
 				}
-				else if ((coredynp.rm_ty ==CAMbased))
+				else if (coredynp.rm_ty == CAMbased)
 				{
 					iFRAT->stats_t.readAc.access   = XML->sys.core[ithCore].rename_reads;
 					iFRAT->stats_t.writeAc.access  = XML->sys.core[ithCore].rename_writes;
@@ -2603,7 +2602,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 						*(fFRAT->local_result.power.readOp.dynamic + fdcl->power.readOp.dynamic)
 						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
-			else if ((coredynp.rm_ty ==CAMbased))
+			else if (coredynp.rm_ty == CAMbased)
 			{
 				iFRAT->power_t.reset();
 				fFRAT->power_t.reset();
@@ -2614,7 +2613,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 						*(fFRAT->local_result.power.searchOp.dynamic + fdcl->power.readOp.dynamic)
 						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
-			if ((coredynp.rm_ty ==RAMbased) && (coredynp.globalCheckpoint<1))
+			if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint<1))
 			{
 				iRRAT->power_t.reset();
 				fRRAT->power_t.reset();
@@ -2636,7 +2635,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 		}
 		else if (coredynp.scheu_ty==ReservationStation)
 		{
-			if (coredynp.rm_ty ==RAMbased)
+			if (coredynp.rm_ty == RAMbased)
 			{
 				iFRAT->power_t.reset();
 				fFRAT->power_t.reset();
@@ -2648,7 +2647,7 @@ void RENAMINGU::computeEnergy(bool is_tdp)
 						*(fFRAT->local_result.power.readOp.dynamic + fdcl->power.readOp.dynamic)
 						+fFRAT->stats_t.writeAc.access*fFRAT->local_result.power.writeOp.dynamic);
 			}
-			else if ((coredynp.rm_ty ==CAMbased))
+			else if (coredynp.rm_ty == CAMbased)
 			{
 				iFRAT->power_t.reset();
 				fFRAT->power_t.reset();
@@ -4374,7 +4373,7 @@ void Core::set_core_param()
 		exit(0);
 	}
 
-	if (!((coredynp.rm_ty ==RAMbased)||(coredynp.rm_ty ==CAMbased)))
+	if (!((coredynp.rm_ty == RAMbased)||(coredynp.rm_ty == CAMbased)))
 	{
 		cout<<"Invalid OOO Renaming Type"<<endl;
 		exit(0);
@@ -4405,7 +4404,7 @@ void Core::set_core_param()
 	{
 		coredynp.globalCheckpoint   =  GC_count > 4 ? 4 : GC_count; //RAM-based RAT cannot have more than 4 GCs; see "a power-aware hybrid ram-cam renaming mechanism for fast recovery"
 	}
-	else if(coredynp.rm_ty ==CAMbased)
+	else if(coredynp.rm_ty == CAMbased)
 	{
 		coredynp.globalCheckpoint   =  GC_count < 1 ? 1 : GC_count;
 	}

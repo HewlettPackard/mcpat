@@ -76,8 +76,8 @@ NIUController::NIUController(ParseXML *XML_interface,InputParameter* interface_i
 
 
 	  double frontend_area, phy_area, mac_area, SerDer_area;
-      double frontend_dyn, mac_dyn, SerDer_dyn;
-      double frontend_gates, mac_gates, SerDer_gates = 0.;
+    double frontend_dyn, mac_dyn, SerDer_dyn;
+    double frontend_gates, mac_gates, SerDer_gates = 0.;
 	  double pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
 	  double NMOS_sizing, PMOS_sizing;
 
@@ -233,8 +233,12 @@ PCIeController::PCIeController(ParseXML *XML_interface,InputParameter* interface
  {
 
 	  double frontend_area, phy_area, ctrl_area, SerDer_area;
-      double ctrl_dyn, frontend_dyn, SerDer_dyn;
-      double ctrl_gates,frontend_gates, SerDer_gates=0.;
+    double ctrl_dyn; 
+    //double frontend_dyn; 
+    double SerDer_dyn;
+    double ctrl_gates; 
+    //double frontend_gates; 
+    double SerDer_gates=0.0;
 	  double pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
 	  double NMOS_sizing, PMOS_sizing;
 
@@ -387,9 +391,16 @@ FlashController::FlashController(ParseXML *XML_interface,InputParameter* interfa
  interface_ip(*interface_ip_)
  {
 
-	  double frontend_area, phy_area, ctrl_area, SerDer_area;
-      double ctrl_dyn, frontend_dyn, SerDer_dyn;
-      double ctrl_gates,frontend_gates, SerDer_gates=0.;
+	  //double frontend_area;
+    //double phy_area;
+    double ctrl_area;
+    double SerDer_area;
+    double ctrl_dyn;
+    //double frontend_dyn;
+    double SerDer_dyn;
+    double ctrl_gates;
+    //double frontend_gates;
+    double SerDer_gates=0.0;
 	  double pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
 	  double NMOS_sizing, PMOS_sizing;
 
