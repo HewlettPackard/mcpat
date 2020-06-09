@@ -215,8 +215,7 @@ void *calc_time_mt_wrapper(void *void_obj) {
   delete tag_arr.back();
   data_arr.pop_back();
   tag_arr.pop_back();
-
-  pthread_exit(NULL);
+  return NULL;
 }
 
 bool calculate_time(bool is_tag, int pure_ram, bool pure_cam, double Nspd,
@@ -768,6 +767,8 @@ void solve(uca_org_t *fin_res) {
         ((ram_cell_tech_type == lp_dram) || (ram_cell_tech_type == comm_dram));
     init_tech_params(g_ip->F_sz_um, is_tag);
 
+#if NTHREADS > 1 
+    // If Multithreadded:
     for (uint32_t t = 0; t < nthreads; t++) {
       calc_array[t].is_tag = is_tag;
       calc_array[t].is_main_mem = false;
@@ -779,6 +780,13 @@ void solve(uca_org_t *fin_res) {
     for (uint32_t t = 0; t < nthreads; t++) {
       pthread_join(threads[t], NULL);
     }
+#else
+    // Else just a single thread dont bother with pthread overhead
+    calc_array[0].is_tag = is_tag;
+    calc_array[0].is_main_mem = false;
+    calc_array[0].Nspd_min = 0.125;
+    calc_time_mt_wrapper((void *)(&(calc_array[0])));
+#endif
 
     for (uint32_t t = 0; t < nthreads; t++) {
       calc_array[t].data_arr.sort(mem_array::lt);
@@ -799,6 +807,7 @@ void solve(uca_org_t *fin_res) {
       ((ram_cell_tech_type == lp_dram) || (ram_cell_tech_type == comm_dram));
   init_tech_params(g_ip->F_sz_um, is_tag);
 
+#if NTHREADS > 1 
   for (uint32_t t = 0; t < nthreads; t++) {
     calc_array[t].is_tag = is_tag;
     calc_array[t].is_main_mem = g_ip->is_main_mem;
@@ -816,6 +825,19 @@ void solve(uca_org_t *fin_res) {
   for (uint32_t t = 0; t < nthreads; t++) {
     pthread_join(threads[t], NULL);
   }
+#else
+    // Else just a single thread dont bother with pthread overhead
+    calc_array[0].is_tag = is_tag;
+    calc_array[0].is_main_mem = g_ip->is_main_mem;
+    if (!(pure_cam || g_ip->fully_assoc)) {
+      calc_array[0].Nspd_min =
+          (double)(g_ip->out_w) / (double)(g_ip->block_sz * 8);
+    } else {
+      calc_array[0].Nspd_min = 1;
+    }
+    calc_time_mt_wrapper((void *)(&(calc_array[0])));
+#endif
+  
 
   data_arr.clear();
   for (uint32_t t = 0; t < nthreads; t++) {

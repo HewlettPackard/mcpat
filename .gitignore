@@ -40,3 +40,7 @@ unit_test/output
 
 # CMake
 build*
+
+# Profiling
+gmon.out
+profile*.txt

@@ -18,44 +18,11 @@ endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function")
 set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg -g")
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
 
 add_definitions(-DNTHREADS=1)
 
-add_subdirectory(cacti)
+add_subdirectory(src)
 
-add_executable(mcpat 
-  XML_Parse.h
-  arch_const.h
-  array.h
-  basic_components.h
-  core.h
-  globalvar.h
-  interconnect.h
-  iocontrollers.h
-  logic.h
-  memoryctrl.h
-  noc.h
-  processor.h
-  sharedcache.h
-  version.h
-  xmlParser.h
-  XML_Parse.cc
-  array.cc
-  basic_components.cc
-  core.cc
-  interconnect.cc
-  iocontrollers.cc
-  logic.cc
-  main.cc
-  memoryctrl.cc
-  noc.cc
-  processor.cc
-  sharedcache.cc
-  xmlParser.cc
-)
-
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(mcpat LINK_PUBLIC cacti Threads::Threads)
