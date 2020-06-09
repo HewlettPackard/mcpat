@@ -41,7 +41,7 @@ unsigned int MIN_BANKSIZE = 65536;
 #define LATCH_DELAY 28e-12 /* latch delay in s (later should use FO4 TODO) */
 #define CONTR_2_BANK_LAT 0
 
-int cont_stats[2 /*l2 or l3*/][5 /* cores */][ROUTER_TYPES][7 /*banks*/]
+int cont_stats[2 /*l2 or l3*/][5 /* cores */][ROUTER_TYPES][8 /*banks*/]
               [8 /* cycle time */];
 
 Nuca::Nuca(TechnologyParameter::DeviceType *dt) : deviceType(dt) {

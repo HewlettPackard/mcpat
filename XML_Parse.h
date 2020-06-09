@@ -302,7 +302,7 @@ typedef struct {
   double Dir_config[20];
   int buffer_sizes[20];
   int clockrate;
-  int ports[20];
+  int ports[21];
   int device_type;
   int cache_policy; // 0 no write or write-though with non-write allocate;1
                     // write-back with write-allocate
@@ -324,7 +324,7 @@ typedef struct {
   double Dir_config[20];
   int buffer_sizes[20];
   int clockrate;
-  int ports[20];
+  int ports[21];
   int device_type;
   int cache_policy; // 0 no write or write-though with non-write allocate;1
                     // write-back with write-allocate
@@ -434,7 +434,7 @@ typedef struct {
   int number_of_outputs_of_crossbars;
   int flit_bits;
   int input_buffer_entries_per_port;
-  int ports_of_input_buffer[20];
+  int ports_of_input_buffer[21];
   // stats
   double crossbar_accesses;
 } xbar0_systemNoC;
