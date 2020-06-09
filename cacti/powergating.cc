@@ -73,19 +73,19 @@ Sleep_tx::Sleep_tx(double _perf_with_sleep_tx,
                    double _active_Isat, // of circuit block, not sleep tx
                    bool _is_footer, double _c_circuit_wakeup, double _V_delta,
                    int _num_sleep_tx,
-                   //            double  _vt_circuit,
-                   //			double  _vt_sleep_tx,
-                   //			double  _mobility,//of sleep tx
-                   //			double  _c_ox,//of sleep tx
+                   // double  _vt_circuit,
+                   // double  _vt_sleep_tx,
+                   // double  _mobility,//of sleep tx
+                   // double  _c_ox,//of sleep tx
                    const Area &cell_)
     : perf_with_sleep_tx(_perf_with_sleep_tx), active_Isat(_active_Isat),
-      is_footer(_is_footer), c_circuit_wakeup(_c_circuit_wakeup),
-      V_delta(_V_delta), num_sleep_tx(_num_sleep_tx),
+      is_footer(_is_footer), num_sleep_tx(_num_sleep_tx),
+      c_circuit_wakeup(_c_circuit_wakeup),
       // vt_circuit(_vt_circuit),
       // vt_sleep_tx(_vt_sleep_tx),
       // mobility(_mobility),
       // c_ox(_c_ox)
-      cell(cell_), is_sleep_tx(true) {
+      cell(cell_), is_sleep_tx(true), V_delta(_V_delta) {
 
   // a single sleep tx in a network
   double raw_area, raw_width, raw_hight;
@@ -124,7 +124,7 @@ auto Sleep_tx::compute_penalty() -> double {
   if (is_footer) {
     c_intrinsic_sleep =
         drain_C_(width, NCH, 1, 1, area.h, false, false, false, is_sleep_tx);
-    //		V_delta = _V_delta;
+    //    V_delta = _V_delta;
     wakeup_delay =
         (c_circuit_wakeup + c_intrinsic_sleep) * V_delta /
         (simplified_nmos_Isat(width, false, false, false, is_sleep_tx) /
@@ -136,7 +136,7 @@ auto Sleep_tx::compute_penalty() -> double {
   } else {
     c_intrinsic_sleep = drain_C_(width * p_to_n_sz_ratio, PCH, 1, 1, area.h,
                                  false, false, false, is_sleep_tx);
-    //		V_delta = _V_delta;
+    //    V_delta = _V_delta;
     wakeup_delay =
         (c_circuit_wakeup + c_intrinsic_sleep) * V_delta /
         (simplified_pmos_Isat(width, false, false, false, is_sleep_tx) /

@@ -151,7 +151,7 @@ interconnect::interconnect(string name_, enum Device_ty device_ty_,
     area.set_area(area.get_area() * route_over_perc +
                   no_device_under_wire_area.get_area() * (1 - route_over_perc));
 
-  Wire wreset();
+  Wire wreset(1, 1);
 }
 
 void interconnect::compute() {

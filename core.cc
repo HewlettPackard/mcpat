@@ -1728,7 +1728,7 @@ used for index the RAT entry to be updated.
         fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
         area.set_area(area.get_area() + fFRAT->area.get_area());
 
-      } else if ((coredynp.rm_ty == CAMbased)) {
+      } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
         tag = coredynp.arch_ireg_width + coredynp.hthread_width;
         data = int(
@@ -2012,7 +2012,7 @@ used for index the RAT entry to be updated.
         fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
         area.set_area(area.get_area() + fFRAT->area.get_area());
 
-      } else if ((coredynp.rm_ty == CAMbased)) {
+      } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
         tag = coredynp.arch_ireg_width + coredynp.hthread_width;
         data = int(ceil(
@@ -2953,7 +2953,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
           fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
           fFRAT->tdp_stats = fFRAT->stats_t;
 
-        } else if ((coredynp.rm_ty == CAMbased)) {
+        } else if (coredynp.rm_ty == CAMbased) {
           iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_search_ports;
           iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
           iFRAT->tdp_stats = iFRAT->stats_t;
@@ -2992,7 +2992,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
           fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
           fFRAT->tdp_stats = fFRAT->stats_t;
 
-        } else if ((coredynp.rm_ty == CAMbased)) {
+        } else if (coredynp.rm_ty == CAMbased) {
           iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_search_ports;
           iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
           iFRAT->tdp_stats = iFRAT->stats_t;
@@ -3043,7 +3043,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
           fFRAT->stats_t.writeAc.access =
               XML->sys.core[ithCore].fp_rename_writes;
           fFRAT->rtp_stats = fFRAT->stats_t;
-        } else if ((coredynp.rm_ty == CAMbased)) {
+        } else if (coredynp.rm_ty == CAMbased) {
           iFRAT->stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
           iFRAT->stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
           iFRAT->rtp_stats = iFRAT->stats_t;
@@ -3093,7 +3093,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
           //					fFRAT->stats_t.searchAc.access =
           // XML->sys.core[ithCore].committed_fp_instructions;
           fFRAT->rtp_stats = fFRAT->stats_t;
-        } else if ((coredynp.rm_ty == CAMbased)) {
+        } else if (coredynp.rm_ty == CAMbased) {
           iFRAT->stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
           iFRAT->stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
           iFRAT->rtp_stats = iFRAT->stats_t;
@@ -3167,7 +3167,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
                   fdcl->power.readOp.dynamic) +
              fFRAT->stats_t.writeAc.access *
                  fFRAT->local_result.power.writeOp.dynamic);
-      } else if ((coredynp.rm_ty == CAMbased)) {
+      } else if (coredynp.rm_ty == CAMbased) {
         iFRAT->power_t.reset();
         fFRAT->power_t.reset();
         iFRAT->power_t.readOp.dynamic +=
@@ -3229,7 +3229,7 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
                   fdcl->power.readOp.dynamic) +
              fFRAT->stats_t.writeAc.access *
                  fFRAT->local_result.power.writeOp.dynamic);
-      } else if ((coredynp.rm_ty == CAMbased)) {
+      } else if (coredynp.rm_ty == CAMbased) {
         iFRAT->power_t.reset();
         fFRAT->power_t.reset();
         iFRAT->power_t.readOp.dynamic +=

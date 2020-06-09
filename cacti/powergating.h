@@ -40,10 +40,10 @@ public:
            double _active_Isat, // of circuit block, not sleep tx
            bool _is_footer, double _c_circuit_wakeup, double _V_delta,
            int _num_sleep_tx,
-           //            double  _vt_circuit,
-           //			double  _vt_sleep_tx,
-           //			double  _mobility,//of sleep tx
-           //			double  _c_ox,//of sleep tx
+           // double  _vt_circuit,
+           //	double  _vt_sleep_tx,
+           //	double  _mobility,//of sleep tx
+           //	double  _c_ox,//of sleep tx
            const Area &cell_);
 
   double perf_with_sleep_tx;

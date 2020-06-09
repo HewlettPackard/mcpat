@@ -64,7 +64,7 @@ private:
   double NTtr, PTtr;
   double o_len;
   TechnologyParameter::DeviceType *deviceType;
-  double TriS1, TriS2;
+  // double TriS1, TriS2;
   double min_w_pmos, Vdd;
 };
 
