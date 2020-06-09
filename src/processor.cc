@@ -104,11 +104,17 @@ Processor::Processor(ParseXML *XML_interface)
     if (procdynp.homoCore) {
       core.area.set_area(core.area.get_area() +
                          cores[i]->area.get_area() * procdynp.numCore);
-      set_pppm(pppm_t, cores[i]->clockRate * procdynp.numCore, procdynp.numCore,
-               procdynp.numCore, procdynp.numCore);
+      set_pppm(pppm_t,
+               cores[i]->clockRate * procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore);
       core.power = core.power + cores[i]->power * pppm_t;
-      set_pppm(pppm_t, 1 / cores[i]->executionTime, procdynp.numCore,
-               procdynp.numCore, procdynp.numCore);
+      set_pppm(pppm_t,
+               1 / cores[i]->executionTime,
+               procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore);
       core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
       area.set_area(area.get_area() +
                     core.area.get_area()); // placement and routing overhead is
@@ -143,11 +149,17 @@ Processor::Processor(ParseXML *XML_interface)
         if (procdynp.homoL2) {
           l2.area.set_area(l2.area.get_area() +
                            l2array[i]->area.get_area() * procdynp.numL2);
-          set_pppm(pppm_t, l2array[i]->cachep.clockRate * procdynp.numL2,
-                   procdynp.numL2, procdynp.numL2, procdynp.numL2);
+          set_pppm(pppm_t,
+                   l2array[i]->cachep.clockRate * procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2);
           l2.power = l2.power + l2array[i]->power * pppm_t;
-          set_pppm(pppm_t, 1 / l2array[i]->cachep.executionTime, procdynp.numL2,
-                   procdynp.numL2, procdynp.numL2);
+          set_pppm(pppm_t,
+                   1 / l2array[i]->cachep.executionTime,
+                   procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2);
           l2.rt_power = l2.rt_power + l2array[i]->rt_power * pppm_t;
           area.set_area(
               area.get_area() +
@@ -185,11 +197,17 @@ Processor::Processor(ParseXML *XML_interface)
       if (procdynp.homoL3) {
         l3.area.set_area(l3.area.get_area() +
                          l3array[i]->area.get_area() * procdynp.numL3);
-        set_pppm(pppm_t, l3array[i]->cachep.clockRate * procdynp.numL3,
-                 procdynp.numL3, procdynp.numL3, procdynp.numL3);
+        set_pppm(pppm_t,
+                 l3array[i]->cachep.clockRate * procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3);
         l3.power = l3.power + l3array[i]->power * pppm_t;
-        set_pppm(pppm_t, 1 / l3array[i]->cachep.executionTime, procdynp.numL3,
-                 procdynp.numL3, procdynp.numL3);
+        set_pppm(pppm_t,
+                 1 / l3array[i]->cachep.executionTime,
+                 procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3);
         l3.rt_power = l3.rt_power + l3array[i]->rt_power * pppm_t;
         area.set_area(area.get_area() +
                       l3.area.get_area()); // placement and routing overhead is
@@ -222,11 +240,17 @@ Processor::Processor(ParseXML *XML_interface)
       if (procdynp.homoL1Dir) {
         l1dir.area.set_area(l1dir.area.get_area() +
                             l1dirarray[i]->area.get_area() * procdynp.numL1Dir);
-        set_pppm(pppm_t, l1dirarray[i]->cachep.clockRate * procdynp.numL1Dir,
-                 procdynp.numL1Dir, procdynp.numL1Dir, procdynp.numL1Dir);
+        set_pppm(pppm_t,
+                 l1dirarray[i]->cachep.clockRate * procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir);
         l1dir.power = l1dir.power + l1dirarray[i]->power * pppm_t;
-        set_pppm(pppm_t, 1 / l1dirarray[i]->cachep.executionTime,
-                 procdynp.numL1Dir, procdynp.numL1Dir, procdynp.numL1Dir);
+        set_pppm(pppm_t,
+                 1 / l1dirarray[i]->cachep.executionTime,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir);
         l1dir.rt_power = l1dir.rt_power + l1dirarray[i]->rt_power * pppm_t;
         area.set_area(
             area.get_area() +
@@ -257,11 +281,17 @@ Processor::Processor(ParseXML *XML_interface)
       if (procdynp.homoL2Dir) {
         l2dir.area.set_area(l2dir.area.get_area() +
                             l2dirarray[i]->area.get_area() * procdynp.numL2Dir);
-        set_pppm(pppm_t, l2dirarray[i]->cachep.clockRate * procdynp.numL2Dir,
-                 procdynp.numL2Dir, procdynp.numL2Dir, procdynp.numL2Dir);
+        set_pppm(pppm_t,
+                 l2dirarray[i]->cachep.clockRate * procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir);
         l2dir.power = l2dir.power + l2dirarray[i]->power * pppm_t;
-        set_pppm(pppm_t, 1 / l2dirarray[i]->cachep.executionTime,
-                 procdynp.numL2Dir, procdynp.numL2Dir, procdynp.numL2Dir);
+        set_pppm(pppm_t,
+                 1 / l2dirarray[i]->cachep.executionTime,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir);
         l2dir.rt_power = l2dir.rt_power + l2dirarray[i]->rt_power * pppm_t;
         area.set_area(
             area.get_area() +
@@ -292,13 +322,18 @@ Processor::Processor(ParseXML *XML_interface)
                       mc->area.get_area() * XML->sys.mc.number_mcs);
     area.set_area(area.get_area() +
                   mc->area.get_area() * XML->sys.mc.number_mcs);
-    set_pppm(pppm_t, XML->sys.mc.number_mcs * mc->mcp.clockRate,
-             XML->sys.mc.number_mcs, XML->sys.mc.number_mcs,
+    set_pppm(pppm_t,
+             XML->sys.mc.number_mcs * mc->mcp.clockRate,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs,
              XML->sys.mc.number_mcs);
     mcs.power = mc->power * pppm_t;
     power = power + mcs.power;
-    set_pppm(pppm_t, 1 / mc->mcp.executionTime, XML->sys.mc.number_mcs,
-             XML->sys.mc.number_mcs, XML->sys.mc.number_mcs);
+    set_pppm(pppm_t,
+             1 / mc->mcp.executionTime,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs);
     mcs.rt_power = mc->rt_power * pppm_t;
     rt_power = rt_power + mcs.rt_power;
   }
@@ -329,13 +364,17 @@ Processor::Processor(ParseXML *XML_interface)
                        niu->area.get_area() * XML->sys.niu.number_units);
     area.set_area(area.get_area() +
                   niu->area.get_area() * XML->sys.niu.number_units);
-    set_pppm(pppm_t, XML->sys.niu.number_units * niu->niup.clockRate,
-             XML->sys.niu.number_units, XML->sys.niu.number_units,
+    set_pppm(pppm_t,
+             XML->sys.niu.number_units * niu->niup.clockRate,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units,
              XML->sys.niu.number_units);
     nius.power = niu->power * pppm_t;
     power = power + nius.power;
-    set_pppm(pppm_t, XML->sys.niu.number_units * niu->niup.clockRate,
-             XML->sys.niu.number_units, XML->sys.niu.number_units,
+    set_pppm(pppm_t,
+             XML->sys.niu.number_units * niu->niup.clockRate,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units,
              XML->sys.niu.number_units);
     nius.rt_power = niu->rt_power * pppm_t;
     rt_power = rt_power + nius.rt_power;
@@ -349,13 +388,17 @@ Processor::Processor(ParseXML *XML_interface)
                         pcie->area.get_area() * XML->sys.pcie.number_units);
     area.set_area(area.get_area() +
                   pcie->area.get_area() * XML->sys.pcie.number_units);
-    set_pppm(pppm_t, XML->sys.pcie.number_units * pcie->pciep.clockRate,
-             XML->sys.pcie.number_units, XML->sys.pcie.number_units,
+    set_pppm(pppm_t,
+             XML->sys.pcie.number_units * pcie->pciep.clockRate,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units,
              XML->sys.pcie.number_units);
     pcies.power = pcie->power * pppm_t;
     power = power + pcies.power;
-    set_pppm(pppm_t, XML->sys.pcie.number_units * pcie->pciep.clockRate,
-             XML->sys.pcie.number_units, XML->sys.pcie.number_units,
+    set_pppm(pppm_t,
+             XML->sys.pcie.number_units * pcie->pciep.clockRate,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units,
              XML->sys.pcie.number_units);
     pcies.rt_power = pcie->rt_power * pppm_t;
     rt_power = rt_power + pcies.rt_power;
@@ -375,7 +418,10 @@ Processor::Processor(ParseXML *XML_interface)
         }
       } else { // Bus based interconnect
         nocs.push_back(
-            new NoC(XML, i, &interface_ip, 1,
+            new NoC(XML,
+                    i,
+                    &interface_ip,
+                    1,
                     sqrt(area.get_area() * XML->sys.NoC[i].chip_coverage)));
         if (procdynp.homoNOC) {
           noc.area.set_area(noc.area.get_area() +
@@ -420,11 +466,17 @@ Processor::Processor(ParseXML *XML_interface)
       nocs[i]->computeEnergy();
       nocs[i]->computeEnergy(false);
       if (procdynp.homoNOC) {
-        set_pppm(pppm_t, procdynp.numNOC * nocs[i]->nocdynp.clockRate,
-                 procdynp.numNOC, procdynp.numNOC, procdynp.numNOC);
+        set_pppm(pppm_t,
+                 procdynp.numNOC * nocs[i]->nocdynp.clockRate,
+                 procdynp.numNOC,
+                 procdynp.numNOC,
+                 procdynp.numNOC);
         noc.power = noc.power + nocs[i]->power * pppm_t;
-        set_pppm(pppm_t, 1 / nocs[i]->nocdynp.executionTime, procdynp.numNOC,
-                 procdynp.numNOC, procdynp.numNOC);
+        set_pppm(pppm_t,
+                 1 / nocs[i]->nocdynp.executionTime,
+                 procdynp.numNOC,
+                 procdynp.numNOC,
+                 procdynp.numNOC);
         noc.rt_power = noc.rt_power + nocs[i]->rt_power * pppm_t;
         power = power + noc.power;
         rt_power = rt_power + noc.rt_power;

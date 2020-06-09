@@ -38,7 +38,9 @@ class Sleep_tx : public Component {
 public:
   Sleep_tx(double _perf_with_sleep_tx,
            double _active_Isat, // of circuit block, not sleep tx
-           bool _is_footer, double _c_circuit_wakeup, double _V_delta,
+           bool _is_footer,
+           double _c_circuit_wakeup,
+           double _V_delta,
            int _num_sleep_tx,
            // double  _vt_circuit,
            //	double  _vt_sleep_tx,

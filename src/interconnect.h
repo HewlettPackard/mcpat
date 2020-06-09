@@ -46,13 +46,20 @@
 
 class interconnect : public Component {
 public:
-  interconnect(string name_, enum Device_ty device_ty_, double base_w,
-               double base_h, int data_w, double len,
+  interconnect(string name_,
+               enum Device_ty device_ty_,
+               double base_w,
+               double base_h,
+               int data_w,
+               double len,
                const InputParameter *configure_interface,
-               int start_wiring_level_, bool pipelinable_ = false,
-               double route_over_perc_ = 0.5, bool opt_local_ = true,
+               int start_wiring_level_,
+               bool pipelinable_ = false,
+               double route_over_perc_ = 0.5,
+               bool opt_local_ = true,
                enum Core_type core_ty_ = Inorder,
-               enum Wire_type wire_model = Global, double width_s = 1.0,
+               enum Wire_type wire_model = Global,
+               double width_s = 1.0,
                double space_s = 1.0,
                TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
 

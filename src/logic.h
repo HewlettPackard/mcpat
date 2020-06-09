@@ -52,7 +52,9 @@ using namespace std;
 class selection_logic : public Component {
 public:
   selection_logic(
-      bool _is_default, int win_entries_, int issue_width_,
+      bool _is_default,
+      int win_entries_,
+      int issue_width_,
       const InputParameter *configure_interface,
       enum Device_ty device_ty_ = Core_device,
       enum Core_type core_ty_ = Inorder); //, const ParseXML *_XML_interface);
@@ -73,7 +75,8 @@ public:
 class dep_resource_conflict_check : public Component {
 public:
   dep_resource_conflict_check(const InputParameter *configure_interface,
-                              const CoreDynParam &dyn_p_, int compare_bits_,
+                              const CoreDynParam &dyn_p_,
+                              int compare_bits_,
                               bool _is_default = true);
   InputParameter l_ip;
   uca_org_t local_result;
@@ -95,8 +98,11 @@ public:
 
 class inst_decoder : public Component {
 public:
-  inst_decoder(bool _is_default, const InputParameter *configure_interface,
-               int opcode_length_, int num_decoders_, bool x86_,
+  inst_decoder(bool _is_default,
+               const InputParameter *configure_interface,
+               int opcode_length_,
+               int num_decoders_,
+               bool x86_,
                enum Device_ty device_ty_ = Core_device,
                enum Core_type core_ty_ = Inorder);
   inst_decoder();
@@ -125,8 +131,11 @@ public:
 
 class DFFCell : public Component {
 public:
-  DFFCell(bool _is_dram, double _WdecNANDn, double _WdecNANDp,
-          double _cell_load, const InputParameter *configure_interface);
+  DFFCell(bool _is_dram,
+          double _WdecNANDn,
+          double _WdecNANDp,
+          double _cell_load,
+          const InputParameter *configure_interface);
   InputParameter l_ip;
   bool is_dram;
   double cell_load;
@@ -150,8 +159,10 @@ public:
 class Pipeline : public Component {
 public:
   Pipeline(const InputParameter *configure_interface,
-           const CoreDynParam &dyn_p_, enum Device_ty device_ty_ = Core_device,
-           bool _is_core_pipeline = true, bool _is_default = true);
+           const CoreDynParam &dyn_p_,
+           enum Device_ty device_ty_ = Core_device,
+           bool _is_core_pipeline = true,
+           bool _is_default = true);
   InputParameter l_ip;
   uca_org_t local_result;
   CoreDynParam coredynp;
@@ -201,8 +212,10 @@ public:
   statsDef stats_t;
   powerDef power_t;
 
-  FunctionalUnit(ParseXML *XML_interface, int ithCore_,
-                 InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  FunctionalUnit(ParseXML *XML_interface,
+                 int ithCore_,
+                 InputParameter *interface_ip_,
+                 const CoreDynParam &dyn_p_,
                  enum FU_type fu_type);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -211,9 +224,12 @@ public:
 
 class UndiffCore : public Component {
 public:
-  UndiffCore(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
-             bool exist_ = true, bool embedded_ = false);
+  UndiffCore(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
+             bool exist_ = true,
+             bool embedded_ = false);
   ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;

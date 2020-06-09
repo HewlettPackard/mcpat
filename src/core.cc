@@ -44,9 +44,11 @@
 #include <string>
 //#include "globalvar.h"
 
-InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
+InstFetchU::InstFetchU(ParseXML *XML_interface,
+                       int ithCore_,
                        InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_, bool exist_)
+                       const CoreDynParam &dyn_p_,
+                       bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), IB(0), BTB(0), ID_inst(0), ID_operand(0), ID_misc(0),
       exist(exist_) {
@@ -100,8 +102,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  icache.caches = new ArrayST(&interface_ip, "icache", Core_device,
-                              coredynp.opt_local, coredynp.core_ty);
+  icache.caches = new ArrayST(&interface_ip,
+                              "icache",
+                              Core_device,
+                              coredynp.opt_local,
+                              coredynp.core_ty);
   scktRatio = g_tp.sckt_co_eff;
   chip_PR_overhead = g_tp.chip_layout_overhead;
   macro_PR_overhead = g_tp.macro_layout_overhead;
@@ -153,8 +158,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.missb = new ArrayST(&interface_ip, "icacheMissBuffer", Core_device,
-                             coredynp.opt_local, coredynp.core_ty);
+  icache.missb = new ArrayST(&interface_ip,
+                             "icacheMissBuffer",
+                             Core_device,
+                             coredynp.opt_local,
+                             coredynp.core_ty);
   icache.area.set_area(icache.area.get_area() +
                        icache.missb->local_result.area);
   area.set_area(area.get_area() + icache.missb->local_result.area);
@@ -188,8 +196,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.ifb = new ArrayST(&interface_ip, "icacheFillBuffer", Core_device,
-                           coredynp.opt_local, coredynp.core_ty);
+  icache.ifb = new ArrayST(&interface_ip,
+                           "icacheFillBuffer",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
   icache.area.set_area(icache.area.get_area() + icache.ifb->local_result.area);
   area.set_area(area.get_area() + icache.ifb->local_result.area);
   // output_data_csv(icache.ifb.local_result);
@@ -226,9 +237,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.prefetchb =
-      new ArrayST(&interface_ip, "icacheprefetchBuffer", Core_device,
-                  coredynp.opt_local, coredynp.core_ty);
+  icache.prefetchb = new ArrayST(&interface_ip,
+                                 "icacheprefetchBuffer",
+                                 Core_device,
+                                 coredynp.opt_local,
+                                 coredynp.core_ty);
   icache.area.set_area(icache.area.get_area() +
                        icache.prefetchb->local_result.area);
   area.set_area(area.get_area() + icache.prefetchb->local_result.area);
@@ -273,7 +286,10 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  IB = new ArrayST(&interface_ip, "InstBuffer", Core_device, coredynp.opt_local,
+  IB = new ArrayST(&interface_ip,
+                   "InstBuffer",
+                   Core_device,
+                   coredynp.opt_local,
                    coredynp.core_ty);
   IB->area.set_area(IB->area.get_area() + IB->local_result.area);
   area.set_area(area.get_area() + IB->local_result.area);
@@ -337,8 +353,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_rd_ports = coredynp.predictionW;
     interface_ip.num_wr_ports = coredynp.predictionW;
     interface_ip.num_se_rd_ports = 0;
-    BTB = new ArrayST(&interface_ip, "Branch Target Buffer", Core_device,
-                      coredynp.opt_local, coredynp.core_ty);
+    BTB = new ArrayST(&interface_ip,
+                      "Branch Target Buffer",
+                      Core_device,
+                      coredynp.opt_local,
+                      coredynp.core_ty);
     BTB->area.set_area(BTB->area.get_area() + BTB->local_result.area);
     area.set_area(area.get_area() + BTB->local_result.area);
     /// cout<<"area="<<area<<endl;
@@ -347,17 +366,29 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
     area.set_area(area.get_area() + BPT->area.get_area());
   }
 
-  ID_inst = new inst_decoder(is_default, &interface_ip, coredynp.opcode_length,
+  ID_inst = new inst_decoder(is_default,
+                             &interface_ip,
+                             coredynp.opcode_length,
                              1 /*Decoder should not know how many by itself*/,
-                             coredynp.x86, Core_device, coredynp.core_ty);
+                             coredynp.x86,
+                             Core_device,
+                             coredynp.core_ty);
 
-  ID_operand =
-      new inst_decoder(is_default, &interface_ip, coredynp.arch_ireg_width, 1,
-                       coredynp.x86, Core_device, coredynp.core_ty);
+  ID_operand = new inst_decoder(is_default,
+                                &interface_ip,
+                                coredynp.arch_ireg_width,
+                                1,
+                                coredynp.x86,
+                                Core_device,
+                                coredynp.core_ty);
 
-  ID_misc = new inst_decoder(is_default, &interface_ip,
-                             8 /* Prefix field etc upto 14B*/, 1, coredynp.x86,
-                             Core_device, coredynp.core_ty);
+  ID_misc = new inst_decoder(is_default,
+                             &interface_ip,
+                             8 /* Prefix field etc upto 14B*/,
+                             1,
+                             coredynp.x86,
+                             Core_device,
+                             coredynp.core_ty);
   // TODO: X86 decoder should decode the inst in cyclic mode under the control
   // of squencer. So the dynamic power should be multiplied by a few times.
   area.set_area(area.get_area() +
@@ -366,9 +397,11 @@ InstFetchU::InstFetchU(ParseXML *XML_interface, int ithCore_,
                     coredynp.decodeW);
 }
 
-BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
+BranchPredictor::BranchPredictor(ParseXML *XML_interface,
+                                 int ithCore_,
                                  InputParameter *interface_ip_,
-                                 const CoreDynParam &dyn_p_, bool exist_)
+                                 const CoreDynParam &dyn_p_,
+                                 bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), globalBPT(0), localBPT(0), L1_localBPT(0),
       L2_localBPT(0), chooser(0), RAS(0), exist(exist_) {
@@ -421,8 +454,11 @@ BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  globalBPT = new ArrayST(&interface_ip, "Global Predictor", Core_device,
-                          coredynp.opt_local, coredynp.core_ty);
+  globalBPT = new ArrayST(&interface_ip,
+                          "Global Predictor",
+                          Core_device,
+                          coredynp.opt_local,
+                          coredynp.core_ty);
   globalBPT->area.set_area(globalBPT->area.get_area() +
                            globalBPT->local_result.area);
   area.set_area(area.get_area() + globalBPT->local_result.area);
@@ -446,8 +482,11 @@ BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  L1_localBPT = new ArrayST(&interface_ip, "L1 local Predictor", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+  L1_localBPT = new ArrayST(&interface_ip,
+                            "L1 local Predictor",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
   L1_localBPT->area.set_area(L1_localBPT->area.get_area() +
                              L1_localBPT->local_result.area);
   area.set_area(area.get_area() + L1_localBPT->local_result.area);
@@ -471,8 +510,11 @@ BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  L2_localBPT = new ArrayST(&interface_ip, "L2 local Predictor", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+  L2_localBPT = new ArrayST(&interface_ip,
+                            "L2 local Predictor",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
   L2_localBPT->area.set_area(L2_localBPT->area.get_area() +
                              L2_localBPT->local_result.area);
   area.set_area(area.get_area() + L2_localBPT->local_result.area);
@@ -496,8 +538,11 @@ BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  chooser = new ArrayST(&interface_ip, "Predictor Chooser", Core_device,
-                        coredynp.opt_local, coredynp.core_ty);
+  chooser = new ArrayST(&interface_ip,
+                        "Predictor Chooser",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
   chooser->area.set_area(chooser->area.get_area() + chooser->local_result.area);
   area.set_area(area.get_area() + chooser->local_result.area);
 
@@ -521,17 +566,19 @@ BranchPredictor::BranchPredictor(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  RAS = new ArrayST(&interface_ip, "RAS", Core_device, coredynp.opt_local,
-                    coredynp.core_ty);
+  RAS = new ArrayST(
+      &interface_ip, "RAS", Core_device, coredynp.opt_local, coredynp.core_ty);
   RAS->area.set_area(RAS->area.get_area() +
                      RAS->local_result.area * coredynp.num_hthreads);
   area.set_area(area.get_area() +
                 RAS->local_result.area * coredynp.num_hthreads);
 }
 
-SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
+SchedulerU::SchedulerU(ParseXML *XML_interface,
+                       int ithCore_,
                        InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_, bool exist_)
+                       const CoreDynParam &dyn_p_,
+                       bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), int_inst_window(0), fp_inst_window(0), ROB(0),
       instruction_selection(0), exist(exist_) {
@@ -579,8 +626,11 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_wr_ports = coredynp.peak_issueW;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.peak_issueW;
-    int_inst_window = new ArrayST(&interface_ip, "InstFetchQueue", Core_device,
-                                  coredynp.opt_local, coredynp.core_ty);
+    int_inst_window = new ArrayST(&interface_ip,
+                                  "InstFetchQueue",
+                                  Core_device,
+                                  coredynp.opt_local,
+                                  coredynp.core_ty);
     int_inst_window->area.set_area(int_inst_window->area.get_area() +
                                    int_inst_window->local_result.area *
                                        coredynp.num_pipelines);
@@ -600,9 +650,12 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
     interface_ip.assoc =
         1; // reset to prevent unnecessary warning messages when init_interface
     instruction_selection = new selection_logic(
-        is_default, XML->sys.core[ithCore].instruction_window_size,
+        is_default,
+        XML->sys.core[ithCore].instruction_window_size,
         coredynp.peak_issueW * XML->sys.core[ithCore].number_hardware_threads,
-        &interface_ip, Core_device, coredynp.core_ty);
+        &interface_ip,
+        Core_device,
+        coredynp.core_ty);
   }
 
   if (coredynp.core_ty == OOO) {
@@ -666,8 +719,11 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_wr_ports = coredynp.peak_issueW;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.peak_issueW;
-    int_inst_window = new ArrayST(&interface_ip, tmp_name, Core_device,
-                                  coredynp.opt_local, coredynp.core_ty);
+    int_inst_window = new ArrayST(&interface_ip,
+                                  tmp_name,
+                                  Core_device,
+                                  coredynp.opt_local,
+                                  coredynp.core_ty);
     int_inst_window->area.set_area(int_inst_window->area.get_area() +
                                    int_inst_window->local_result.area *
                                        coredynp.num_pipelines);
@@ -715,8 +771,11 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_wr_ports = coredynp.fp_issueW;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.fp_issueW;
-    fp_inst_window = new ArrayST(&interface_ip, tmp_name, Core_device,
-                                 coredynp.opt_local, coredynp.core_ty);
+    fp_inst_window = new ArrayST(&interface_ip,
+                                 tmp_name,
+                                 Core_device,
+                                 coredynp.opt_local,
+                                 coredynp.core_ty);
     fp_inst_window->area.set_area(fp_inst_window->area.get_area() +
                                   fp_inst_window->local_result.area *
                                       coredynp.num_fp_pipelines);
@@ -847,8 +906,11 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
       interface_ip.num_wr_ports = coredynp.peak_issueW;
       interface_ip.num_se_rd_ports = 0;
       interface_ip.num_search_ports = 0;
-      ROB = new ArrayST(&interface_ip, "ReorderBuffer", Core_device,
-                        coredynp.opt_local, coredynp.core_ty);
+      ROB = new ArrayST(&interface_ip,
+                        "ReorderBuffer",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
       ROB->area.set_area(ROB->area.get_area() +
                          ROB->local_result.area * coredynp.num_pipelines);
       area.set_area(area.get_area() +
@@ -856,15 +918,21 @@ SchedulerU::SchedulerU(ParseXML *XML_interface, int ithCore_,
       ROB_height = ROB->local_result.cache_ht;
     }
 
-    instruction_selection = new selection_logic(
-        is_default, XML->sys.core[ithCore].instruction_window_size,
-        coredynp.peak_issueW, &interface_ip, Core_device, coredynp.core_ty);
+    instruction_selection =
+        new selection_logic(is_default,
+                            XML->sys.core[ithCore].instruction_window_size,
+                            coredynp.peak_issueW,
+                            &interface_ip,
+                            Core_device,
+                            coredynp.core_ty);
   }
 }
 
-LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
+LoadStoreU::LoadStoreU(ParseXML *XML_interface,
+                       int ithCore_,
                        InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_, bool exist_)
+                       const CoreDynParam &dyn_p_,
+                       bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), LSQ(0), LoadQ(0), exist(exist_) {
   if (!exist)
@@ -922,8 +990,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.caches = new ArrayST(&interface_ip, "dcache", Core_device,
-                              coredynp.opt_local, coredynp.core_ty);
+  dcache.caches = new ArrayST(&interface_ip,
+                              "dcache",
+                              Core_device,
+                              coredynp.opt_local,
+                              coredynp.core_ty);
   dcache.area.set_area(dcache.area.get_area() +
                        dcache.caches->local_result.area);
   area.set_area(area.get_area() + dcache.caches->local_result.area);
@@ -959,8 +1030,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.missb = new ArrayST(&interface_ip, "dcacheMissBuffer", Core_device,
-                             coredynp.opt_local, coredynp.core_ty);
+  dcache.missb = new ArrayST(&interface_ip,
+                             "dcacheMissBuffer",
+                             Core_device,
+                             coredynp.opt_local,
+                             coredynp.core_ty);
   dcache.area.set_area(dcache.area.get_area() +
                        dcache.missb->local_result.area);
   area.set_area(area.get_area() + dcache.missb->local_result.area);
@@ -992,8 +1066,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.ifb = new ArrayST(&interface_ip, "dcacheFillBuffer", Core_device,
-                           coredynp.opt_local, coredynp.core_ty);
+  dcache.ifb = new ArrayST(&interface_ip,
+                           "dcacheFillBuffer",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
   dcache.area.set_area(dcache.area.get_area() + dcache.ifb->local_result.area);
   area.set_area(area.get_area() + dcache.ifb->local_result.area);
   // output_data_csv(dcache.ifb.local_result);
@@ -1028,9 +1105,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.prefetchb =
-      new ArrayST(&interface_ip, "dcacheprefetchBuffer", Core_device,
-                  coredynp.opt_local, coredynp.core_ty);
+  dcache.prefetchb = new ArrayST(&interface_ip,
+                                 "dcacheprefetchBuffer",
+                                 Core_device,
+                                 coredynp.opt_local,
+                                 coredynp.core_ty);
   dcache.area.set_area(dcache.area.get_area() +
                        dcache.prefetchb->local_result.area);
   area.set_area(area.get_area() + dcache.prefetchb->local_result.area);
@@ -1064,8 +1143,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    dcache.wbb = new ArrayST(&interface_ip, "dcacheWBB", Core_device,
-                             coredynp.opt_local, coredynp.core_ty);
+    dcache.wbb = new ArrayST(&interface_ip,
+                             "dcacheWBB",
+                             Core_device,
+                             coredynp.opt_local,
+                             coredynp.core_ty);
     dcache.area.set_area(dcache.area.get_area() +
                          dcache.wbb->local_result.area);
     area.set_area(area.get_area() + dcache.wbb->local_result.area);
@@ -1103,8 +1185,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_wr_ports = XML->sys.core[ithCore].memory_ports;
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports = XML->sys.core[ithCore].memory_ports;
-  LSQ = new ArrayST(&interface_ip, "Load(Store)Queue", Core_device,
-                    coredynp.opt_local, coredynp.core_ty);
+  LSQ = new ArrayST(&interface_ip,
+                    "Load(Store)Queue",
+                    Core_device,
+                    coredynp.opt_local,
+                    coredynp.core_ty);
   LSQ->area.set_area(LSQ->area.get_area() + LSQ->local_result.area);
   area.set_area(area.get_area() + LSQ->local_result.area);
   // output_data_csv(LSQ.LSQ.local_result);
@@ -1134,8 +1219,11 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_wr_ports = XML->sys.core[ithCore].memory_ports;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = XML->sys.core[ithCore].memory_ports;
-    LoadQ = new ArrayST(&interface_ip, "LoadQueue", Core_device,
-                        coredynp.opt_local, coredynp.core_ty);
+    LoadQ = new ArrayST(&interface_ip,
+                        "LoadQueue",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
     LoadQ->area.set_area(LoadQ->area.get_area() + LoadQ->local_result.area);
     area.set_area(area.get_area() + LoadQ->local_result.area);
     // output_data_csv(LoadQ.LoadQ.local_result);
@@ -1146,8 +1234,10 @@ LoadStoreU::LoadStoreU(ParseXML *XML_interface, int ithCore_,
   area.set_area(area.get_area() * cdb_overhead);
 }
 
-MemManU::MemManU(ParseXML *XML_interface, int ithCore_,
-                 InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+MemManU::MemManU(ParseXML *XML_interface,
+                 int ithCore_,
+                 InputParameter *interface_ip_,
+                 const CoreDynParam &dyn_p_,
                  bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), itlb(0), dtlb(0), exist(exist_) {
@@ -1196,8 +1286,8 @@ MemManU::MemManU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       debug ? 1 : XML->sys.core[ithCore].number_instruction_fetch_ports;
-  itlb = new ArrayST(&interface_ip, "ITLB", Core_device, coredynp.opt_local,
-                     coredynp.core_ty);
+  itlb = new ArrayST(
+      &interface_ip, "ITLB", Core_device, coredynp.opt_local, coredynp.core_ty);
   itlb->area.set_area(itlb->area.get_area() + itlb->local_result.area);
   area.set_area(area.get_area() + itlb->local_result.area);
   // output_data_csv(itlb.tlb.local_result);
@@ -1235,15 +1325,17 @@ MemManU::MemManU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_wr_ports = XML->sys.core[ithCore].memory_ports;
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports = XML->sys.core[ithCore].memory_ports;
-  dtlb = new ArrayST(&interface_ip, "DTLB", Core_device, coredynp.opt_local,
-                     coredynp.core_ty);
+  dtlb = new ArrayST(
+      &interface_ip, "DTLB", Core_device, coredynp.opt_local, coredynp.core_ty);
   dtlb->area.set_area(dtlb->area.get_area() + dtlb->local_result.area);
   area.set_area(area.get_area() + dtlb->local_result.area);
   // output_data_csv(dtlb.tlb.local_result);
 }
 
-RegFU::RegFU(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+RegFU::RegFU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
              bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), IRF(0), FRF(0), RFWIN(0), exist(exist_) {
@@ -1281,8 +1373,11 @@ RegFU::RegFU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 2 * coredynp.peak_issueW;
   interface_ip.num_wr_ports = coredynp.peak_issueW;
   interface_ip.num_se_rd_ports = 0;
-  IRF = new ArrayST(&interface_ip, "Integer Register File", Core_device,
-                    coredynp.opt_local, coredynp.core_ty);
+  IRF = new ArrayST(&interface_ip,
+                    "Integer Register File",
+                    Core_device,
+                    coredynp.opt_local,
+                    coredynp.core_ty);
   IRF->area.set_area(IRF->area.get_area() +
                      IRF->local_result.area * coredynp.num_pipelines *
                          cdb_overhead *
@@ -1320,8 +1415,11 @@ RegFU::RegFU(ParseXML *XML_interface, int ithCore_,
   interface_ip.num_rd_ports = 2 * XML->sys.core[ithCore].issue_width;
   interface_ip.num_wr_ports = XML->sys.core[ithCore].issue_width;
   interface_ip.num_se_rd_ports = 0;
-  FRF = new ArrayST(&interface_ip, "Floating point Register File", Core_device,
-                    coredynp.opt_local, coredynp.core_ty);
+  FRF = new ArrayST(&interface_ip,
+                    "Floating point Register File",
+                    Core_device,
+                    coredynp.opt_local,
+                    coredynp.core_ty);
   FRF->area.set_area(FRF->area.get_area() +
                      FRF->local_result.area * coredynp.num_fp_pipelines *
                          cdb_overhead *
@@ -1377,8 +1475,11 @@ RegFU::RegFU(ParseXML *XML_interface, int ithCore_,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    RFWIN = new ArrayST(&interface_ip, "RegWindow", Core_device,
-                        coredynp.opt_local, coredynp.core_ty);
+    RFWIN = new ArrayST(&interface_ip,
+                        "RegWindow",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
     RFWIN->area.set_area(RFWIN->area.get_area() +
                          RFWIN->local_result.area * coredynp.num_pipelines);
     area.set_area(area.get_area() +
@@ -1387,9 +1488,12 @@ RegFU::RegFU(ParseXML *XML_interface, int ithCore_,
   }
 }
 
-EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, double lsq_height_,
-             const CoreDynParam &dyn_p_, bool exist_)
+EXECU::EXECU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             double lsq_height_,
+             const CoreDynParam &dyn_p_,
+             bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0), fp_u(0),
       exeu(0), mul(0), int_bypass(0), intTagBypass(0), int_mul_bypass(0),
@@ -1437,50 +1541,99 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
   }
 
   if (coredynp.core_ty == Inorder) {
-    int_bypass = new interconnect(
-        "Int Bypass Data", Core_device, 1, 1,
-        int(ceil(XML->sys.machine_bits / 32.0) * 32),
-        rfu->int_regfile_height + exeu->FU_height + lsq_height, &interface_ip,
-        3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+    int_bypass =
+        new interconnect("Int Bypass Data",
+                         Core_device,
+                         1,
+                         1,
+                         int(ceil(XML->sys.machine_bits / 32.0) * 32),
+                         rfu->int_regfile_height + exeu->FU_height + lsq_height,
+                         &interface_ip,
+                         3,
+                         false,
+                         1.0,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
     bypass.area.set_area(bypass.area.get_area() + int_bypass->area.get_area());
-    intTagBypass = new interconnect(
-        "Int Bypass tag", Core_device, 1, 1, coredynp.perThreadState,
-        rfu->int_regfile_height + exeu->FU_height + lsq_height +
-            scheu->Iw_height,
-        &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+    intTagBypass = new interconnect("Int Bypass tag",
+                                    Core_device,
+                                    1,
+                                    1,
+                                    coredynp.perThreadState,
+                                    rfu->int_regfile_height + exeu->FU_height +
+                                        lsq_height + scheu->Iw_height,
+                                    &interface_ip,
+                                    3,
+                                    false,
+                                    1.0,
+                                    coredynp.opt_local,
+                                    coredynp.core_ty);
     bypass.area.set_area(bypass.area.get_area() +
                          intTagBypass->area.get_area());
 
     if (coredynp.num_muls > 0) {
-      int_mul_bypass = new interconnect(
-          "Mul Bypass Data", Core_device, 1, 1,
-          int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-          rfu->fp_regfile_height + exeu->FU_height + mul->FU_height +
-              lsq_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      int_mul_bypass =
+          new interconnect("Mul Bypass Data",
+                           Core_device,
+                           1,
+                           1,
+                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+                           rfu->fp_regfile_height + exeu->FU_height +
+                               mul->FU_height + lsq_height,
+                           &interface_ip,
+                           3,
+                           false,
+                           1.0,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            int_mul_bypass->area.get_area());
-      intTag_mul_Bypass = new interconnect(
-          "Mul Bypass tag", Core_device, 1, 1, coredynp.perThreadState,
-          rfu->fp_regfile_height + exeu->FU_height + mul->FU_height +
-              lsq_height + scheu->Iw_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      intTag_mul_Bypass =
+          new interconnect("Mul Bypass tag",
+                           Core_device,
+                           1,
+                           1,
+                           coredynp.perThreadState,
+                           rfu->fp_regfile_height + exeu->FU_height +
+                               mul->FU_height + lsq_height + scheu->Iw_height,
+                           &interface_ip,
+                           3,
+                           false,
+                           1.0,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            intTag_mul_Bypass->area.get_area());
     }
 
     if (coredynp.num_fpus > 0) {
-      fp_bypass = new interconnect(
-          "FP Bypass Data", Core_device, 1, 1,
-          int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-          rfu->fp_regfile_height + fp_u->FU_height, &interface_ip, 3, false,
-          1.0, coredynp.opt_local, coredynp.core_ty);
+      fp_bypass =
+          new interconnect("FP Bypass Data",
+                           Core_device,
+                           1,
+                           1,
+                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+                           rfu->fp_regfile_height + fp_u->FU_height,
+                           &interface_ip,
+                           3,
+                           false,
+                           1.0,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() + fp_bypass->area.get_area());
-      fpTagBypass = new interconnect(
-          "FP Bypass tag", Core_device, 1, 1, coredynp.perThreadState,
-          rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
-              scheu->Iw_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      fpTagBypass = new interconnect("FP Bypass tag",
+                                     Core_device,
+                                     1,
+                                     1,
+                                     coredynp.perThreadState,
+                                     rfu->fp_regfile_height + fp_u->FU_height +
+                                         lsq_height + scheu->Iw_height,
+                                     &interface_ip,
+                                     3,
+                                     false,
+                                     1.0,
+                                     coredynp.opt_local,
+                                     coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            fpTagBypass->area.get_area());
     }
@@ -1491,33 +1644,67 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
        * windows and register files, while tag broadcast interconnects also
        * cover across ROB
        */
-      int_bypass = new interconnect(
-          "Int Bypass Data", Core_device, 1, 1,
-          int(ceil(coredynp.int_data_width)),
-          rfu->int_regfile_height + exeu->FU_height + lsq_height, &interface_ip,
-          3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      int_bypass = new interconnect("Int Bypass Data",
+                                    Core_device,
+                                    1,
+                                    1,
+                                    int(ceil(coredynp.int_data_width)),
+                                    rfu->int_regfile_height + exeu->FU_height +
+                                        lsq_height,
+                                    &interface_ip,
+                                    3,
+                                    false,
+                                    1.0,
+                                    coredynp.opt_local,
+                                    coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            int_bypass->area.get_area());
-      intTagBypass = new interconnect(
-          "Int Bypass tag", Core_device, 1, 1, coredynp.phy_ireg_width,
-          rfu->int_regfile_height + exeu->FU_height + lsq_height +
-              scheu->Iw_height + scheu->ROB_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      intTagBypass = new interconnect("Int Bypass tag",
+                                      Core_device,
+                                      1,
+                                      1,
+                                      coredynp.phy_ireg_width,
+                                      rfu->int_regfile_height +
+                                          exeu->FU_height + lsq_height +
+                                          scheu->Iw_height + scheu->ROB_height,
+                                      &interface_ip,
+                                      3,
+                                      false,
+                                      1.0,
+                                      coredynp.opt_local,
+                                      coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            intTagBypass->area.get_area());
 
       if (coredynp.num_muls > 0) {
-        int_mul_bypass = new interconnect(
-            "Mul Bypass Data", Core_device, 1, 1,
-            int(ceil(coredynp.int_data_width)),
-            rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
-                lsq_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+        int_mul_bypass =
+            new interconnect("Mul Bypass Data",
+                             Core_device,
+                             1,
+                             1,
+                             int(ceil(coredynp.int_data_width)),
+                             rfu->int_regfile_height + exeu->FU_height +
+                                 mul->FU_height + lsq_height,
+                             &interface_ip,
+                             3,
+                             false,
+                             1.0,
+                             coredynp.opt_local,
+                             coredynp.core_ty);
         intTag_mul_Bypass = new interconnect(
-            "Mul Bypass tag", Core_device, 1, 1, coredynp.phy_ireg_width,
+            "Mul Bypass tag",
+            Core_device,
+            1,
+            1,
+            coredynp.phy_ireg_width,
             rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+            &interface_ip,
+            3,
+            false,
+            1.0,
+            coredynp.opt_local,
+            coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
                              int_mul_bypass->area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
@@ -1525,16 +1712,32 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
       }
 
       if (coredynp.num_fpus > 0) {
-        fp_bypass = new interconnect("FP Bypass Data", Core_device, 1, 1,
+        fp_bypass = new interconnect("FP Bypass Data",
+                                     Core_device,
+                                     1,
+                                     1,
                                      int(ceil(coredynp.fp_data_width)),
                                      rfu->fp_regfile_height + fp_u->FU_height,
-                                     &interface_ip, 3, false, 1.0,
-                                     coredynp.opt_local, coredynp.core_ty);
+                                     &interface_ip,
+                                     3,
+                                     false,
+                                     1.0,
+                                     coredynp.opt_local,
+                                     coredynp.core_ty);
         fpTagBypass = new interconnect(
-            "FP Bypass tag", Core_device, 1, 1, coredynp.phy_freg_width,
+            "FP Bypass tag",
+            Core_device,
+            1,
+            1,
+            coredynp.phy_freg_width,
             rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
                 scheu->fp_Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+            &interface_ip,
+            3,
+            false,
+            1.0,
+            coredynp.opt_local,
+            coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
                              fp_bypass->area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
@@ -1545,33 +1748,67 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
        * In RS based processor both data and tag are broadcast together,
        * covering functional units, lsq, nst windows, register files, and ROBs
        */
-      int_bypass = new interconnect(
-          "Int Bypass Data", Core_device, 1, 1,
-          int(ceil(coredynp.int_data_width)),
-          rfu->int_regfile_height + exeu->FU_height + lsq_height +
-              scheu->Iw_height + scheu->ROB_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
-      intTagBypass = new interconnect(
-          "Int Bypass tag", Core_device, 1, 1, coredynp.phy_ireg_width,
-          rfu->int_regfile_height + exeu->FU_height + lsq_height +
-              scheu->Iw_height + scheu->ROB_height,
-          &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+      int_bypass = new interconnect("Int Bypass Data",
+                                    Core_device,
+                                    1,
+                                    1,
+                                    int(ceil(coredynp.int_data_width)),
+                                    rfu->int_regfile_height + exeu->FU_height +
+                                        lsq_height + scheu->Iw_height +
+                                        scheu->ROB_height,
+                                    &interface_ip,
+                                    3,
+                                    false,
+                                    1.0,
+                                    coredynp.opt_local,
+                                    coredynp.core_ty);
+      intTagBypass = new interconnect("Int Bypass tag",
+                                      Core_device,
+                                      1,
+                                      1,
+                                      coredynp.phy_ireg_width,
+                                      rfu->int_regfile_height +
+                                          exeu->FU_height + lsq_height +
+                                          scheu->Iw_height + scheu->ROB_height,
+                                      &interface_ip,
+                                      3,
+                                      false,
+                                      1.0,
+                                      coredynp.opt_local,
+                                      coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
                            int_bypass->area.get_area());
       bypass.area.set_area(bypass.area.get_area() +
                            intTagBypass->area.get_area());
       if (coredynp.num_muls > 0) {
         int_mul_bypass = new interconnect(
-            "Mul Bypass Data", Core_device, 1, 1,
+            "Mul Bypass Data",
+            Core_device,
+            1,
+            1,
             int(ceil(coredynp.int_data_width)),
             rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+            &interface_ip,
+            3,
+            false,
+            1.0,
+            coredynp.opt_local,
+            coredynp.core_ty);
         intTag_mul_Bypass = new interconnect(
-            "Mul Bypass tag", Core_device, 1, 1, coredynp.phy_ireg_width,
+            "Mul Bypass tag",
+            Core_device,
+            1,
+            1,
+            coredynp.phy_ireg_width,
             rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+            &interface_ip,
+            3,
+            false,
+            1.0,
+            coredynp.opt_local,
+            coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
                              int_mul_bypass->area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
@@ -1579,17 +1816,34 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
       }
 
       if (coredynp.num_fpus > 0) {
-        fp_bypass = new interconnect(
-            "FP Bypass Data", Core_device, 1, 1,
-            int(ceil(coredynp.fp_data_width)),
-            rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
-                scheu->fp_Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+        fp_bypass = new interconnect("FP Bypass Data",
+                                     Core_device,
+                                     1,
+                                     1,
+                                     int(ceil(coredynp.fp_data_width)),
+                                     rfu->fp_regfile_height + fp_u->FU_height +
+                                         lsq_height + scheu->fp_Iw_height +
+                                         scheu->ROB_height,
+                                     &interface_ip,
+                                     3,
+                                     false,
+                                     1.0,
+                                     coredynp.opt_local,
+                                     coredynp.core_ty);
         fpTagBypass = new interconnect(
-            "FP Bypass tag", Core_device, 1, 1, coredynp.phy_freg_width,
+            "FP Bypass tag",
+            Core_device,
+            1,
+            1,
+            coredynp.phy_freg_width,
             rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
                 scheu->fp_Iw_height + scheu->ROB_height,
-            &interface_ip, 3, false, 1.0, coredynp.opt_local, coredynp.core_ty);
+            &interface_ip,
+            3,
+            false,
+            1.0,
+            coredynp.opt_local,
+            coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
                              fp_bypass->area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
@@ -1600,8 +1854,10 @@ EXECU::EXECU(ParseXML *XML_interface, int ithCore_,
   area.set_area(area.get_area() + bypass.area.get_area());
 }
 
-RENAMINGU::RENAMINGU(ParseXML *XML_interface, int ithCore_,
-                     InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+RENAMINGU::RENAMINGU(ParseXML *XML_interface,
+                     int ithCore_,
+                     InputParameter *interface_ip_,
+                     const CoreDynParam &dyn_p_,
                      bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), iFRAT(0), fFRAT(0), iRRAT(0), fRRAT(0), ifreeL(0),
@@ -1693,8 +1949,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = 2 * coredynp.decodeW;
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
-        iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iFRAT = new ArrayST(&interface_ip,
+                            "Int FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
         area.set_area(area.get_area() + iFRAT->area.get_area());
 
@@ -1723,8 +1982,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = 2 * coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fFRAT = new ArrayST(&interface_ip,
+                            "FP FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
         area.set_area(area.get_area() + fFRAT->area.get_area());
 
@@ -1759,8 +2021,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
-        iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iFRAT = new ArrayST(&interface_ip,
+                            "Int FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
         area.set_area(area.get_area() + iFRAT->area.get_area());
 
@@ -1794,8 +2059,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
-        fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fFRAT = new ArrayST(&interface_ip,
+                            "FP FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
         area.set_area(area.get_area() + fFRAT->area.get_area());
       }
@@ -1833,8 +2101,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
-        iRRAT = new ArrayST(&interface_ip, "Int RetireRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iRRAT = new ArrayST(&interface_ip,
+                            "Int RetireRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iRRAT->area.set_area(iRRAT->area.get_area() + iRRAT->local_result.area);
         area.set_area(area.get_area() + iRRAT->area.get_area());
 
@@ -1862,8 +2133,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fRRAT = new ArrayST(&interface_ip, "FP RetireRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fRRAT = new ArrayST(&interface_ip,
+                            "FP RetireRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fRRAT->area.set_area(fRRAT->area.get_area() + fRRAT->local_result.area);
         area.set_area(area.get_area() + fRRAT->area.get_area());
       }
@@ -1899,8 +2173,11 @@ used for index the RAT entry to be updated.
       // every cycle, (coredynp.decodeW -1) inst may need to send back it dest
       // tags, committW insts needs to update freelist buffers
       interface_ip.num_se_rd_ports = 0;
-      ifreeL = new ArrayST(&interface_ip, "Int Free List", Core_device,
-                           coredynp.opt_local, coredynp.core_ty);
+      ifreeL = new ArrayST(&interface_ip,
+                           "Int Free List",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       ifreeL->area.set_area(ifreeL->area.get_area() +
                             ifreeL->local_result.area);
       area.set_area(area.get_area() + ifreeL->area.get_area());
@@ -1927,17 +2204,21 @@ used for index the RAT entry to be updated.
       interface_ip.num_wr_ports =
           coredynp.fp_decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
-      ffreeL = new ArrayST(&interface_ip, "FP Free List", Core_device,
-                           coredynp.opt_local, coredynp.core_ty);
+      ffreeL = new ArrayST(&interface_ip,
+                           "FP Free List",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       ffreeL->area.set_area(ffreeL->area.get_area() +
                             ffreeL->local_result.area);
       area.set_area(area.get_area() + ffreeL->area.get_area());
 
       idcl = new dep_resource_conflict_check(
-          &interface_ip, coredynp,
+          &interface_ip,
+          coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl = new dep_resource_conflict_check(&interface_ip, coredynp,
-                                             coredynp.phy_freg_width);
+      fdcl = new dep_resource_conflict_check(
+          &interface_ip, coredynp, coredynp.phy_freg_width);
 
     } else if (coredynp.scheu_ty == ReservationStation) {
       if (coredynp.rm_ty == RAMbased) {
@@ -1967,8 +2248,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = 2 * coredynp.decodeW;
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
-        iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iFRAT = new ArrayST(&interface_ip,
+                            "Int FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iFRAT->local_result.adjust_area();
         //			iFRAT->local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
@@ -2002,8 +2286,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = 2 * coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fFRAT = new ArrayST(&interface_ip,
+                            "FP FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fFRAT->local_result.adjust_area();
         //			fFRAT->local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
@@ -2041,8 +2328,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
-        iFRAT = new ArrayST(&interface_ip, "Int FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iFRAT = new ArrayST(&interface_ip,
+                            "Int FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
         area.set_area(area.get_area() + iFRAT->area.get_area());
 
@@ -2075,8 +2365,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
-        fFRAT = new ArrayST(&interface_ip, "FP FrontRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fFRAT = new ArrayST(&interface_ip,
+                            "FP FrontRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
         area.set_area(area.get_area() + fFRAT->area.get_area());
       }
@@ -2108,8 +2401,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
-        iRRAT = new ArrayST(&interface_ip, "Int RetireRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        iRRAT = new ArrayST(&interface_ip,
+                            "Int RetireRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         iRRAT->area.set_area(iRRAT->area.get_area() + iRRAT->local_result.area);
         area.set_area(area.get_area() + iRRAT->area.get_area());
 
@@ -2137,8 +2433,11 @@ used for index the RAT entry to be updated.
         interface_ip.num_rd_ports = coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fRRAT = new ArrayST(&interface_ip, "FP RetireRAT", Core_device,
-                            coredynp.opt_local, coredynp.core_ty);
+        fRRAT = new ArrayST(&interface_ip,
+                            "FP RetireRAT",
+                            Core_device,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
         fRRAT->area.set_area(fRRAT->area.get_area() + fRRAT->local_result.area);
         area.set_area(area.get_area() + fRRAT->area.get_area());
       }
@@ -2166,17 +2465,21 @@ used for index the RAT entry to be updated.
       interface_ip.num_wr_ports =
           coredynp.decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
-      ifreeL = new ArrayST(&interface_ip, "Unified Free List", Core_device,
-                           coredynp.opt_local, coredynp.core_ty);
+      ifreeL = new ArrayST(&interface_ip,
+                           "Unified Free List",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
       // ifreeL->area.set_area(ifreeL->area.get_area()+
       // ifreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
       area.set_area(area.get_area() + ifreeL->area.get_area());
 
       idcl = new dep_resource_conflict_check(
-          &interface_ip, coredynp,
+          &interface_ip,
+          coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl = new dep_resource_conflict_check(&interface_ip, coredynp,
-                                             coredynp.phy_freg_width);
+      fdcl = new dep_resource_conflict_check(
+          &interface_ip, coredynp, coredynp.phy_freg_width);
     }
   }
   if (coredynp.core_ty == Inorder && coredynp.issueW > 1) {
@@ -2185,10 +2488,11 @@ used for index the RAT entry to be updated.
      * must.
      */
     idcl = new dep_resource_conflict_check(
-        &interface_ip, coredynp,
+        &interface_ip,
+        coredynp,
         coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-    fdcl = new dep_resource_conflict_check(&interface_ip, coredynp,
-                                           coredynp.phy_freg_width);
+    fdcl = new dep_resource_conflict_check(
+        &interface_ip, coredynp, coredynp.phy_freg_width);
   }
 }
 
@@ -2217,8 +2521,8 @@ Core::Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_)
   ifu = new InstFetchU(XML, ithCore, &interface_ip, coredynp, exit_flag);
   lsu = new LoadStoreU(XML, ithCore, &interface_ip, coredynp, exit_flag);
   mmu = new MemManU(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  exu = new EXECU(XML, ithCore, &interface_ip, lsu->lsq_height, coredynp,
-                  exit_flag);
+  exu = new EXECU(
+      XML, ithCore, &interface_ip, lsu->lsq_height, coredynp, exit_flag);
   undiffCore = new UndiffCore(XML, ithCore, &interface_ip, coredynp, exit_flag);
   if (coredynp.core_ty == OOO) {
     rnu = new RENAMINGU(XML, ithCore, &interface_ip, coredynp);
@@ -3274,11 +3578,17 @@ void RENAMINGU::computeEnergy(bool is_tdp) {
     if (coredynp.issueW > 1) {
       idcl->power_t.reset();
       fdcl->power_t.reset();
-      set_pppm(pppm_t, idcl->stats_t.readAc.access, coredynp.num_hthreads,
-               coredynp.num_hthreads, idcl->stats_t.readAc.access);
+      set_pppm(pppm_t,
+               idcl->stats_t.readAc.access,
+               coredynp.num_hthreads,
+               coredynp.num_hthreads,
+               idcl->stats_t.readAc.access);
       idcl->power_t = idcl->power * pppm_t;
-      set_pppm(pppm_t, fdcl->stats_t.readAc.access, coredynp.num_hthreads,
-               coredynp.num_hthreads, idcl->stats_t.readAc.access);
+      set_pppm(pppm_t,
+               fdcl->stats_t.readAc.access,
+               coredynp.num_hthreads,
+               coredynp.num_hthreads,
+               idcl->stats_t.readAc.access);
       fdcl->power_t = fdcl->power * pppm_t;
     }
   }
@@ -4745,7 +5055,10 @@ void EXECU::computeEnergy(bool is_tdp) {
 
   if (is_tdp) {
     set_pppm(
-        pppm_t, 2 * coredynp.ALU_cdb_duty_cycle, 2, 2,
+        pppm_t,
+        2 * coredynp.ALU_cdb_duty_cycle,
+        2,
+        2,
         2 * coredynp
                 .ALU_cdb_duty_cycle); // 2 means two source operands needs to be
                                       // passed for each int instruction.
@@ -4753,7 +5066,10 @@ void EXECU::computeEnergy(bool is_tdp) {
                    int_bypass->power * pppm_t;
     if (coredynp.num_muls > 0) {
       set_pppm(
-          pppm_t, 2 * coredynp.MUL_cdb_duty_cycle, 2, 2,
+          pppm_t,
+          2 * coredynp.MUL_cdb_duty_cycle,
+          2,
+          2,
           2 * coredynp
                   .MUL_cdb_duty_cycle); // 2 means two source operands needs to
                                         // be passed for each int instruction.
@@ -4763,7 +5079,10 @@ void EXECU::computeEnergy(bool is_tdp) {
     }
     if (coredynp.num_fpus > 0) {
       set_pppm(
-          pppm_t, 3 * coredynp.FPU_cdb_duty_cycle, 3, 3,
+          pppm_t,
+          3 * coredynp.FPU_cdb_duty_cycle,
+          3,
+          3,
           3 * coredynp
                   .FPU_cdb_duty_cycle); // 3 means three source operands needs
                                         // to be passed for each fp instruction.
@@ -4774,13 +5093,19 @@ void EXECU::computeEnergy(bool is_tdp) {
 
     power = power + rfu->power + exeu->power + bypass.power + scheu->power;
   } else {
-    set_pppm(pppm_t, XML->sys.core[ithCore].cdb_alu_accesses, 2, 2,
+    set_pppm(pppm_t,
+             XML->sys.core[ithCore].cdb_alu_accesses,
+             2,
+             2,
              XML->sys.core[ithCore].cdb_alu_accesses);
     bypass.rt_power = bypass.rt_power + intTagBypass->power * pppm_t;
     bypass.rt_power = bypass.rt_power + int_bypass->power * pppm_t;
 
     if (coredynp.num_muls > 0) {
-      set_pppm(pppm_t, XML->sys.core[ithCore].cdb_mul_accesses, 2, 2,
+      set_pppm(pppm_t,
+               XML->sys.core[ithCore].cdb_mul_accesses,
+               2,
+               2,
                XML->sys.core[ithCore]
                    .cdb_mul_accesses); // 2 means two source operands needs to
                                        // be passed for each int instruction.
@@ -4790,7 +5115,10 @@ void EXECU::computeEnergy(bool is_tdp) {
     }
 
     if (coredynp.num_fpus > 0) {
-      set_pppm(pppm_t, XML->sys.core[ithCore].cdb_fpu_accesses, 3, 3,
+      set_pppm(pppm_t,
+               XML->sys.core[ithCore].cdb_fpu_accesses,
+               3,
+               3,
                XML->sys.core[ithCore].cdb_fpu_accesses);
       bypass.rt_power = bypass.rt_power + fp_bypass->power * pppm_t;
       bypass.rt_power = bypass.rt_power + fpTagBypass->power * pppm_t;
@@ -4935,7 +5263,8 @@ void Core::computeEnergy(bool is_tdp) {
       num_units = 5.0;
       rnu->computeEnergy(is_tdp);
       set_pppm(
-          pppm_t, coredynp.num_pipelines / num_units,
+          pppm_t,
+          coredynp.num_pipelines / num_units,
           coredynp.num_pipelines / num_units,
           coredynp.num_pipelines / num_units,
           coredynp.num_pipelines /
@@ -5029,7 +5358,8 @@ void Core::computeEnergy(bool is_tdp) {
       } else {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle * coredynp.total_cycles;
       }
-      set_pppm(pppm_t, coredynp.num_pipelines * rtp_pipeline_coe / num_units,
+      set_pppm(pppm_t,
+               coredynp.num_pipelines * rtp_pipeline_coe / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
@@ -5051,7 +5381,8 @@ void Core::computeEnergy(bool is_tdp) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            coredynp.IFU_duty_cycle * coredynp.total_cycles;
       }
-      set_pppm(pppm_t, coredynp.num_pipelines * rtp_pipeline_coe / num_units,
+      set_pppm(pppm_t,
+               coredynp.num_pipelines * rtp_pipeline_coe / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
@@ -5067,7 +5398,8 @@ void Core::computeEnergy(bool is_tdp) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            coredynp.LSU_duty_cycle * coredynp.total_cycles;
       }
-      set_pppm(pppm_t, coredynp.num_pipelines * rtp_pipeline_coe / num_units,
+      set_pppm(pppm_t,
+               coredynp.num_pipelines * rtp_pipeline_coe / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
@@ -5084,7 +5416,8 @@ void Core::computeEnergy(bool is_tdp) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            coredynp.ALU_duty_cycle * coredynp.total_cycles;
       }
-      set_pppm(pppm_t, coredynp.num_pipelines * rtp_pipeline_coe / num_units,
+      set_pppm(pppm_t,
+               coredynp.num_pipelines * rtp_pipeline_coe / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
@@ -5101,7 +5434,8 @@ void Core::computeEnergy(bool is_tdp) {
                            (0.5 + 0.5 * coredynp.LSU_duty_cycle) *
                            coredynp.total_cycles;
       }
-      set_pppm(pppm_t, coredynp.num_pipelines * rtp_pipeline_coe / num_units,
+      set_pppm(pppm_t,
+               coredynp.num_pipelines * rtp_pipeline_coe / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
@@ -5748,8 +6082,11 @@ void Core::set_core_param() {
                               ? true
                               : false;
   coredynp.executionTime = XML->sys.total_cycles / coredynp.clockRate;
-  set_pppm(coredynp.pppm_lkg_multhread, 0, coredynp.num_hthreads,
-           coredynp.num_hthreads, 0);
+  set_pppm(coredynp.pppm_lkg_multhread,
+           0,
+           coredynp.num_hthreads,
+           coredynp.num_hthreads,
+           0);
 
   // does not care device types, since all core device types are set at sys.
   // level

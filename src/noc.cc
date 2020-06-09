@@ -43,8 +43,11 @@
 #include <iostream>
 #include <string>
 
-NoC::NoC(ParseXML *XML_interface, int ithNoC_, InputParameter *interface_ip_,
-         double M_traffic_pattern_, double link_len_)
+NoC::NoC(ParseXML *XML_interface,
+         int ithNoC_,
+         InputParameter *interface_ip_,
+         double M_traffic_pattern_,
+         double link_len_)
     : XML(XML_interface), ithNoC(ithNoC_), interface_ip(*interface_ip_),
       router(0), link_bus(0), link_bus_exist(false), router_exist(false),
       M_traffic_pattern(M_traffic_pattern_) {
@@ -85,11 +88,14 @@ NoC::NoC(ParseXML *XML_interface, int ithNoC_, InputParameter *interface_ip_,
 }
 
 void NoC::init_router() {
-  router = new Router(
-      nocdynp.flit_size,
-      nocdynp.virtual_channel_per_port * nocdynp.input_buffer_entries_per_vc,
-      nocdynp.virtual_channel_per_port, &(g_tp.peri_global),
-      nocdynp.input_ports, nocdynp.output_ports, M_traffic_pattern);
+  router = new Router(nocdynp.flit_size,
+                      nocdynp.virtual_channel_per_port *
+                          nocdynp.input_buffer_entries_per_vc,
+                      nocdynp.virtual_channel_per_port,
+                      &(g_tp.peri_global),
+                      nocdynp.input_ports,
+                      nocdynp.output_ports,
+                      M_traffic_pattern);
   // router->print_router();
   area.set_area(area.get_area() +
                 router->area.get_area() * nocdynp.total_nodes);
@@ -160,8 +166,15 @@ void NoC ::init_link_bus(double link_len_) {
 
   if (nocdynp.total_nodes > 1)
     link_len /= 2; // All links are shared by neighbors
-  link_bus = new interconnect(name, Uncore_device, 1, 1, nocdynp.flit_size,
-                              link_len, &interface_ip, 3, true /*pipelinable*/,
+  link_bus = new interconnect(name,
+                              Uncore_device,
+                              1,
+                              1,
+                              nocdynp.flit_size,
+                              link_len,
+                              &interface_ip,
+                              3,
+                              true /*pipelinable*/,
                               nocdynp.route_over_perc);
 
   link_bus_tot_per_Router.area.set_area(
@@ -183,25 +196,35 @@ void NoC::computeEnergy(bool is_tdp) {
     if (router_exist) {
       set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
       router->power = router->power * pppm_t;
-      set_pppm(pppm_t, nocdynp.total_nodes, nocdynp.total_nodes,
-               nocdynp.total_nodes, nocdynp.total_nodes);
+      set_pppm(pppm_t,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes);
       power = power + router->power * pppm_t;
     }
     if (link_bus_exist) {
       if (nocdynp.type)
-        set_pppm(pppm_t, 1 * M_traffic_pattern * M * (nocdynp.min_ports - 1),
-                 nocdynp.global_linked_ports, nocdynp.global_linked_ports,
+        set_pppm(pppm_t,
+                 1 * M_traffic_pattern * M * (nocdynp.min_ports - 1),
+                 nocdynp.global_linked_ports,
+                 nocdynp.global_linked_ports,
                  nocdynp.global_linked_ports);
       // reset traffic pattern; local port do not have router links
       else
-        set_pppm(pppm_t, 1 * M_traffic_pattern * M * (nocdynp.min_ports),
-                 nocdynp.global_linked_ports, nocdynp.global_linked_ports,
+        set_pppm(pppm_t,
+                 1 * M_traffic_pattern * M * (nocdynp.min_ports),
+                 nocdynp.global_linked_ports,
+                 nocdynp.global_linked_ports,
                  nocdynp.global_linked_ports); // reset traffic pattern
 
       link_bus_tot_per_Router.power = link_bus->power * pppm_t;
 
-      set_pppm(pppm_t, nocdynp.total_nodes, nocdynp.total_nodes,
-               nocdynp.total_nodes, nocdynp.total_nodes);
+      set_pppm(pppm_t,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes);
       power = power + link_bus_tot_per_Router.power * pppm_t;
     }
   } else {

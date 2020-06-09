@@ -7,6 +7,14 @@ cmake_minimum_required (VERSION 3.1)
 project(mcpat DESCRIPTION "Power Timing Area Calculator"
               LANGUAGES CXX)
 
+find_package(Boost 1.56 REQUIRED COMPONENTS
+             program_options)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
+find_package(Threads REQUIRED)
+
+
 set (MCPAT_VERSION_MAJOR 1)
 set (MCPAT_VERSION_MINOR 3)
 set (MCPAT_VERSION_PATCH 0)

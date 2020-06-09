@@ -145,7 +145,8 @@ void Subarray::compute_C() {
   } else {
     if (!(is_fa || dp.pure_cam)) {
       C_wl = (gate_C_pass(g_tp.sram.cell_a_w,
-                          (g_tp.sram.b_w - 2 * g_tp.sram.cell_a_w) / 2.0, false,
+                          (g_tp.sram.b_w - 2 * g_tp.sram.cell_a_w) / 2.0,
+                          false,
                           true) *
                   2 +
               c_w_metal) *
@@ -161,7 +162,8 @@ void Subarray::compute_C() {
       r_w_metal = cam_cell.w * g_tp.wire_local.R_per_um;
       C_wl_cam = (gate_C_pass(g_tp.cam.cell_a_w,
                               (g_tp.cam.b_w - 2 * g_tp.cam.cell_a_w) / 2.0,
-                              false, true) *
+                              false,
+                              true) *
                       2 +
                   c_w_metal) *
                  num_cols_fa_cam;
@@ -173,7 +175,8 @@ void Subarray::compute_C() {
         r_w_metal = cell.w * g_tp.wire_local.R_per_um;
         C_wl_ram = (gate_C_pass(g_tp.sram.cell_a_w,
                                 (g_tp.sram.b_w - 2 * g_tp.sram.cell_a_w) / 2.0,
-                                false, true) *
+                                false,
+                                true) *
                         2 +
                     c_w_metal) *
                    num_cols_fa_ram;

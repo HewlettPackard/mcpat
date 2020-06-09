@@ -32,7 +32,8 @@
 #include "logic.h"
 
 // selection_logic
-selection_logic::selection_logic(bool _is_default, int win_entries_,
+selection_logic::selection_logic(bool _is_default,
+                                 int win_entries_,
                                  int issue_width_,
                                  const InputParameter *configure_interface,
                                  enum Device_ty device_ty_,
@@ -102,7 +103,10 @@ void selection_logic::selection_power() { // based on cost effective superscalar
       3 * drain_C_(WSelPn, NCH, 1, 1, g_tp.cell_h_def) +
       drain_C_(WSelPp, PCH, 3, 1, g_tp.cell_h_def) +
       4 * drain_C_(WSelPn, NCH, 1, 1, g_tp.cell_h_def) +
-      drain_C_(WSelPp, PCH, 4, 1,
+      drain_C_(WSelPp,
+               PCH,
+               4,
+               1,
                g_tp.cell_h_def) + // precompute priority logic
       2 * 4 * gate_C(WSelEnn + WSelEnp, 20.0) +
       4 * drain_C_(WSelEnn, NCH, 1, 1, g_tp.cell_h_def) +
@@ -118,7 +122,9 @@ void selection_logic::selection_power() { // based on cost effective superscalar
   power.readOp.leakage =
       issue_width * num_arbiter *
       (cmos_Isub_leakage(
-           WSelPn, WSelPp, 2,
+           WSelPn,
+           WSelPp,
+           2,
            nor) /*approximate precompute with a nor gate*/ // grant1p
        + cmos_Isub_leakage(WSelPn, WSelPp, 3, nor)         // grant2p
        + cmos_Isub_leakage(WSelPn, WSelPp, 4, nor)         // grant3p
@@ -131,7 +137,9 @@ void selection_logic::selection_power() { // based on cost effective superscalar
   power.readOp.gate_leakage =
       issue_width * num_arbiter *
       (cmos_Ig_leakage(
-           WSelPn, WSelPp, 2,
+           WSelPn,
+           WSelPp,
+           2,
            nor) /*approximate precompute with a nor gate*/ // grant1p
        + cmos_Ig_leakage(WSelPn, WSelPp, 3, nor)           // grant2p
        + cmos_Ig_leakage(WSelPn, WSelPp, 4, nor)           // grant3p
@@ -144,8 +152,10 @@ void selection_logic::selection_power() { // based on cost effective superscalar
 }
 
 dep_resource_conflict_check::dep_resource_conflict_check(
-    const InputParameter *configure_interface, const CoreDynParam &dyn_p_,
-    int compare_bits_, bool _is_default)
+    const InputParameter *configure_interface,
+    const CoreDynParam &dyn_p_,
+    int compare_bits_,
+    bool _is_default)
     : l_ip(*configure_interface), coredynp(dyn_p_), compare_bits(compare_bits_),
       is_default(_is_default) {
   Wcompn = 25 * l_ip.F_sz_um; // this was 20.0 micron for the 0.8 micron process
@@ -254,8 +264,11 @@ void dep_resource_conflict_check::leakage_feedback(double temperature) {
 
 // TODO: add inverter and transmission gate base DFF.
 
-DFFCell::DFFCell(bool _is_dram, double _WdecNANDn, double _WdecNANDp,
-                 double _cell_load, const InputParameter *configure_interface)
+DFFCell::DFFCell(bool _is_dram,
+                 double _WdecNANDn,
+                 double _WdecNANDp,
+                 double _cell_load,
+                 const InputParameter *configure_interface)
     : is_dram(_is_dram), cell_load(_cell_load), WdecNANDn(_WdecNANDn),
       WdecNANDp(_WdecNANDp) { // this model is based on the NAND2 based DFF.
   l_ip = *configure_interface;
@@ -317,8 +330,10 @@ void DFFCell::compute_DFF_cell() {
 }
 
 Pipeline::Pipeline(const InputParameter *configure_interface,
-                   const CoreDynParam &dyn_p_, enum Device_ty device_ty_,
-                   bool _is_core_pipeline, bool _is_default)
+                   const CoreDynParam &dyn_p_,
+                   enum Device_ty device_ty_,
+                   bool _is_core_pipeline,
+                   bool _is_default)
     : l_ip(*configure_interface), coredynp(dyn_p_), device_ty(device_ty_),
       is_core_pipeline(_is_core_pipeline), is_default(_is_default),
       num_piperegs(0.0)
@@ -522,7 +537,8 @@ void Pipeline::compute_stage_vector() {
   }
 }
 
-FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
+FunctionalUnit::FunctionalUnit(ParseXML *XML_interface,
+                               int ithCore_,
                                InputParameter *interface_ip_,
                                const CoreDynParam &dyn_p_,
                                enum FU_type fu_type_)
@@ -552,13 +568,16 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(5 * g_tp.min_w_nmos_,
                                   5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
-      gate_leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
-                     cmos_Ig_leakage(
-                         5 * g_tp.min_w_nmos_,
-                         5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
-                     g_tp.peri_global.Vdd / 2; // unit W
+      gate_leakage =
+          area_t * (g_tp.scaling_factor.core_tx_density) *
+          cmos_Ig_leakage(5 * g_tp.min_w_nmos_,
+                          5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
+                          inv) *
+          g_tp.peri_global.Vdd / 2; // unit W
       // energy = 0.3529/10*1e-9;//this is the energy(nJ) for a FP instruction
       // in FPU usually it can have up to 20 cycles.
       //			base_energy = coredynp.core_ty==Inorder? 0:
@@ -583,12 +602,14 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                   20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
       gate_leakage =
           area_t * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
+                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
                           inv) *
           g_tp.peri_global.Vdd / 2;
       //			base_energy = coredynp.core_ty==Inorder?
@@ -612,12 +633,14 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                   20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
       gate_leakage =
           area_t * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
+                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
                           inv) *
           g_tp.peri_global.Vdd / 2;
       //			base_energy = coredynp.core_ty==Inorder?
@@ -652,13 +675,16 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(5 * g_tp.min_w_nmos_,
                                   5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
-      gate_leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
-                     cmos_Ig_leakage(
-                         5 * g_tp.min_w_nmos_,
-                         5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
-                     g_tp.peri_global.Vdd / 2; // unit W
+      gate_leakage =
+          area_t * (g_tp.scaling_factor.core_tx_density) *
+          cmos_Ig_leakage(5 * g_tp.min_w_nmos_,
+                          5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
+                          inv) *
+          g_tp.peri_global.Vdd / 2; // unit W
       // energy = 0.3529/10*1e-9;//this is the energy(nJ) for a FP instruction
       // in FPU usually it can have up to 20 cycles.
       base_energy = coredynp.core_ty == Inorder
@@ -682,12 +708,14 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                   20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
       gate_leakage =
           area_t * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
+                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
                           inv) *
           g_tp.peri_global.Vdd / 2;
       base_energy = coredynp.core_ty == Inorder
@@ -711,12 +739,14 @@ FunctionalUnit::FunctionalUnit(ParseXML *XML_interface, int ithCore_,
       leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
                 cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                   20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                  1, inv) *
+                                  1,
+                                  inv) *
                 g_tp.peri_global.Vdd / 2; // unit W
       gate_leakage =
           area_t * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
+                          20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
                           inv) *
           g_tp.peri_global.Vdd / 2;
       base_energy = coredynp.core_ty == Inorder
@@ -931,26 +961,31 @@ void FunctionalUnit::leakage_feedback(double temperature) {
           4.47 * 1e6 * g_tp.scaling_factor.logic_scaling_co_eff; // this is um^2
     leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
               cmos_Isub_leakage(5 * g_tp.min_w_nmos_,
-                                5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
+                                5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                                1,
                                 inv) *
               g_tp.peri_global.Vdd / 2; // unit W
-    gate_leakage =
-        area_t * (g_tp.scaling_factor.core_tx_density) *
-        cmos_Ig_leakage(5 * g_tp.min_w_nmos_,
-                        5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
-        g_tp.peri_global.Vdd / 2; // unit W
+    gate_leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
+                   cmos_Ig_leakage(5 * g_tp.min_w_nmos_,
+                                   5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                                   1,
+                                   inv) *
+                   g_tp.peri_global.Vdd / 2; // unit W
   } else if (fu_type == ALU) {
     area_t = 280 * 260 * 2 * num_fu *
              g_tp.scaling_factor.logic_scaling_co_eff; // this is um^2 ALU + MUl
     leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
               cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                 20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                1, inv) *
+                                1,
+                                inv) *
               g_tp.peri_global.Vdd / 2; // unit W
     gate_leakage =
         area_t * (g_tp.scaling_factor.core_tx_density) *
         cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                        20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                        20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                        1,
+                        inv) *
         g_tp.peri_global.Vdd / 2;
   } else if (fu_type == MUL) {
     area_t = 280 * 260 * 2 * 3 * num_fu *
@@ -958,12 +993,15 @@ void FunctionalUnit::leakage_feedback(double temperature) {
     leakage = area_t * (g_tp.scaling_factor.core_tx_density) *
               cmos_Isub_leakage(20 * g_tp.min_w_nmos_,
                                 20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
-                                1, inv) *
+                                1,
+                                inv) *
               g_tp.peri_global.Vdd / 2; // unit W
     gate_leakage =
         area_t * (g_tp.scaling_factor.core_tx_density) *
         cmos_Ig_leakage(20 * g_tp.min_w_nmos_,
-                        20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                        20 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                        1,
+                        inv) *
         g_tp.peri_global.Vdd / 2;
   } else {
     cout << "Unknown Functional Unit Type" << endl;
@@ -980,9 +1018,12 @@ void FunctionalUnit::leakage_feedback(double temperature) {
   power.readOp.power_gated_leakage = power.readOp.leakage * pg_reduction;
 }
 
-UndiffCore::UndiffCore(ParseXML *XML_interface, int ithCore_,
+UndiffCore::UndiffCore(ParseXML *XML_interface,
+                       int ithCore_,
                        InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_, bool exist_, bool embedded_)
+                       const CoreDynParam &dyn_p_,
+                       bool exist_,
+                       bool embedded_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       coredynp(dyn_p_), core_ty(coredynp.core_ty), embedded(XML->sys.Embedded),
       pipeline_stage(coredynp.pipeline_stages),
@@ -1038,18 +1079,20 @@ UndiffCore::UndiffCore(ParseXML *XML_interface, int ithCore_,
   // undifferentiated_core 		    = 3*1e6;
   // undifferentiated_core			*=
   // g_tp.scaling_factor.logic_scaling_co_eff;//(g_ip->F_sz_um*g_ip->F_sz_um/0.09/0.09)*;
-  power.readOp.leakage =
-      undifferentiated_core *
-      (core_tx_density)*cmos_Isub_leakage(
-          5 * g_tp.min_w_nmos_, 5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
-          inv) *
-      g_tp.peri_global.Vdd; // unit W
-  power.readOp.gate_leakage =
-      undifferentiated_core *
-      (core_tx_density)*cmos_Ig_leakage(
-          5 * g_tp.min_w_nmos_, 5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1,
-          inv) *
-      g_tp.peri_global.Vdd;
+  power.readOp.leakage = undifferentiated_core *
+                         (core_tx_density)*cmos_Isub_leakage(
+                             5 * g_tp.min_w_nmos_,
+                             5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                             1,
+                             inv) *
+                         g_tp.peri_global.Vdd; // unit W
+  power.readOp.gate_leakage = undifferentiated_core *
+                              (core_tx_density)*cmos_Ig_leakage(
+                                  5 * g_tp.min_w_nmos_,
+                                  5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                                  1,
+                                  inv) *
+                              g_tp.peri_global.Vdd;
 
   double long_channel_device_reduction =
       longer_channel_device_reduction(Core_device, coredynp.core_ty);
@@ -1145,8 +1188,11 @@ void UndiffCore::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 
 inst_decoder::inst_decoder(bool _is_default,
                            const InputParameter *configure_interface,
-                           int opcode_length_, int num_decoders_, bool x86_,
-                           enum Device_ty device_ty_, enum Core_type core_ty_)
+                           int opcode_length_,
+                           int num_decoders_,
+                           bool x86_,
+                           enum Device_ty device_ty_,
+                           enum Core_type core_ty_)
     : is_default(_is_default), opcode_length(opcode_length_),
       num_decoders(num_decoders_), x86(x86_), device_ty(device_ty_),
       core_ty(core_ty_) {
@@ -1192,27 +1238,36 @@ inst_decoder::inst_decoder(bool _is_default,
   load_nmos_width = g_tp.max_w_nmos_ / 2;
   load_pmos_width = g_tp.max_w_nmos_ * pmos_to_nmos_sizing_r;
   C_driver_load =
-      1024 * gate_C(load_nmos_width + load_pmos_width, 0,
+      1024 * gate_C(load_nmos_width + load_pmos_width,
+                    0,
                     is_dram); // TODO: this number 1024 needs to be revisited
   R_wire_load = 3000 * l_ip.F_sz_um * g_tp.wire_outside_mat.R_per_um;
 
-  final_dec = new Decoder(num_decoded_signals, false, C_driver_load,
-                          R_wire_load, false /*is_fa*/, false /*is_dram*/,
+  final_dec = new Decoder(num_decoded_signals,
+                          false,
+                          C_driver_load,
+                          R_wire_load,
+                          false /*is_fa*/,
+                          false /*is_dram*/,
                           false /*wl_tr*/, // to use peri device
                           cell);
 
   PredecBlk *predec_blk1 =
-      new PredecBlk(num_decoded_signals, final_dec,
+      new PredecBlk(num_decoded_signals,
+                    final_dec,
                     0, // Assuming predec and dec are back to back
                     0,
                     1, // Each Predec only drives one final dec
-                    false /*is_dram*/, true);
+                    false /*is_dram*/,
+                    true);
   PredecBlk *predec_blk2 =
-      new PredecBlk(num_decoded_signals, final_dec,
+      new PredecBlk(num_decoded_signals,
+                    final_dec,
                     0, // Assuming predec and dec are back to back
                     0,
                     1, // Each Predec only drives one final dec
-                    false /*is_dram*/, false);
+                    false /*is_dram*/,
+                    false);
 
   PredecBlkDrv *predec_blk_drv1 = new PredecBlkDrv(0, predec_blk1, false);
   PredecBlkDrv *predec_blk_drv2 = new PredecBlkDrv(0, predec_blk2, false);
@@ -1258,10 +1313,14 @@ void inst_decoder::inst_decoder_delay_power() {
 
   outrisetime = pre_dec->compute_delays(inrisetime);
   dec_outrisetime = final_dec->compute_delays(outrisetime);
-  set_pppm(pppm_t, squencer_passes * num_decoder_segments, num_decoder_segments,
-           squencer_passes * num_decoder_segments, num_decoder_segments);
+  set_pppm(pppm_t,
+           squencer_passes * num_decoder_segments,
+           num_decoder_segments,
+           squencer_passes * num_decoder_segments,
+           num_decoder_segments);
   power = power + pre_dec->power * pppm_t;
-  set_pppm(pppm_t, squencer_passes * num_decoder_segments,
+  set_pppm(pppm_t,
+           squencer_passes * num_decoder_segments,
            num_decoder_segments * num_decoded_signals,
            num_decoder_segments * num_decoded_signals,
            squencer_passes * num_decoder_segments);
@@ -1277,11 +1336,15 @@ void inst_decoder::leakage_feedback(double temperature) {
   double pppm_t[4] = {1, 1, 1, 1};
   double squencer_passes = x86 ? 2 : 1;
 
-  set_pppm(pppm_t, squencer_passes * num_decoder_segments, num_decoder_segments,
-           squencer_passes * num_decoder_segments, num_decoder_segments);
+  set_pppm(pppm_t,
+           squencer_passes * num_decoder_segments,
+           num_decoder_segments,
+           squencer_passes * num_decoder_segments,
+           num_decoder_segments);
   power = pre_dec->power * pppm_t;
 
-  set_pppm(pppm_t, squencer_passes * num_decoder_segments,
+  set_pppm(pppm_t,
+           squencer_passes * num_decoder_segments,
            num_decoder_segments * num_decoded_signals,
            num_decoder_segments * num_decoded_signals,
            squencer_passes * num_decoder_segments);

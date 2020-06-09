@@ -44,7 +44,9 @@
 
 class Crossbar : public Component {
 public:
-  Crossbar(double in, double out, double flit_sz,
+  Crossbar(double in,
+           double out,
+           double flit_sz,
            TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
   ~Crossbar();
 

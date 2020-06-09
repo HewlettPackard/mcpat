@@ -52,7 +52,8 @@ public:
   statsDef rtp_stats;
   statsDef stats_t;
   powerDef power_t;
-  MCBackend(InputParameter *interface_ip_, const MCParam &mcp_,
+  MCBackend(InputParameter *interface_ip_,
+            const MCParam &mcp_,
             enum MemoryCtrl_type mc_type_);
   void compute();
   void computeEnergy(bool is_tdp = true);
@@ -70,7 +71,8 @@ public:
   statsDef rtp_stats;
   statsDef stats_t;
   powerDef power_t;
-  MCPHY(InputParameter *interface_ip_, const MCParam &mcp_,
+  MCPHY(InputParameter *interface_ip_,
+        const MCParam &mcp_,
         enum MemoryCtrl_type mc_type_);
   void compute();
   void computeEnergy(bool is_tdp = true);
@@ -89,8 +91,10 @@ public:
   ArrayST *readBuffer;
   ArrayST *writeBuffer;
 
-  MCFrontEnd(ParseXML *XML_interface, InputParameter *interface_ip_,
-             const MCParam &mcp_, enum MemoryCtrl_type mc_type_);
+  MCFrontEnd(ParseXML *XML_interface,
+             InputParameter *interface_ip_,
+             const MCParam &mcp_,
+             enum MemoryCtrl_type mc_type_);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~MCFrontEnd();
@@ -108,7 +112,8 @@ public:
   Pipeline *pipeLogic;
 
   // clock_network clockNetwork;
-  MemoryController(ParseXML *XML_interface, InputParameter *interface_ip_,
+  MemoryController(ParseXML *XML_interface,
+                   InputParameter *interface_ip_,
                    enum MemoryCtrl_type mc_type_);
   void set_mc_param();
   void computeEnergy(bool is_tdp = true);

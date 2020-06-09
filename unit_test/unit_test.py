@@ -107,8 +107,11 @@ def run_test(vector):
   stde = os.path.join(output_path, vector + ".err")
   with open(stdo, "w") as so, open(stde, "w") as se:
     p = subprocess.Popen([
-        "../build/mcpat", "-infile", infile, "-print_level", "5",
-        "-opt_for_clk", "1"
+        "../build/mcpat",
+        "-i",
+        infile,
+        "-p",
+        "5",
     ],
                          stdout=so,
                          stderr=se)

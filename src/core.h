@@ -56,8 +56,10 @@ public:
   ArrayST *RAS;
   bool exist;
 
-  BranchPredictor(ParseXML *XML_interface, int ithCore_,
-                  InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  BranchPredictor(ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
                   bool exsit = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -82,8 +84,10 @@ public:
   inst_decoder *ID_misc;
   bool exist;
 
-  InstFetchU(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  InstFetchU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
              bool exsit = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -105,8 +109,10 @@ public:
   selection_logic *instruction_selection;
   bool exist;
 
-  SchedulerU(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  SchedulerU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
              bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -131,8 +137,10 @@ public:
   ArrayST *RAHT; // register alias history table Used to store GC
   bool exist;
 
-  RENAMINGU(ParseXML *XML_interface, int ithCore_,
-            InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  RENAMINGU(ParseXML *XML_interface,
+            int ithCore_,
+            InputParameter *interface_ip_,
+            const CoreDynParam &dyn_p_,
             bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -155,8 +163,10 @@ public:
   ArrayST *LoadQ;
   bool exist;
 
-  LoadStoreU(ParseXML *XML_interface, int ithCore_,
-             InputParameter *interface_ip_, const CoreDynParam &dyn_p_,
+  LoadStoreU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
              bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -175,8 +185,11 @@ public:
   ArrayST *dtlb;
   bool exist;
 
-  MemManU(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_,
-          const CoreDynParam &dyn_p_, bool exist_ = true);
+  MemManU(ParseXML *XML_interface,
+          int ithCore_,
+          InputParameter *interface_ip_,
+          const CoreDynParam &dyn_p_,
+          bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~MemManU();
@@ -196,8 +209,11 @@ public:
   ArrayST *RFWIN;
   bool exist;
 
-  RegFU(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_,
-        const CoreDynParam &dyn_p_, bool exist_ = true);
+  RegFU(ParseXML *XML_interface,
+        int ithCore_,
+        InputParameter *interface_ip_,
+        const CoreDynParam &dyn_p_,
+        bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~RegFU();
@@ -227,8 +243,12 @@ public:
   Component bypass;
   bool exist;
 
-  EXECU(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_,
-        double lsq_height_, const CoreDynParam &dyn_p_, bool exist_ = true);
+  EXECU(ParseXML *XML_interface,
+        int ithCore_,
+        InputParameter *interface_ip_,
+        double lsq_height_,
+        const CoreDynParam &dyn_p_,
+        bool exist_ = true);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~EXECU();

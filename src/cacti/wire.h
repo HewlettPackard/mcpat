@@ -43,15 +43,18 @@
 
 class Wire : public Component {
 public:
-  Wire(enum Wire_type wire_model, double len /* in u*/,
+  Wire(enum Wire_type wire_model,
+       double len /* in u*/,
        int nsense = 1 /* no. of sense amps connected to the low-swing wire */,
-       double width_scaling = 1, double spacing_scaling = 1,
+       double width_scaling = 1,
+       double spacing_scaling = 1,
        enum Wire_placement wire_placement = outside_mat,
        double resistivity = CU_RESISTIVITY,
        TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
   ~Wire();
 
-  Wire(double width_scaling = 1, double spacing_scaling = 1,
+  Wire(double width_scaling = 1,
+       double spacing_scaling = 1,
        //         bool reset_repeater_sizing = true,
        enum Wire_placement wire_placement = outside_mat,
        double resistivity = CU_RESISTIVITY,

@@ -152,7 +152,8 @@ public:
 private:
   double compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h();
   double width_write_driver_or_write_mux();
-  double compute_comparators_height(int tagbits, int number_ways_in_mat,
+  double compute_comparators_height(int tagbits,
+                                    int number_ways_in_mat,
                                     double subarray_mem_cell_area_w);
   double compute_cam_delay(double inrisetime);
   double compute_bitline_delay(double inrisetime);

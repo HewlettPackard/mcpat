@@ -34,7 +34,9 @@
 #define ASPECT_THRESHOLD .8
 #define ADJ 1
 
-Crossbar::Crossbar(double n_inp_, double n_out_, double flit_size_,
+Crossbar::Crossbar(double n_inp_,
+                   double n_out_,
+                   double flit_size_,
                    TechnologyParameter::DeviceType *dt)
     : n_inp(n_inp_), n_out(n_out_), flit_size(flit_size_), deviceType(dt) {
   min_w_pmos = deviceType->n_to_p_eff_curr_drv_ratio * g_tp.min_w_nmos_;
@@ -94,13 +96,19 @@ void Crossbar::compute_power() {
   double tri_cap = output_buffer();
   assert(tri_cap > 0);
   // area of a tristate logic
-  double g_area = compute_gate_area(INV, 1, TriS2 * g_tp.min_w_nmos_,
-                                    TriS2 * min_w_pmos, g_tp.cell_h_def);
+  double g_area = compute_gate_area(
+      INV, 1, TriS2 * g_tp.min_w_nmos_, TriS2 * min_w_pmos, g_tp.cell_h_def);
   g_area *= 2; // to model area of output transistors
-  g_area += compute_gate_area(NAND, 2, TriS1 * 2 * g_tp.min_w_nmos_,
-                              TriS1 * min_w_pmos, g_tp.cell_h_def);
-  g_area += compute_gate_area(NOR, 2, TriS1 * g_tp.min_w_nmos_,
-                              TriS1 * 2 * min_w_pmos, g_tp.cell_h_def);
+  g_area += compute_gate_area(NAND,
+                              2,
+                              TriS1 * 2 * g_tp.min_w_nmos_,
+                              TriS1 * min_w_pmos,
+                              g_tp.cell_h_def);
+  g_area += compute_gate_area(NOR,
+                              2,
+                              TriS1 * g_tp.min_w_nmos_,
+                              TriS1 * 2 * min_w_pmos,
+                              g_tp.cell_h_def);
   double width /*per tristate*/ = g_area / (CB_ADJ * g_tp.cell_h_def);
   // effective no. of tristate buffers that need to be laid side by side
   int ntri = (int)ceil(g_tp.cell_h_def / (g_tp.wire_outside_mat.pitch));
@@ -131,27 +139,28 @@ void Crossbar::compute_power() {
        (tri_inp_cap * n_out + tri_out_cap * n_inp + tri_ctr_cap + tri_int_cap) *
            Vdd * Vdd) *
       flit_size;
-  power.readOp.leakage = n_inp * n_out * flit_size *
-                         (cmos_Isub_leakage(g_tp.min_w_nmos_ * TriS2 * 2,
-                                            min_w_pmos * TriS2 * 2, 1, inv) *
-                              Vdd +
-                          cmos_Isub_leakage(g_tp.min_w_nmos_ * TriS1 * 3,
-                                            min_w_pmos * TriS1 * 3, 2, nand) *
-                              Vdd +
-                          cmos_Isub_leakage(g_tp.min_w_nmos_ * TriS1 * 3,
-                                            min_w_pmos * TriS1 * 3, 2, nor) *
-                              Vdd +
-                          w1.power.readOp.leakage + w2.power.readOp.leakage);
+  power.readOp.leakage =
+      n_inp * n_out * flit_size *
+      (cmos_Isub_leakage(
+           g_tp.min_w_nmos_ * TriS2 * 2, min_w_pmos * TriS2 * 2, 1, inv) *
+           Vdd +
+       cmos_Isub_leakage(
+           g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2, nand) *
+           Vdd +
+       cmos_Isub_leakage(
+           g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2, nor) *
+           Vdd +
+       w1.power.readOp.leakage + w2.power.readOp.leakage);
   power.readOp.gate_leakage =
       n_inp * n_out * flit_size *
-      (cmos_Ig_leakage(g_tp.min_w_nmos_ * TriS2 * 2, min_w_pmos * TriS2 * 2, 1,
-                       inv) *
+      (cmos_Ig_leakage(
+           g_tp.min_w_nmos_ * TriS2 * 2, min_w_pmos * TriS2 * 2, 1, inv) *
            Vdd +
-       cmos_Ig_leakage(g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2,
-                       nand) *
+       cmos_Ig_leakage(
+           g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2, nand) *
            Vdd +
-       cmos_Ig_leakage(g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2,
-                       nor) *
+       cmos_Ig_leakage(
+           g_tp.min_w_nmos_ * TriS1 * 3, min_w_pmos * TriS1 * 3, 2, nor) *
            Vdd +
        w1.power.readOp.gate_leakage + w2.power.readOp.gate_leakage);
 
@@ -162,9 +171,11 @@ void Crossbar::compute_power() {
                tr_R_on(g_tp.min_w_nmos_ * wdriver.repeater_size, NCH, 1);
   double cap = g_tp.wire_outside_mat.C_per_um * (area.w + area.h) +
                n_out * tri_inp_cap + n_inp * tri_out_cap;
-  delay = horowitz(w1.signal_rise_time(), res * cap,
+  delay = horowitz(w1.signal_rise_time(),
+                   res * cap,
                    deviceType->Vth / deviceType->Vdd,
-                   deviceType->Vth / deviceType->Vdd, RISE);
+                   deviceType->Vth / deviceType->Vdd,
+                   RISE);
 
   Wire wreset(1, 1);
 }

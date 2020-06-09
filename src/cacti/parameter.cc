@@ -227,11 +227,16 @@ void TechnologyParameter::display(uint32_t indent) {
 DynamicParameter::DynamicParameter()
     : use_inp_params(0), cell(), is_valid(true) {}
 
-DynamicParameter::DynamicParameter(bool is_tag_, int pure_ram_, int pure_cam_,
-                                   double Nspd_, unsigned int Ndwl_,
-                                   unsigned int Ndbl_, unsigned int Ndcm_,
+DynamicParameter::DynamicParameter(bool is_tag_,
+                                   int pure_ram_,
+                                   int pure_cam_,
+                                   double Nspd_,
+                                   unsigned int Ndwl_,
+                                   unsigned int Ndbl_,
+                                   unsigned int Ndcm_,
                                    unsigned int Ndsam_lev_1_,
-                                   unsigned int Ndsam_lev_2_, bool is_main_mem_)
+                                   unsigned int Ndsam_lev_2_,
+                                   bool is_main_mem_)
     : is_tag(is_tag_), pure_ram(pure_ram_), pure_cam(pure_cam_), tagbits(0),
       Nspd(Nspd_), Ndwl(Ndwl_), Ndbl(Ndbl_), Ndcm(Ndcm_),
       Ndsam_lev_1(Ndsam_lev_1_), Ndsam_lev_2(Ndsam_lev_2_),

@@ -39,16 +39,18 @@
 
 using namespace std;
 
-void ParseXML::parse(char *filepath) {
+void ParseXML::parse(std::string filepath) {
   unsigned int i, j, k, m, n;
   unsigned int NumofCom_4;
   unsigned int itmp;
+  char *fp = new char[filepath.length() + 1];
+  strcpy(fp, filepath.c_str());
   // Initialize all structures
   ParseXML::initialize();
 
   // this open and parse the XML file:
   XMLNode xMainNode = XMLNode::openFileHelper(
-      filepath, "component"); // the 'component' in the first layer
+      fp, "component"); // the 'component' in the first layer
 
   XMLNode xNode2 = xMainNode.getChildNode(
       "component"); // the 'component' in the second layer

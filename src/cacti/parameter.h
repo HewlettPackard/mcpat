@@ -344,9 +344,15 @@ public:
   double dram_refresh_period;
 
   DynamicParameter();
-  DynamicParameter(bool is_tag_, int pure_ram_, int pure_cam_, double Nspd_,
-                   unsigned int Ndwl_, unsigned int Ndbl_, unsigned int Ndcm_,
-                   unsigned int Ndsam_lev_1_, unsigned int Ndsam_lev_2_,
+  DynamicParameter(bool is_tag_,
+                   int pure_ram_,
+                   int pure_cam_,
+                   double Nspd_,
+                   unsigned int Ndwl_,
+                   unsigned int Ndbl_,
+                   unsigned int Ndcm_,
+                   unsigned int Ndsam_lev_1_,
+                   unsigned int Ndsam_lev_2_,
                    bool is_main_mem_);
 
   int use_inp_params;

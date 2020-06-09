@@ -46,7 +46,8 @@
 #include <iostream>
 #include <string.h>
 
-SharedCache::SharedCache(ParseXML *XML_interface, int ithCache_,
+SharedCache::SharedCache(ParseXML *XML_interface,
+                         int ithCache_,
                          InputParameter *interface_ip_,
                          enum cache_level cacheL_)
     : XML(XML_interface), ithCache(ithCache_), interface_ip(*interface_ip_),
@@ -166,8 +167,8 @@ SharedCache::SharedCache(ParseXML *XML_interface, int ithCache_,
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = 1;
-    unicache.missb = new ArrayST(&interface_ip, cachep.name + "MissB", device_t,
-                                 true, core_t);
+    unicache.missb = new ArrayST(
+        &interface_ip, cachep.name + "MissB", device_t, true, core_t);
     unicache.area.set_area(unicache.area.get_area() +
                            unicache.missb->local_result.area);
     area.set_area(area.get_area() + unicache.missb->local_result.area);
@@ -192,8 +193,8 @@ SharedCache::SharedCache(ParseXML *XML_interface, int ithCache_,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    unicache.ifb = new ArrayST(&interface_ip, cachep.name + "FillB", device_t,
-                               true, core_t);
+    unicache.ifb = new ArrayST(
+        &interface_ip, cachep.name + "FillB", device_t, true, core_t);
     unicache.area.set_area(unicache.area.get_area() +
                            unicache.ifb->local_result.area);
     area.set_area(area.get_area() + unicache.ifb->local_result.area);
@@ -221,8 +222,8 @@ SharedCache::SharedCache(ParseXML *XML_interface, int ithCache_,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    unicache.prefetchb = new ArrayST(&interface_ip, cachep.name + "PrefetchB",
-                                     device_t, true, core_t);
+    unicache.prefetchb = new ArrayST(
+        &interface_ip, cachep.name + "PrefetchB", device_t, true, core_t);
     unicache.area.set_area(unicache.area.get_area() +
                            unicache.prefetchb->local_result.area);
     area.set_area(area.get_area() + unicache.prefetchb->local_result.area);

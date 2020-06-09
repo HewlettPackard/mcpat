@@ -60,15 +60,19 @@ public:
   bool router_exist;
   string name, link_name;
   double M_traffic_pattern;
-  NoC(ParseXML *XML_interface, int ithNoC_, InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6, double link_len_ = 0);
+  NoC(ParseXML *XML_interface,
+      int ithNoC_,
+      InputParameter *interface_ip_,
+      double M_traffic_pattern_ = 0.6,
+      double link_len_ = 0);
   void set_noc_param();
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   void init_link_bus(double link_len_);
   void init_router();
   void computeEnergy_link_bus(bool is_tdp = true);
-  void displayEnergy_link_bus(uint32_t indent = 0, int plevel = 100,
+  void displayEnergy_link_bus(uint32_t indent = 0,
+                              int plevel = 100,
                               bool is_tdp = true);
   ~NoC();
 };

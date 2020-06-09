@@ -1,39 +1,39 @@
 add_subdirectory(cacti)
 
 add_executable(mcpat 
-  XML_Parse.h
   arch_const.h
   array.h
+  array.cc
   basic_components.h
+  basic_components.cc
   core.h
+  core.cc
   globalvar.h
   interconnect.h
+  interconnect.cc
   iocontrollers.h
+  iocontrollers.cc
   logic.h
-  memoryctrl.h
+  logic.cc
   noc.h
+  noc.cc
+  main.cc
+  memoryctrl.h
+  memoryctrl.cc
+  options.h
+  options.cc
   processor.h
+  processor.cc
   sharedcache.h
+  sharedcache.cc
   version.h
   xmlParser.h
-  XML_Parse.cc
-  array.cc
-  basic_components.cc
-  core.cc
-  interconnect.cc
-  iocontrollers.cc
-  logic.cc
-  main.cc
-  memoryctrl.cc
-  noc.cc
-  processor.cc
-  sharedcache.cc
   xmlParser.cc
+  XML_Parse.h
+  XML_Parse.cc
 )
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(mcpat LINK_PUBLIC cacti Threads::Threads)
+target_link_libraries(mcpat LINK_PUBLIC cacti Threads::Threads Boost::program_options)
 
 add_custom_command(TARGET mcpat POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mcpat> ${PROJECT_BINARY_DIR}/mcpat

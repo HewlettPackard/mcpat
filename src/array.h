@@ -46,9 +46,12 @@ using namespace std;
 class ArrayST : public Component {
 public:
   ArrayST(){};
-  ArrayST(const InputParameter *configure_interface, string _name,
-          enum Device_ty device_ty_, bool opt_local_ = true,
-          enum Core_type core_ty_ = Inorder, bool _is_default = true);
+  ArrayST(const InputParameter *configure_interface,
+          string _name,
+          enum Device_ty device_ty_,
+          bool opt_local_ = true,
+          enum Core_type core_ty_ = Inorder,
+          bool _is_default = true);
 
   InputParameter l_ip;
   string name;

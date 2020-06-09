@@ -40,10 +40,16 @@
 
 using namespace std;
 
-Decoder::Decoder(int _num_dec_signals, bool flag_way_select,
-                 double _C_ld_dec_out, double _R_wire_dec_out,
-                 bool fully_assoc_, bool is_dram_, bool is_wl_tr_,
-                 const Area &cell_, bool power_gating_, int nodes_DSTN_)
+Decoder::Decoder(int _num_dec_signals,
+                 bool flag_way_select,
+                 double _C_ld_dec_out,
+                 double _R_wire_dec_out,
+                 bool fully_assoc_,
+                 bool is_dram_,
+                 bool is_wl_tr_,
+                 const Area &cell_,
+                 bool power_gating_,
+                 int nodes_DSTN_)
     : exist(false), C_ld_dec_out(_C_ld_dec_out),
       R_wire_dec_out(_R_wire_dec_out), num_gates(0), num_gates_min(2), delay(0),
       // power(),
@@ -109,10 +115,16 @@ void Decoder::compute_widths() {
 
     F *= C_ld_dec_out / (gate_C(w_dec_n[0], 0, is_dram, false, is_wl_tr) +
                          gate_C(w_dec_p[0], 0, is_dram, false, is_wl_tr));
-    num_gates =
-        logical_effort(num_gates_min, num_in_signals == 2 ? gnand2 : gnand3, F,
-                       w_dec_n, w_dec_p, C_ld_dec_out, p_to_n_sz_ratio, is_dram,
-                       is_wl_tr, g_tp.max_w_nmos_dec);
+    num_gates = logical_effort(num_gates_min,
+                               num_in_signals == 2 ? gnand2 : gnand3,
+                               F,
+                               w_dec_n,
+                               w_dec_p,
+                               C_ld_dec_out,
+                               p_to_n_sz_ratio,
+                               is_dram,
+                               is_wl_tr,
+                               g_tp.max_w_nmos_dec);
   }
 }
 
@@ -178,8 +190,13 @@ void Decoder::compute_power_gating() {
   c_wakeup = drain_C_(total_driver_pwidth, PCH, 1, 1, cell.h); // Psleep tx
   detalV = g_tp.peri_global.Vdd - g_tp.peri_global.Vcc_min;
   //    if (g_ip->power_gating)
-  sleeptx = new Sleep_tx(g_ip->perfloss, Isat_subarray, is_footer, c_wakeup,
-                         detalV, nodes_DSTN, area);
+  sleeptx = new Sleep_tx(g_ip->perfloss,
+                         Isat_subarray,
+                         is_footer,
+                         c_wakeup,
+                         detalV,
+                         nodes_DSTN,
+                         area);
 }
 
 double Decoder::compute_delays(double inrisetime) {
@@ -203,7 +220,13 @@ double Decoder::compute_delays(double inrisetime) {
     c_intrinsic =
         drain_C_(w_dec_p[0], PCH, 1, 1, area.h, is_dram, false, is_wl_tr) *
             num_in_signals +
-        drain_C_(w_dec_n[0], NCH, num_in_signals, 1, area.h, is_dram, false,
+        drain_C_(w_dec_n[0],
+                 NCH,
+                 num_in_signals,
+                 1,
+                 area.h,
+                 is_dram,
+                 false,
                  is_wl_tr);
     tf = rd * (c_intrinsic + c_load);
     this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
@@ -215,8 +238,8 @@ double Decoder::compute_delays(double inrisetime) {
 
     for (i = 1; i < num_gates - 1; ++i) {
       rd = tr_R_on(w_dec_n[i], NCH, 1, is_dram, false, is_wl_tr);
-      c_load = gate_C(w_dec_p[i + 1] + w_dec_n[i + 1], 0.0, is_dram, false,
-                      is_wl_tr);
+      c_load = gate_C(
+          w_dec_p[i + 1] + w_dec_n[i + 1], 0.0, is_dram, false, is_wl_tr);
       c_intrinsic =
           drain_C_(w_dec_p[i], PCH, 1, 1, area.h, is_dram, false, is_wl_tr) +
           drain_C_(w_dec_n[i], NCH, 1, 1, area.h, is_dram, false, is_wl_tr);
@@ -282,10 +305,13 @@ void Decoder::leakage_feedback(double temperature) {
   }
 }
 
-PredecBlk::PredecBlk(int num_dec_signals, Decoder *dec_,
+PredecBlk::PredecBlk(int num_dec_signals,
+                     Decoder *dec_,
                      double C_wire_predec_blk_out,
-                     double R_wire_predec_blk_out_, int num_dec_per_predec,
-                     bool is_dram, bool is_blk1)
+                     double R_wire_predec_blk_out_,
+                     int num_dec_per_predec,
+                     bool is_dram,
+                     bool is_blk1)
     : dec(dec_), exist(false), number_input_addr_bits(0),
       C_ld_predec_blk_out(0), R_wire_predec_blk_out(0),
       branch_effort_nand2_gate_output(1), branch_effort_nand3_gate_output(1),
@@ -425,10 +451,16 @@ void PredecBlk::compute_widths() {
     w_L2_p[0] = p_to_n_sz_ratio * g_tp.min_w_nmos_;
     F *= C_ld_predec_blk_out /
          (gate_C(w_L2_n[0], 0, is_dram_) + gate_C(w_L2_p[0], 0, is_dram_));
-    number_gates_L2 =
-        logical_effort(min_number_gates_L2, flag_L2_gate == 2 ? gnand2 : gnand3,
-                       F, w_L2_n, w_L2_p, C_ld_predec_blk_out, p_to_n_sz_ratio,
-                       is_dram_, false, g_tp.max_w_nmos_);
+    number_gates_L2 = logical_effort(min_number_gates_L2,
+                                     flag_L2_gate == 2 ? gnand2 : gnand3,
+                                     F,
+                                     w_L2_n,
+                                     w_L2_p,
+                                     C_ld_predec_blk_out,
+                                     p_to_n_sz_ratio,
+                                     is_dram_,
+                                     false,
+                                     g_tp.max_w_nmos_);
 
     // Now find the number of gates and widths in first level of predecoder
     if ((flag_two_unique_paths) ||
@@ -445,10 +477,16 @@ void PredecBlk::compute_widths() {
       F = gnand2 * c_load_nand2_path /
           (gate_C(w_L1_nand2_n[0], 0, is_dram_) +
            gate_C(w_L1_nand2_p[0], 0, is_dram_));
-      number_gates_L1_nand2_path =
-          logical_effort(min_number_gates_L1, gnand2, F, w_L1_nand2_n,
-                         w_L1_nand2_p, c_load_nand2_path, p_to_n_sz_ratio,
-                         is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_L1_nand2_path = logical_effort(min_number_gates_L1,
+                                                  gnand2,
+                                                  F,
+                                                  w_L1_nand2_n,
+                                                  w_L1_nand2_p,
+                                                  c_load_nand2_path,
+                                                  p_to_n_sz_ratio,
+                                                  is_dram_,
+                                                  false,
+                                                  g_tp.max_w_nmos_);
     }
 
     // Now find widths of gates along path in which first gate is a NAND3
@@ -466,10 +504,16 @@ void PredecBlk::compute_widths() {
       F = gnand3 * c_load_nand3_path /
           (gate_C(w_L1_nand3_n[0], 0, is_dram_) +
            gate_C(w_L1_nand3_p[0], 0, is_dram_));
-      number_gates_L1_nand3_path =
-          logical_effort(min_number_gates_L1, gnand3, F, w_L1_nand3_n,
-                         w_L1_nand3_p, c_load_nand3_path, p_to_n_sz_ratio,
-                         is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_L1_nand3_path = logical_effort(min_number_gates_L1,
+                                                  gnand3,
+                                                  F,
+                                                  w_L1_nand3_n,
+                                                  w_L1_nand3_p,
+                                                  c_load_nand3_path,
+                                                  p_to_n_sz_ratio,
+                                                  is_dram_,
+                                                  false,
+                                                  g_tp.max_w_nmos_);
     }
   } else { // find number of gates and widths in first level of predecoder block
            // when there is no second level
@@ -479,20 +523,32 @@ void PredecBlk::compute_widths() {
       F = gnand2 * C_ld_predec_blk_out /
           (gate_C(w_L1_nand2_n[0], 0, is_dram_) +
            gate_C(w_L1_nand2_p[0], 0, is_dram_));
-      number_gates_L1_nand2_path =
-          logical_effort(min_number_gates_L1, gnand2, F, w_L1_nand2_n,
-                         w_L1_nand2_p, C_ld_predec_blk_out, p_to_n_sz_ratio,
-                         is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_L1_nand2_path = logical_effort(min_number_gates_L1,
+                                                  gnand2,
+                                                  F,
+                                                  w_L1_nand2_n,
+                                                  w_L1_nand2_p,
+                                                  C_ld_predec_blk_out,
+                                                  p_to_n_sz_ratio,
+                                                  is_dram_,
+                                                  false,
+                                                  g_tp.max_w_nmos_);
     } else if (number_inputs_L1_gate == 3) {
       w_L1_nand3_n[0] = 3 * g_tp.min_w_nmos_;
       w_L1_nand3_p[0] = p_to_n_sz_ratio * g_tp.min_w_nmos_;
       F = gnand3 * C_ld_predec_blk_out /
           (gate_C(w_L1_nand3_n[0], 0, is_dram_) +
            gate_C(w_L1_nand3_p[0], 0, is_dram_));
-      number_gates_L1_nand3_path =
-          logical_effort(min_number_gates_L1, gnand3, F, w_L1_nand3_n,
-                         w_L1_nand3_p, C_ld_predec_blk_out, p_to_n_sz_ratio,
-                         is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_L1_nand3_path = logical_effort(min_number_gates_L1,
+                                                  gnand3,
+                                                  F,
+                                                  w_L1_nand3_n,
+                                                  w_L1_nand3_p,
+                                                  C_ld_predec_blk_out,
+                                                  p_to_n_sz_ratio,
+                                                  is_dram_,
+                                                  false,
+                                                  g_tp.max_w_nmos_);
     }
   }
 }
@@ -517,8 +573,8 @@ void PredecBlk::compute_area() {
       leak_L1_nand3 = 0;
       gate_leak_L1_nand3 = 0;
     } else {
-      tot_area_L1_nand3 = compute_gate_area(NAND, 3, w_L1_nand3_p[0],
-                                            w_L1_nand3_n[0], g_tp.cell_h_def);
+      tot_area_L1_nand3 = compute_gate_area(
+          NAND, 3, w_L1_nand3_p[0], w_L1_nand3_n[0], g_tp.cell_h_def);
       leak_L1_nand3 =
           cmos_Isub_leakage(w_L1_nand3_n[0], w_L1_nand3_p[0], 3, nand);
       gate_leak_L1_nand3 =
@@ -588,10 +644,10 @@ void PredecBlk::compute_area() {
     }
 
     for (int i = 1; i < number_gates_L1_nand2_path; ++i) {
-      tot_area_L1_nand2 += compute_gate_area(INV, 1, w_L1_nand2_p[i],
-                                             w_L1_nand2_n[i], g_tp.cell_h_def);
-      leak_L1_nand2 += cmos_Isub_leakage(w_L1_nand2_n[i], w_L1_nand2_p[i], 2,
-                                         nand, is_dram_);
+      tot_area_L1_nand2 += compute_gate_area(
+          INV, 1, w_L1_nand2_p[i], w_L1_nand2_n[i], g_tp.cell_h_def);
+      leak_L1_nand2 += cmos_Isub_leakage(
+          w_L1_nand2_n[i], w_L1_nand2_p[i], 2, nand, is_dram_);
       gate_leak_L1_nand2 +=
           cmos_Ig_leakage(w_L1_nand2_n[i], w_L1_nand2_p[i], 2, nand, is_dram_);
     }
@@ -600,10 +656,10 @@ void PredecBlk::compute_area() {
     gate_leak_L1_nand2 *= num_L1_nand2;
 
     for (int i = 1; i < number_gates_L1_nand3_path; ++i) {
-      tot_area_L1_nand3 += compute_gate_area(INV, 1, w_L1_nand3_p[i],
-                                             w_L1_nand3_n[i], g_tp.cell_h_def);
-      leak_L1_nand3 += cmos_Isub_leakage(w_L1_nand3_n[i], w_L1_nand3_p[i], 3,
-                                         nand, is_dram_);
+      tot_area_L1_nand3 += compute_gate_area(
+          INV, 1, w_L1_nand3_p[i], w_L1_nand3_n[i], g_tp.cell_h_def);
+      leak_L1_nand3 += cmos_Isub_leakage(
+          w_L1_nand3_n[i], w_L1_nand3_p[i], 3, nand, is_dram_);
       gate_leak_L1_nand3 +=
           cmos_Ig_leakage(w_L1_nand3_n[i], w_L1_nand3_p[i], 3, nand, is_dram_);
     }
@@ -940,8 +996,8 @@ void PredecBlk::leakage_feedback(double temperature) {
     }
 
     for (int i = 1; i < number_gates_L1_nand2_path; ++i) {
-      leak_L1_nand2 += cmos_Isub_leakage(w_L1_nand2_n[i], w_L1_nand2_p[i], 2,
-                                         nand, is_dram_);
+      leak_L1_nand2 += cmos_Isub_leakage(
+          w_L1_nand2_n[i], w_L1_nand2_p[i], 2, nand, is_dram_);
       gate_leak_L1_nand2 +=
           cmos_Ig_leakage(w_L1_nand2_n[i], w_L1_nand2_p[i], 2, nand, is_dram_);
     }
@@ -949,8 +1005,8 @@ void PredecBlk::leakage_feedback(double temperature) {
     gate_leak_L1_nand2 *= num_L1_nand2;
 
     for (int i = 1; i < number_gates_L1_nand3_path; ++i) {
-      leak_L1_nand3 += cmos_Isub_leakage(w_L1_nand3_n[i], w_L1_nand3_p[i], 3,
-                                         nand, is_dram_);
+      leak_L1_nand3 += cmos_Isub_leakage(
+          w_L1_nand3_n[i], w_L1_nand3_p[i], 3, nand, is_dram_);
       gate_leak_L1_nand3 +=
           cmos_Ig_leakage(w_L1_nand3_n[i], w_L1_nand3_p[i], 3, nand, is_dram_);
     }
@@ -1103,10 +1159,16 @@ void PredecBlkDrv::compute_widths() {
       width_nand2_path_p[0] = p_to_n_sz_ratio * width_nand2_path_n[0];
       F = c_load_nand2_path_out /
           gate_C(width_nand2_path_n[0] + width_nand2_path_p[0], 0, is_dram_);
-      number_gates_nand2_path =
-          logical_effort(min_number_gates, 1, F, width_nand2_path_n,
-                         width_nand2_path_p, c_load_nand2_path_out,
-                         p_to_n_sz_ratio, is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_nand2_path = logical_effort(min_number_gates,
+                                               1,
+                                               F,
+                                               width_nand2_path_n,
+                                               width_nand2_path_p,
+                                               c_load_nand2_path_out,
+                                               p_to_n_sz_ratio,
+                                               is_dram_,
+                                               false,
+                                               g_tp.max_w_nmos_);
     }
 
     if ((blk->flag_two_unique_paths) || (blk->number_inputs_L1_gate == 3) ||
@@ -1117,10 +1179,16 @@ void PredecBlkDrv::compute_widths() {
       width_nand3_path_p[0] = p_to_n_sz_ratio * width_nand3_path_n[0];
       F = c_load_nand3_path_out /
           gate_C(width_nand3_path_n[0] + width_nand3_path_p[0], 0, is_dram_);
-      number_gates_nand3_path =
-          logical_effort(min_number_gates, 1, F, width_nand3_path_n,
-                         width_nand3_path_p, c_load_nand3_path_out,
-                         p_to_n_sz_ratio, is_dram_, false, g_tp.max_w_nmos_);
+      number_gates_nand3_path = logical_effort(min_number_gates,
+                                               1,
+                                               F,
+                                               width_nand3_path_n,
+                                               width_nand3_path_p,
+                                               c_load_nand3_path_out,
+                                               p_to_n_sz_ratio,
+                                               is_dram_,
+                                               false,
+                                               g_tp.max_w_nmos_);
     }
   }
 }
@@ -1136,9 +1204,11 @@ void PredecBlkDrv::compute_area() {
   if (flag_driver_exists) { // first check whether a predecoder block driver is
                             // needed
     for (int i = 0; i < number_gates_nand2_path; ++i) {
-      area_nand2_path +=
-          compute_gate_area(INV, 1, width_nand2_path_p[i],
-                            width_nand2_path_n[i], g_tp.cell_h_def);
+      area_nand2_path += compute_gate_area(INV,
+                                           1,
+                                           width_nand2_path_p[i],
+                                           width_nand2_path_n[i],
+                                           g_tp.cell_h_def);
       leak_nand2_path += cmos_Isub_leakage(
           width_nand2_path_n[i], width_nand2_path_p[i], 1, inv, is_dram_);
       gate_leak_nand2_path += cmos_Ig_leakage(
@@ -1155,9 +1225,11 @@ void PredecBlkDrv::compute_area() {
          num_buffers_driving_4_nand2_load);
 
     for (int i = 0; i < number_gates_nand3_path; ++i) {
-      area_nand3_path +=
-          compute_gate_area(INV, 1, width_nand3_path_p[i],
-                            width_nand3_path_n[i], g_tp.cell_h_def);
+      area_nand3_path += compute_gate_area(INV,
+                                           1,
+                                           width_nand3_path_p[i],
+                                           width_nand3_path_n[i],
+                                           g_tp.cell_h_def);
       leak_nand3_path += cmos_Isub_leakage(
           width_nand3_path_n[i], width_nand3_path_p[i], 1, inv, is_dram_);
       gate_leak_nand3_path += cmos_Ig_leakage(
@@ -1200,8 +1272,8 @@ PredecBlkDrv::compute_delays(double inrisetime_nand2_path,
       c_gate_load = gate_C(
           width_nand2_path_p[i + 1] + width_nand2_path_n[i + 1], 0.0, is_dram_);
       c_intrinsic =
-          drain_C_(width_nand2_path_p[i], PCH, 1, 1, g_tp.cell_h_def,
-                   is_dram_) +
+          drain_C_(
+              width_nand2_path_p[i], PCH, 1, 1, g_tp.cell_h_def, is_dram_) +
           drain_C_(width_nand2_path_n[i], NCH, 1, 1, g_tp.cell_h_def, is_dram_);
       tf = rd * (c_intrinsic + c_gate_load);
       this_delay = horowitz(inrisetime_nand2_path, tf, 0.5, 0.5, RISE);
@@ -1216,8 +1288,8 @@ PredecBlkDrv::compute_delays(double inrisetime_nand2_path,
       i = number_gates_nand2_path - 1;
       rd = tr_R_on(width_nand2_path_n[i], NCH, 1, is_dram_);
       c_intrinsic =
-          drain_C_(width_nand2_path_p[i], PCH, 1, 1, g_tp.cell_h_def,
-                   is_dram_) +
+          drain_C_(
+              width_nand2_path_p[i], PCH, 1, 1, g_tp.cell_h_def, is_dram_) +
           drain_C_(width_nand2_path_n[i], NCH, 1, 1, g_tp.cell_h_def, is_dram_);
       c_load = c_load_nand2_path_out;
       tf = rd * (c_intrinsic + c_load) + r_load_nand2_path_out * c_load / 2;
@@ -1235,8 +1307,8 @@ PredecBlkDrv::compute_delays(double inrisetime_nand2_path,
       c_gate_load = gate_C(
           width_nand3_path_p[i + 1] + width_nand3_path_n[i + 1], 0.0, is_dram_);
       c_intrinsic =
-          drain_C_(width_nand3_path_p[i], PCH, 1, 1, g_tp.cell_h_def,
-                   is_dram_) +
+          drain_C_(
+              width_nand3_path_p[i], PCH, 1, 1, g_tp.cell_h_def, is_dram_) +
           drain_C_(width_nand3_path_n[i], NCH, 1, 1, g_tp.cell_h_def, is_dram_);
       tf = rd * (c_intrinsic + c_gate_load);
       this_delay = horowitz(inrisetime_nand3_path, tf, 0.5, 0.5, RISE);
@@ -1251,8 +1323,8 @@ PredecBlkDrv::compute_delays(double inrisetime_nand2_path,
       i = number_gates_nand3_path - 1;
       rd = tr_R_on(width_nand3_path_n[i], NCH, 1, is_dram_);
       c_intrinsic =
-          drain_C_(width_nand3_path_p[i], PCH, 1, 1, g_tp.cell_h_def,
-                   is_dram_) +
+          drain_C_(
+              width_nand3_path_p[i], PCH, 1, 1, g_tp.cell_h_def, is_dram_) +
           drain_C_(width_nand3_path_n[i], NCH, 1, 1, g_tp.cell_h_def, is_dram_);
       c_load = c_load_nand3_path_out;
       tf = rd * (c_intrinsic + c_load) + r_load_nand3_path_out * c_load / 2;
@@ -1452,8 +1524,12 @@ Predec::get_max_delay_before_decoder(pair<double, double> input_pair1,
   return ret_val;
 }
 
-Driver::Driver(double c_gate_load_, double c_wire_load_, double r_wire_load_,
-               bool is_dram, bool power_gating_, int nodes_DSTN_)
+Driver::Driver(double c_gate_load_,
+               double c_wire_load_,
+               double r_wire_load_,
+               bool is_dram,
+               bool power_gating_,
+               int nodes_DSTN_)
     : number_gates(0), min_number_gates(2), c_gate_load(c_gate_load_),
       c_wire_load(c_wire_load_), r_wire_load(r_wire_load_), delay(0),
       //  power(),
@@ -1475,9 +1551,16 @@ void Driver::compute_widths() {
   width_p[0] = p_to_n_sz_ratio * g_tp.min_w_nmos_;
 
   double F = c_load / gate_C(width_n[0] + width_p[0], 0, is_dram_);
-  number_gates =
-      logical_effort(min_number_gates, 1, F, width_n, width_p, c_load,
-                     p_to_n_sz_ratio, is_dram_, false, g_tp.max_w_nmos_);
+  number_gates = logical_effort(min_number_gates,
+                                1,
+                                F,
+                                width_n,
+                                width_p,
+                                c_load,
+                                p_to_n_sz_ratio,
+                                is_dram_,
+                                false,
+                                g_tp.max_w_nmos_);
 }
 
 void Driver::compute_area() {
@@ -1513,10 +1596,13 @@ void Driver::compute_power_gating() {
   c_wakeup = drain_C_(total_driver_pwidth, PCH, 1, 1, area.h); // Psleep tx
   detalV = g_tp.peri_global.Vdd - g_tp.peri_global.Vcc_min;
   //    if (g_ip->power_gating)
-  sleeptx =
-      new Sleep_tx(g_ip->perfloss, Isat_subarray, is_footer, c_wakeup, detalV,
-                   nodes_DSTN, // default is 1 for drivers
-                   area);
+  sleeptx = new Sleep_tx(g_ip->perfloss,
+                         Isat_subarray,
+                         is_footer,
+                         c_wakeup,
+                         detalV,
+                         nodes_DSTN, // default is 1 for drivers
+                         area);
 }
 
 double Driver::compute_delay(double inrisetime) {

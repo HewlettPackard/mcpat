@@ -140,10 +140,12 @@ typedef struct {
   int l;
   XMLCHAR c;
 } XMLCharacterEntity;
-static XMLCharacterEntity XMLEntities[] = {
-    {_CXML("&amp;"), 5, _CXML('&')},   {_CXML("&lt;"), 4, _CXML('<')},
-    {_CXML("&gt;"), 4, _CXML('>')},    {_CXML("&quot;"), 6, _CXML('\"')},
-    {_CXML("&apos;"), 6, _CXML('\'')}, {NULL, 0, '\0'}};
+static XMLCharacterEntity XMLEntities[] = {{_CXML("&amp;"), 5, _CXML('&')},
+                                           {_CXML("&lt;"), 4, _CXML('<')},
+                                           {_CXML("&gt;"), 4, _CXML('>')},
+                                           {_CXML("&quot;"), 6, _CXML('\"')},
+                                           {_CXML("&apos;"), 6, _CXML('\'')},
+                                           {NULL, 0, '\0'}};
 
 // When rendering the XMLNode to a string (using the "createXMLString"
 // function), you can ask for a beautiful formatting. This formatting is using
@@ -570,8 +572,10 @@ XMLNode XMLNode::openFileHelper(XMLCSTR filename, XMLCSTR tag) {
   if (f) {
     char bb[205];
     int l = (int)fread(bb, 1, 200, f);
-    setGlobalOptions(guessCharEncoding(bb, l), guessWideCharChars,
-                     dropWhiteSpace, removeCommentsInMiddleOfText);
+    setGlobalOptions(guessCharEncoding(bb, l),
+                     guessWideCharChars,
+                     dropWhiteSpace,
+                     removeCommentsInMiddleOfText);
     fclose(f);
   }
 
@@ -598,14 +602,19 @@ XMLNode XMLNode::openFileHelper(XMLCSTR filename, XMLCSTR tag) {
             "%i.\n%s%s%s"
 #endif
             ,
-            filename, XMLNode::getError(pResults.error), pResults.nLine,
-            pResults.nColumn, s1, s2, s3);
+            filename,
+            XMLNode::getError(pResults.error),
+            pResults.nLine,
+            pResults.nColumn,
+            s1,
+            s2,
+            s3);
 
     // display message
 #if defined(_XMLWINDOWS) && !defined(UNDER_CE) &&                              \
     !defined(_XMLPARSER_NO_MESSAGEBOX_)
-    MessageBoxA(NULL, message, "XML Parsing error",
-                MB_OK | MB_ICONERROR | MB_TOPMOST);
+    MessageBoxA(
+        NULL, message, "XML Parsing error", MB_OK | MB_ICONERROR | MB_TOPMOST);
 #else
     printf("%s", message);
 #endif
@@ -780,7 +789,8 @@ typedef enum Attrib { eAttribName = 0, eAttribEquals, eAttribValue } Attrib;
 // inside a tag
 typedef enum Status { eInsideTag = 0, eOutsideTag } Status;
 
-XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding,
+XMLError XMLNode::writeToFile(XMLCSTR filename,
+                              const char *encoding,
                               char nFormat) const {
   if (!d)
     return eXMLErrorNone;
@@ -794,7 +804,9 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding,
   if ((!isDeclaration()) &&
       ((d->lpszName) || (!getChildNode().isDeclaration()))) {
     if (!fwrite(L"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n",
-                sizeof(wchar_t) * 40, 1, f))
+                sizeof(wchar_t) * 40,
+                1,
+                f))
       return eXMLErrorCannotWriteFile;
   }
 #else
@@ -1104,8 +1116,8 @@ static inline XMLCHAR getNextChar(XML *pXML) {
 
 // Find the next token in a string.
 // pcbToken contains the number of characters that have been read.
-static NextToken GetNextToken(XML *pXML, int *pcbToken,
-                              enum XMLTokenTypeTag *pType) {
+static NextToken
+GetNextToken(XML *pXML, int *pcbToken, enum XMLTokenTypeTag *pType) {
   NextToken result;
   XMLCHAR ch;
   XMLCHAR chTemp;
@@ -1317,8 +1329,8 @@ static inline void myFree(void *p) {
   if (p)
     free(p);
 }
-static inline void *myRealloc(void *p, int newsize, int memInc,
-                              int sizeofElem) {
+static inline void *
+myRealloc(void *p, int newsize, int memInc, int sizeofElem) {
   if (p == NULL) {
     if (memInc)
       return malloc(memInc * sizeofElem);
@@ -1335,8 +1347,8 @@ static inline void *myRealloc(void *p, int newsize, int memInc,
 }
 
 // private:
-XMLElementPosition XMLNode::findPosition(XMLNodeData *d, int index,
-                                         XMLElementType xxtype) {
+XMLElementPosition
+XMLNode::findPosition(XMLNodeData *d, int index, XMLElementType xxtype) {
   if (index < 0)
     return -1;
   int i = 0, j = (int)((index << 2) + xxtype), *o = d->pOrder;
@@ -1361,8 +1373,12 @@ int XMLNode::removeOrderElement(XMLNodeData *d, XMLElementType t, int index) {
   return i;
 }
 
-void *XMLNode::addToOrder(int memoryIncrease, int *_pos, int nc, void *p,
-                          int size, XMLElementType xtype) {
+void *XMLNode::addToOrder(int memoryIncrease,
+                          int *_pos,
+                          int nc,
+                          void *p,
+                          int size,
+                          XMLElementType xtype) {
   //  in: *_pos is the position inside d->pOrder ("-1" means "EndOf")
   // out: *_pos is the index inside p
   p = myRealloc(p, (nc + 1), memoryIncrease, size);
@@ -1394,19 +1410,22 @@ void *XMLNode::addToOrder(int memoryIncrease, int *_pos, int nc, void *p,
       o[i] += 4;
 
   *_pos = pos = o[pos] >> 2;
-  memmove(((char *)p) + (pos + 1) * size, ((char *)p) + pos * size,
+  memmove(((char *)p) + (pos + 1) * size,
+          ((char *)p) + pos * size,
           (nc - pos) * size);
 
   return p;
 }
 
 // Add a child node to the given element.
-XMLNode XMLNode::addChild_priv(int memoryIncrease, XMLSTR lpszName,
-                               char isDeclaration, int pos) {
+XMLNode XMLNode::addChild_priv(int memoryIncrease,
+                               XMLSTR lpszName,
+                               char isDeclaration,
+                               int pos) {
   if (!lpszName)
     return emptyXMLNode;
-  d->pChild = (XMLNode *)addToOrder(memoryIncrease, &pos, d->nChild, d->pChild,
-                                    sizeof(XMLNode), eNodeChild);
+  d->pChild = (XMLNode *)addToOrder(
+      memoryIncrease, &pos, d->nChild, d->pChild, sizeof(XMLNode), eNodeChild);
   d->pChild[pos].d = NULL;
   d->pChild[pos] = XMLNode(d, lpszName, isDeclaration);
   d->nChild++;
@@ -1414,7 +1433,8 @@ XMLNode XMLNode::addChild_priv(int memoryIncrease, XMLSTR lpszName,
 }
 
 // Add an attribute to an element.
-XMLAttribute *XMLNode::addAttribute_priv(int memoryIncrease, XMLSTR lpszName,
+XMLAttribute *XMLNode::addAttribute_priv(int memoryIncrease,
+                                         XMLSTR lpszName,
                                          XMLSTR lpszValuev) {
   if (!lpszName)
     return &emptyXMLAttribute;
@@ -1441,24 +1461,27 @@ XMLCSTR XMLNode::addText_priv(int memoryIncrease, XMLSTR lpszValue, int pos) {
     myFree(lpszValue);
     return NULL;
   }
-  d->pText = (XMLCSTR *)addToOrder(memoryIncrease, &pos, d->nText, d->pText,
-                                   sizeof(XMLSTR), eNodeText);
+  d->pText = (XMLCSTR *)addToOrder(
+      memoryIncrease, &pos, d->nText, d->pText, sizeof(XMLSTR), eNodeText);
   d->pText[pos] = lpszValue;
   d->nText++;
   return lpszValue;
 }
 
 // Add clear (unformatted) text to the element.
-XMLClear *XMLNode::addClear_priv(int memoryIncrease, XMLSTR lpszValue,
-                                 XMLCSTR lpszOpen, XMLCSTR lpszClose, int pos) {
+XMLClear *XMLNode::addClear_priv(int memoryIncrease,
+                                 XMLSTR lpszValue,
+                                 XMLCSTR lpszOpen,
+                                 XMLCSTR lpszClose,
+                                 int pos) {
   if (!lpszValue)
     return &emptyXMLClear;
   if (!d) {
     myFree(lpszValue);
     return &emptyXMLClear;
   }
-  d->pClear = (XMLClear *)addToOrder(memoryIncrease, &pos, d->nClear, d->pClear,
-                                     sizeof(XMLClear), eNodeClear);
+  d->pClear = (XMLClear *)addToOrder(
+      memoryIncrease, &pos, d->nClear, d->pClear, sizeof(XMLClear), eNodeClear);
   XMLClear *pNewClear = d->pClear + pos;
   pNewClear->lpszValue = lpszValue;
   if (!lpszOpen)
@@ -1510,8 +1533,11 @@ char XMLNode::parseClearTag(void *px, void *_pClear) {
     pXML->nIndex += cbTemp + (int)xstrlen(pClear.lpszClose);
 
     // Add the clear node to the current element
-    addClear_priv(MEMORYINCREASE, stringDup(lpXML, cbTemp), pClear.lpszOpen,
-                  pClear.lpszClose, -1);
+    addClear_priv(MEMORYINCREASE,
+                  stringDup(lpXML, cbTemp),
+                  pClear.lpszOpen,
+                  pClear.lpszClose,
+                  -1);
     return 0;
   }
 
@@ -1522,8 +1548,8 @@ char XMLNode::parseClearTag(void *px, void *_pClear) {
 
 void XMLNode::exactMemory(XMLNodeData *d) {
   if (d->pOrder)
-    d->pOrder = (int *)realloc(d->pOrder, (d->nChild + d->nText + d->nClear) *
-                                              sizeof(int));
+    d->pOrder = (int *)realloc(
+        d->pOrder, (d->nChild + d->nText + d->nClear) * sizeof(int));
   if (d->pChild)
     d->pChild = (XMLNode *)realloc(d->pChild, d->nChild * sizeof(XMLNode));
   if (d->pAttribute)
@@ -1675,7 +1701,8 @@ int XMLNode::ParseXMLElement(void *pa) {
                 // the current one and recurse
                 pNew = addChild_priv(MEMORYINCREASE,
                                      stringDup(token.pStr, cbToken),
-                                     nDeclaration, -1);
+                                     nDeclaration,
+                                     -1);
 
                 while (!pNew.isEmpty()) {
                   // Callself to process the new node.  If we return
@@ -1724,7 +1751,8 @@ int XMLNode::ParseXMLElement(void *pa) {
                       // Add the new element and recurse
                       pNew = addChild_priv(
                           MEMORYINCREASE,
-                          stringDup(pXML->lpNewElement, pXML->cbNewElement), 0,
+                          stringDup(pXML->lpNewElement, pXML->cbNewElement),
+                          0,
                           -1);
                       pXML->cbNewElement = 0;
                     } else {
@@ -1857,8 +1885,8 @@ int XMLNode::ParseXMLElement(void *pa) {
                 // Eg.  'Attribute AnotherAttribute'
                 case eTokenText:
                   // Add the unvalued attribute to the list
-                  addAttribute_priv(MEMORYINCREASE, stringDup(lpszTemp, cbTemp),
-                                    NULL);
+                  addAttribute_priv(
+                      MEMORYINCREASE, stringDup(lpszTemp, cbTemp), NULL);
                   // Cache the token then indicate.  We are next to
                   // look for the equals attribute
                   lpszTemp = token.pStr;
@@ -1882,8 +1910,8 @@ int XMLNode::ParseXMLElement(void *pa) {
 
                   if (cbTemp) {
                     // Add the unvalued attribute to the list
-                    addAttribute_priv(MEMORYINCREASE,
-                                      stringDup(lpszTemp, cbTemp), NULL);
+                    addAttribute_priv(
+                        MEMORYINCREASE, stringDup(lpszTemp, cbTemp), NULL);
                   }
 
                   // If this is the end of the tag then return to the caller
@@ -1945,8 +1973,8 @@ int XMLNode::ParseXMLElement(void *pa) {
                       if (!attrVal)
                         return FALSE;
                     }
-                    addAttribute_priv(MEMORYINCREASE,
-                                      stringDup(lpszTemp, cbTemp), attrVal);
+                    addAttribute_priv(
+                        MEMORYINCREASE, stringDup(lpszTemp, cbTemp), attrVal);
                   }
 
                   // Indicate we are searching for a new attribute
@@ -1987,8 +2015,8 @@ int XMLNode::ParseXMLElement(void *pa) {
 }
 
 // Count the number of lines and columns in an XML string.
-static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto,
-                                 XMLResults *pResults) {
+static void
+CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults) {
   XMLCHAR ch;
   assert(lpXML);
   assert(pResults);
@@ -2009,8 +2037,8 @@ static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto,
 }
 
 // Parse XML and return the root element.
-XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag,
-                             XMLResults *pResults) {
+XMLNode
+XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults) {
   if (!lpszXML) {
     if (pResults) {
       pResults->error = eXMLErrorNoElements;
@@ -2021,8 +2049,8 @@ XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag,
   }
 
   XMLNode xnode(NULL, NULL, FALSE);
-  struct XML xml = {lpszXML, lpszXML, 0,    0, eXMLErrorNone,
-                    NULL,    0,       NULL, 0, TRUE};
+  struct XML xml = {
+      lpszXML, lpszXML, 0, 0, eXMLErrorNone, NULL, 0, NULL, 0, TRUE};
 
   // Create header element
   xnode.ParseXMLElement(&xml);
@@ -2067,8 +2095,8 @@ XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag,
   return xnode;
 }
 
-XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag,
-                           XMLResults *pResults) {
+XMLNode
+XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults) {
   if (pResults) {
     pResults->nLine = 0;
     pResults->nColumn = 0;
@@ -2152,7 +2180,8 @@ static inline void charmemset(XMLSTR dest, XMLCHAR c, int l) {
 //
 // This recurses through all subnodes then adds contents of the nodes to the
 // string.
-int XMLNode::CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker,
+int XMLNode::CreateXMLStringR(XMLNodeData *pEntry,
+                              XMLSTR lpszMarker,
                               int nFormat) {
   int nResult = 0;
   int cb = nFormat < 0 ? 0 : nFormat;
@@ -2590,8 +2619,8 @@ XMLNode XMLNode::addChild(XMLNode childNode, int pos) {
   dc->pParent = d;
   //     int nc=d->nChild;
   //     d->pChild=(XMLNode*)myRealloc(d->pChild,(nc+1),memoryIncrease,sizeof(XMLNode));
-  d->pChild = (XMLNode *)addToOrder(0, &pos, d->nChild, d->pChild,
-                                    sizeof(XMLNode), eNodeChild);
+  d->pChild = (XMLNode *)addToOrder(
+      0, &pos, d->nChild, d->pChild, sizeof(XMLNode), eNodeChild);
   d->pChild[pos].d = dc;
   d->nChild++;
   return childNode;
@@ -2624,8 +2653,8 @@ void XMLNode::deleteAttribute(XMLCSTR lpszName) {
     deleteAttribute(j - 1);
 }
 
-XMLAttribute *XMLNode::updateAttribute_WOSD(XMLSTR lpszNewValue,
-                                            XMLSTR lpszNewName, int i) {
+XMLAttribute *
+XMLNode::updateAttribute_WOSD(XMLSTR lpszNewValue, XMLSTR lpszNewName, int i) {
   if (!d) {
     if (lpszNewValue)
       free(lpszNewValue);
@@ -2860,8 +2889,8 @@ XMLNode XMLNode::getChildNode(XMLCSTR name, int j) const {
   return getChildNode(i);
 }
 
-XMLNode XMLNode::getChildNodeByPath(XMLCSTR _path, char createMissing,
-                                    XMLCHAR sep) {
+XMLNode
+XMLNode::getChildNodeByPath(XMLCSTR _path, char createMissing, XMLCHAR sep) {
   XMLSTR path = stringDup(_path);
   XMLNode x = getChildNodeByPathNonConst(path, createMissing, sep);
   if (path)
@@ -2869,7 +2898,8 @@ XMLNode XMLNode::getChildNodeByPath(XMLCSTR _path, char createMissing,
   return x;
 }
 
-XMLNode XMLNode::getChildNodeByPathNonConst(XMLSTR path, char createIfMissing,
+XMLNode XMLNode::getChildNodeByPathNonConst(XMLSTR path,
+                                            char createIfMissing,
                                             XMLCHAR sep) {
   if ((!path) || (!(*path)))
     return *this;
@@ -2949,7 +2979,8 @@ XMLElementPosition XMLNode::positionOfChildNode(XMLCSTR name, int count) const {
   return findPosition(d, j - 1, eNodeChild);
 }
 
-XMLNode XMLNode::getChildNodeWithAttribute(XMLCSTR name, XMLCSTR attributeName,
+XMLNode XMLNode::getChildNodeWithAttribute(XMLCSTR name,
+                                           XMLCSTR attributeName,
                                            XMLCSTR attributeValue,
                                            int *k) const {
   int i = 0, j;
@@ -3127,11 +3158,13 @@ char XMLNode::isDeclaration() const {
 char XMLNode::isEmpty() const { return (d == NULL); }
 XMLNode XMLNode::emptyNode() { return XMLNode::emptyXMLNode; }
 
-XMLNode XMLNode::addChild(XMLCSTR lpszName, char isDeclaration,
+XMLNode XMLNode::addChild(XMLCSTR lpszName,
+                          char isDeclaration,
                           XMLElementPosition pos) {
   return addChild_priv(0, stringDup(lpszName), isDeclaration, pos);
 }
-XMLNode XMLNode::addChild_WOSD(XMLSTR lpszName, char isDeclaration,
+XMLNode XMLNode::addChild_WOSD(XMLSTR lpszName,
+                               char isDeclaration,
                                XMLElementPosition pos) {
   return addChild_priv(0, lpszName, isDeclaration, pos);
 }
@@ -3147,12 +3180,16 @@ XMLCSTR XMLNode::addText(XMLCSTR lpszValue, XMLElementPosition pos) {
 XMLCSTR XMLNode::addText_WOSD(XMLSTR lpszValue, XMLElementPosition pos) {
   return addText_priv(0, lpszValue, pos);
 }
-XMLClear *XMLNode::addClear(XMLCSTR lpszValue, XMLCSTR lpszOpen,
-                            XMLCSTR lpszClose, XMLElementPosition pos) {
+XMLClear *XMLNode::addClear(XMLCSTR lpszValue,
+                            XMLCSTR lpszOpen,
+                            XMLCSTR lpszClose,
+                            XMLElementPosition pos) {
   return addClear_priv(0, stringDup(lpszValue), lpszOpen, lpszClose, pos);
 }
-XMLClear *XMLNode::addClear_WOSD(XMLSTR lpszValue, XMLCSTR lpszOpen,
-                                 XMLCSTR lpszClose, XMLElementPosition pos) {
+XMLClear *XMLNode::addClear_WOSD(XMLSTR lpszValue,
+                                 XMLCSTR lpszOpen,
+                                 XMLCSTR lpszClose,
+                                 XMLElementPosition pos) {
   return addClear_priv(0, lpszValue, lpszOpen, lpszClose, pos);
 }
 XMLCSTR XMLNode::updateName(XMLCSTR lpszName) {
@@ -3164,16 +3201,16 @@ XMLAttribute *XMLNode::updateAttribute(XMLAttribute *newAttribute,
                               stringDup(newAttribute->lpszName),
                               oldAttribute->lpszName);
 }
-XMLAttribute *XMLNode::updateAttribute(XMLCSTR lpszNewValue,
-                                       XMLCSTR lpszNewName, int i) {
-  return updateAttribute_WOSD(stringDup(lpszNewValue), stringDup(lpszNewName),
-                              i);
+XMLAttribute *
+XMLNode::updateAttribute(XMLCSTR lpszNewValue, XMLCSTR lpszNewName, int i) {
+  return updateAttribute_WOSD(
+      stringDup(lpszNewValue), stringDup(lpszNewName), i);
 }
 XMLAttribute *XMLNode::updateAttribute(XMLCSTR lpszNewValue,
                                        XMLCSTR lpszNewName,
                                        XMLCSTR lpszOldName) {
-  return updateAttribute_WOSD(stringDup(lpszNewValue), stringDup(lpszNewName),
-                              lpszOldName);
+  return updateAttribute_WOSD(
+      stringDup(lpszNewValue), stringDup(lpszNewName), lpszOldName);
 }
 XMLCSTR XMLNode::updateText(XMLCSTR lpszNewValue, int i) {
   return updateText_WOSD(stringDup(lpszNewValue), i);
@@ -3192,7 +3229,8 @@ XMLClear *XMLNode::updateClear(XMLClear *newP, XMLClear *oldP) {
 }
 
 char XMLNode::setGlobalOptions(XMLCharEncoding _characterEncoding,
-                               char _guessWideCharChars, char _dropWhiteSpace,
+                               char _guessWideCharChars,
+                               char _dropWhiteSpace,
                                char _removeCommentsInMiddleOfText) {
   guessWideCharChars = _guessWideCharChars;
   dropWhiteSpace = _dropWhiteSpace;
@@ -3371,7 +3409,8 @@ int XMLParserBase64Tool::encodeLength(int inlen, char formatted) {
   return i;
 }
 
-XMLSTR XMLParserBase64Tool::encode(unsigned char *inbuf, unsigned int inlen,
+XMLSTR XMLParserBase64Tool::encode(unsigned char *inbuf,
+                                   unsigned int inlen,
                                    char formatted) {
   int i = encodeLength(inlen, formatted), k = 17, eLen = inlen / 3, j;
   alloc(i * sizeof(XMLCHAR));
@@ -3447,8 +3486,10 @@ unsigned int XMLParserBase64Tool::decodeSize(XMLCSTR data, XMLError *xe) {
   return (unsigned int)((size * 3) / 4);
 }
 
-unsigned char XMLParserBase64Tool::decode(XMLCSTR data, unsigned char *buf,
-                                          int len, XMLError *xe) {
+unsigned char XMLParserBase64Tool::decode(XMLCSTR data,
+                                          unsigned char *buf,
+                                          int len,
+                                          XMLError *xe) {
   if (xe)
     *xe = eXMLErrorNone;
   int i = 0, p = 0;
@@ -3561,8 +3602,8 @@ void XMLParserBase64Tool::alloc(int newsize) {
   }
 }
 
-unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen,
-                                           XMLError *xe) {
+unsigned char *
+XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *xe) {
   if (xe)
     *xe = eXMLErrorNone;
   unsigned int len = decodeSize(data, xe);
