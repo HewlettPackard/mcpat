@@ -34,9 +34,9 @@
 #include "area.h"
 #include "parameter.h"
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 using namespace std;
 
@@ -115,7 +115,7 @@ Sleep_tx::Sleep_tx(double _perf_with_sleep_tx,
   compute_penalty();
 }
 
-double Sleep_tx::compute_penalty() {
+auto Sleep_tx::compute_penalty() -> double {
   // V_delta = VDD - VCCmin nothing to do with threshold of sleep tx. Although
   // it might be OK to use sleep tx to control the V_delta
   double c_load;
@@ -155,4 +155,5 @@ double Sleep_tx::compute_penalty() {
           just the wakeup latency will be shorter than the wakeup time from full
      asleep. So, the sleep time and energy does not matter
   */
+  return 0.0;
 }

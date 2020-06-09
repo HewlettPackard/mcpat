@@ -37,3 +37,6 @@ obj_opt/
 
 # Unit-Test
 unit_test/output
+
+# CMake
+build*

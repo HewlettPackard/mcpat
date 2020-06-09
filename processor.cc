@@ -38,16 +38,16 @@
 #include "version.h"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface), // TODO: using one global copy may have problems.
-      mc(0), niu(0), pcie(0), flashcontroller(0) {
+      mc(nullptr), niu(nullptr), pcie(nullptr), flashcontroller(nullptr) {
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
@@ -905,12 +905,12 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 void Processor::set_proc_param() {
   bool debug = false;
 
-  procdynp.homoCore = bool(debug ? 1 : XML->sys.homogeneous_cores);
-  procdynp.homoL2 = bool(debug ? 1 : XML->sys.homogeneous_L2s);
-  procdynp.homoL3 = bool(debug ? 1 : XML->sys.homogeneous_L3s);
-  procdynp.homoNOC = bool(debug ? 1 : XML->sys.homogeneous_NoCs);
-  procdynp.homoL1Dir = bool(debug ? 1 : XML->sys.homogeneous_L1Directories);
-  procdynp.homoL2Dir = bool(debug ? 1 : XML->sys.homogeneous_L2Directories);
+  procdynp.homoCore = bool(debug ? true : XML->sys.homogeneous_cores);
+  procdynp.homoL2 = bool(debug ? true : XML->sys.homogeneous_L2s);
+  procdynp.homoL3 = bool(debug ? true : XML->sys.homogeneous_L3s);
+  procdynp.homoNOC = bool(debug ? true : XML->sys.homogeneous_NoCs);
+  procdynp.homoL1Dir = bool(debug ? true : XML->sys.homogeneous_L1Directories);
+  procdynp.homoL2Dir = bool(debug ? true : XML->sys.homogeneous_L2Directories);
 
   procdynp.numCore = XML->sys.number_of_cores;
   procdynp.numL2 = XML->sys.number_of_L2s;
@@ -986,7 +986,7 @@ void Processor::set_proc_param() {
   interface_ip.assoc = 1;
   interface_ip.nbanks = 1;
   interface_ip.out_w = interface_ip.line_sz * 8;
-  interface_ip.specific_tag = 1;
+  interface_ip.specific_tag = true;
   interface_ip.tag_w = 64;
   interface_ip.access_mode = 2;
 
@@ -1054,18 +1054,18 @@ Processor::~Processor() {
   }
   if (mc) {
     delete mc;
-    mc = 0;
+    mc = nullptr;
   }
   if (niu) {
     delete niu;
-    niu = 0;
+    niu = nullptr;
   }
   if (pcie) {
     delete pcie;
-    pcie = 0;
+    pcie = nullptr;
   }
   if (flashcontroller) {
     delete flashcontroller;
-    flashcontroller = 0;
+    flashcontroller = nullptr;
   }
 };

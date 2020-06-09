@@ -1,0 +1,45 @@
+add_library(cacti
+  Ucache.h
+  arbiter.h
+  area.h
+  bank.h
+  basic_circuit.h
+  cacti_interface.h
+  component.h
+  const.h
+  crossbar.h
+  decoder.h
+  htree2.h
+  io.h
+  mat.h
+  nuca.h
+  parameter.h
+  powergating.h
+  router.h
+  subarray.h
+  uca.h
+  version_cacti.h
+  wire.h
+  Ucache.cc
+  arbiter.cc
+  area.cc
+  bank.cc
+  basic_circuit.cc
+  cacti_interface.cc
+  component.cc
+  crossbar.cc
+  decoder.cc
+  htree2.cc
+  io.cc
+  main.cc
+  mat.cc
+  nuca.cc
+  parameter.cc
+  powergating.cc
+  router.cc
+  subarray.cc
+  technology.cc
+  uca.cc
+  wire.cc
+)
+target_include_directories(cacti PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
