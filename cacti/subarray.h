@@ -29,8 +29,6 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __SUBARRAY_H__
 #define __SUBARRAY_H__
 
@@ -40,31 +38,26 @@
 
 using namespace std;
 
+class Subarray : public Component {
+public:
+  Subarray(const DynamicParameter &dp, bool is_fa_);
+  ~Subarray();
 
-class Subarray : public Component
-{
-  public:
-    Subarray(const DynamicParameter & dp, bool is_fa_);
-    ~Subarray();
+  const DynamicParameter &dp;
+  double get_total_cell_area();
+  unsigned int num_rows;
+  unsigned int num_cols;
+  int32_t num_cols_fa_cam;
+  int32_t num_cols_fa_ram;
+  Area cell, cam_cell;
 
-    const DynamicParameter & dp;
-    double  get_total_cell_area();
-    unsigned int num_rows;
-    unsigned int num_cols;
-    int32_t num_cols_fa_cam;
-    int32_t num_cols_fa_ram;
-    Area    cell, cam_cell;
+  bool is_fa;
+  double C_wl, C_wl_cam, C_wl_ram;
+  double R_wl, R_wl_cam, R_wl_ram;
+  double C_bl, C_bl_cam;
 
-    bool    is_fa;
-    double  C_wl, C_wl_cam, C_wl_ram;
-    double  R_wl, R_wl_cam, R_wl_ram;
-    double  C_bl, C_bl_cam;
-  private:
-
-    void compute_C();  // compute bitline and wordline capacitance
+private:
+  void compute_C(); // compute bitline and wordline capacitance
 };
 
-
-
 #endif
-

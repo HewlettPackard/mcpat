@@ -29,40 +29,37 @@
  *
  ***************************************************************************/
 
-
 #ifndef __UCACHE_H__
 #define __UCACHE_H__
 
-#include <list>
 #include "area.h"
-#include "router.h"
 #include "nuca.h"
+#include "router.h"
 #include "uca.h"
 
+#include <list>
 
-class min_values_t
-{
-  public:
-    double min_delay;
-    double min_dyn;
-    double min_leakage;
-    double min_area;
-    double min_cyc;
+class min_values_t {
+public:
+  double min_delay;
+  double min_dyn;
+  double min_leakage;
+  double min_area;
+  double min_cyc;
 
-    min_values_t() : min_delay(BIGNUM), min_dyn(BIGNUM), min_leakage(BIGNUM), min_area(BIGNUM), min_cyc(BIGNUM) { }
+  min_values_t()
+      : min_delay(BIGNUM), min_dyn(BIGNUM), min_leakage(BIGNUM),
+        min_area(BIGNUM), min_cyc(BIGNUM) {}
 
-    void update_min_values(const min_values_t * val);
-    void update_min_values(const uca_org_t & res);
-    void update_min_values(const nuca_org_t * res);
-    void update_min_values(const mem_array * res);
+  void update_min_values(const min_values_t *val);
+  void update_min_values(const uca_org_t &res);
+  void update_min_values(const nuca_org_t *res);
+  void update_min_values(const mem_array *res);
 };
 
-
-
-struct solution
-{
-  int    tag_array_index;
-  int    data_array_index;
+struct solution {
+  int tag_array_index;
+  int data_array_index;
   list<mem_array *>::iterator tag_array_iter;
   list<mem_array *>::iterator data_array_iter;
   double access_time;
@@ -72,39 +69,23 @@ struct solution
   powerDef total_power;
 };
 
-
-
-bool calculate_time(
-    bool is_tag,
-    int pure_ram,
-    bool pure_cam,
-    double Nspd,
-    unsigned int Ndwl,
-    unsigned int Ndbl,
-    unsigned int Ndcm,
-    unsigned int Ndsam_lev_1,
-    unsigned int Ndsam_lev_2,
-    mem_array *ptr_array,
-    int flag_results_populate,
-    results_mem_array *ptr_results,
-    uca_org_t *ptr_fin_res,
-    bool is_main_mem);
+bool calculate_time(bool is_tag, int pure_ram, bool pure_cam, double Nspd,
+                    unsigned int Ndwl, unsigned int Ndbl, unsigned int Ndcm,
+                    unsigned int Ndsam_lev_1, unsigned int Ndsam_lev_2,
+                    mem_array *ptr_array, int flag_results_populate,
+                    results_mem_array *ptr_results, uca_org_t *ptr_fin_res,
+                    bool is_main_mem);
 
 void collect_uca_results(
-//    bool is_tag,
-//    int pure_ram,
-//    bool pure_cam,
-    double Nspd,
-    unsigned int Ndwl,
-    unsigned int Ndbl,
-    unsigned int Ndcm,
-    unsigned int Ndsam_lev_1,
-    unsigned int Ndsam_lev_2,
-    UCA const * const uca,
-    mem_array * const ptr_array,
-//    int flag_results_populate,
-//    results_mem_array *ptr_results,
-//    uca_org_t *ptr_fin_res,
+    //    bool is_tag,
+    //    int pure_ram,
+    //    bool pure_cam,
+    double Nspd, unsigned int Ndwl, unsigned int Ndbl, unsigned int Ndcm,
+    unsigned int Ndsam_lev_1, unsigned int Ndsam_lev_2, UCA const *const uca,
+    mem_array *const ptr_array,
+    //    int flag_results_populate,
+    //    results_mem_array *ptr_results,
+    //    uca_org_t *ptr_fin_res,
     bool is_main_mem);
 
 void update_dvs(uca_org_t *fin_res);
@@ -113,23 +94,21 @@ void update_pg(uca_org_t *fin_res);
 void solve(uca_org_t *fin_res);
 void init_tech_params(double tech, bool is_tag);
 
-
-struct calc_time_mt_wrapper_struct
-{
+struct calc_time_mt_wrapper_struct {
   uint32_t tid;
-  bool     is_tag;
-  bool     pure_ram;
-  bool     pure_cam;
-  bool     is_main_mem;
-  double   Nspd_min;
+  bool is_tag;
+  bool pure_ram;
+  bool pure_cam;
+  bool is_main_mem;
+  double Nspd_min;
 
-  min_values_t * data_res;
-  min_values_t * tag_res;
+  min_values_t *data_res;
+  min_values_t *tag_res;
 
   list<mem_array *> data_arr;
   list<mem_array *> tag_arr;
 };
 
-void *calc_time_mt_wrapper(void * void_obj);
+void *calc_time_mt_wrapper(void *void_obj);
 
 #endif

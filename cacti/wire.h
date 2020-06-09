@@ -29,99 +29,91 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __WIRE_H__
 #define __WIRE_H__
 
+#include "assert.h"
 #include "basic_circuit.h"
+#include "cacti_interface.h"
 #include "component.h"
 #include "parameter.h"
-#include "assert.h"
-#include "cacti_interface.h"
+
 #include <iostream>
 #include <list>
 
-class Wire : public Component
-{
-  public:
-    Wire(enum Wire_type wire_model, double len /* in u*/,
-         int nsense = 1/* no. of sense amps connected to the low-swing wire */,
-         double width_scaling = 1,
-         double spacing_scaling = 1,
-         enum Wire_placement wire_placement = outside_mat,
-         double resistivity = CU_RESISTIVITY,
-         TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
-    ~Wire();
+class Wire : public Component {
+public:
+  Wire(enum Wire_type wire_model, double len /* in u*/,
+       int nsense = 1 /* no. of sense amps connected to the low-swing wire */,
+       double width_scaling = 1, double spacing_scaling = 1,
+       enum Wire_placement wire_placement = outside_mat,
+       double resistivity = CU_RESISTIVITY,
+       TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
+  ~Wire();
 
-    Wire( double width_scaling = 1,
-         double spacing_scaling = 1,
-//         bool reset_repeater_sizing = true,
-         enum Wire_placement wire_placement = outside_mat,
-         double resistivity = CU_RESISTIVITY,
-         TechnologyParameter::DeviceType *dt = &(g_tp.peri_global)
-    ); // should be used only once for initializing static members
-    void init_wire(/*bool reset_repeater_sizing = true*/);
+  Wire(double width_scaling = 1, double spacing_scaling = 1,
+       //         bool reset_repeater_sizing = true,
+       enum Wire_placement wire_placement = outside_mat,
+       double resistivity = CU_RESISTIVITY,
+       TechnologyParameter::DeviceType *dt =
+           &(g_tp.peri_global)); // should be used only once for initializing
+                                 // static members
+  void init_wire(/*bool reset_repeater_sizing = true*/);
 
-    void calculate_wire_stats();
-    void delay_optimal_wire(/*bool reset_repeater_sizing = true*/);
-    double wire_cap(double len, bool call_from_outside=false);
-    double wire_res(double len);
-    void low_swing_model();
-    double signal_fall_time();
-    double signal_rise_time();
-    double sense_amp_input_cap();
+  void calculate_wire_stats();
+  void delay_optimal_wire(/*bool reset_repeater_sizing = true*/);
+  double wire_cap(double len, bool call_from_outside = false);
+  double wire_res(double len);
+  void low_swing_model();
+  double signal_fall_time();
+  double signal_rise_time();
+  double sense_amp_input_cap();
 
-    enum Wire_type wt;
-    double wire_spacing;
-    double wire_width;
-    enum Wire_placement wire_placement;
-    double repeater_size;
-    double repeater_spacing;
-    static double repeater_size_init; // value used in initialization should not be reused in final output
-    static double repeater_spacing_init;
-    double wire_length;
-    double in_rise_time, out_rise_time;
+  enum Wire_type wt;
+  double wire_spacing;
+  double wire_width;
+  enum Wire_placement wire_placement;
+  double repeater_size;
+  double repeater_spacing;
+  static double repeater_size_init; // value used in initialization should not
+                                    // be reused in final output
+  static double repeater_spacing_init;
+  double wire_length;
+  double in_rise_time, out_rise_time;
 
-    void set_in_rise_time(double rt)
-    {
-      in_rise_time = rt;
-    }
-    static Component global;
-    static Component global_5;
-    static Component global_10;
-    static Component global_20;
-    static Component global_30;
-    static Component low_swing;
-    static double wire_width_init;
-    static double wire_spacing_init;
-    static void print_wire();
-    void wire_dvs_update();
+  void set_in_rise_time(double rt) { in_rise_time = rt; }
+  static Component global;
+  static Component global_5;
+  static Component global_10;
+  static Component global_20;
+  static Component global_30;
+  static Component low_swing;
+  static double wire_width_init;
+  static double wire_spacing_init;
+  static void print_wire();
+  void wire_dvs_update();
 
-  private:
+private:
+  int nsense; // no. of sense amps connected to a low-swing wire if it
+              // is broadcasting data to multiple destinations
+  // width and spacing scaling factor can be used
+  // to model low level wires or special
+  // fat wires
+  double w_scale, s_scale;
+  double resistivity;
+  powerDef wire_model(double space, double size, double *delay);
+  list<Component> repeated_wire;
+  void update_fullswing();
+  static int initialized;
 
-    int nsense; // no. of sense amps connected to a low-swing wire if it
-                // is broadcasting data to multiple destinations
-    // width and spacing scaling factor can be used
-    // to model low level wires or special
-    // fat wires
-    double w_scale, s_scale;
-    double resistivity;
-    powerDef wire_model (double space, double size, double *delay);
-    list <Component> repeated_wire;
-    void update_fullswing();
-    static int initialized;
+  // low-swing
+  Component transmitter;
+  Component l_wire;
+  Component sense_amp;
 
+  double min_w_pmos;
 
-    //low-swing
-    Component transmitter;
-    Component l_wire;
-    Component sense_amp;
-
-    double min_w_pmos;
-
-    TechnologyParameter::DeviceType *deviceType;
-
+  TechnologyParameter::DeviceType *deviceType;
 };
 
 #endif

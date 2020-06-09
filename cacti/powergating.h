@@ -34,49 +34,44 @@
 
 #include "component.h"
 
-class Sleep_tx : public Component
-{
+class Sleep_tx : public Component {
 public:
-	Sleep_tx(
-				double  _perf_with_sleep_tx,
-				double  _active_Isat,//of circuit block, not sleep tx
-	            bool    _is_footer,
-	            double _c_circuit_wakeup,
-	            double _V_delta,
-	            int     _num_sleep_tx,
-	//            double  _vt_circuit,
-	//			double  _vt_sleep_tx,
-	//			double  _mobility,//of sleep tx
-	//			double  _c_ox,//of sleep tx
-				const  Area & cell_);
+  Sleep_tx(double _perf_with_sleep_tx,
+           double _active_Isat, // of circuit block, not sleep tx
+           bool _is_footer, double _c_circuit_wakeup, double _V_delta,
+           int _num_sleep_tx,
+           //            double  _vt_circuit,
+           //			double  _vt_sleep_tx,
+           //			double  _mobility,//of sleep tx
+           //			double  _c_ox,//of sleep tx
+           const Area &cell_);
 
-	double  perf_with_sleep_tx;
-	double  active_Isat;
-	bool    is_footer;
-	int     num_sleep_tx;
-	double  vt_circuit;
-	double  vt_sleep_tx;
-	double  vdd;// of circuit block not sleep tx
-	double  mobility;//of sleep tx
-	double  c_ox;
-	double  width;
-	double  c_circuit_wakeup;
-	double  c_intrinsic_sleep;
-	double  delay, wakeup_delay;
-	powerDef power, wakeup_power;
-//	double  c_circuit_sleep;
-//	double  sleep_delay;
-//	powerDef sleep_power;
-	const  Area & cell;
-	bool    is_sleep_tx;
-	double  V_delta;
+  double perf_with_sleep_tx;
+  double active_Isat;
+  bool is_footer;
+  int num_sleep_tx;
+  double vt_circuit;
+  double vt_sleep_tx;
+  double vdd;      // of circuit block not sleep tx
+  double mobility; // of sleep tx
+  double c_ox;
+  double width;
+  double c_circuit_wakeup;
+  double c_intrinsic_sleep;
+  double delay, wakeup_delay;
+  powerDef power, wakeup_power;
+  //	double  c_circuit_sleep;
+  //	double  sleep_delay;
+  //	powerDef sleep_power;
+  const Area &cell;
+  bool is_sleep_tx;
+  double V_delta;
 
+  //	void   compute_area();
+  double compute_penalty(); // return outrisetime
 
-//	void   compute_area();
-	double compute_penalty();  // return outrisetime
-
-	void leakage_feedback(double temperature){};
-	~Sleep_tx(){};
+  void leakage_feedback(double temperature){};
+  ~Sleep_tx(){};
 };
 
 #endif /* POWERGATING_H_ */

@@ -34,10 +34,11 @@
 
 #include <string>
 
-#define VER_MAJOR_CACTI		6	/* CACTI-P and DVS */
-#define VER_MINOR_CACTI		5
-const string VER_postfix_CACTI =  "-P";
-#define VER_COMMENT_CACTI	"CAM and fully associative cache, power gating, and DVS"
-#define VER_UPDATE_CACTI	"June, 2014"
+#define VER_MAJOR_CACTI 6 /* CACTI-P and DVS */
+#define VER_MINOR_CACTI 5
+const string VER_postfix_CACTI = "-P";
+#define VER_COMMENT_CACTI                                                      \
+  "CAM and fully associative cache, power gating, and DVS"
+#define VER_UPDATE_CACTI "June, 2014"
 
 #endif /* VERSION_H_ */

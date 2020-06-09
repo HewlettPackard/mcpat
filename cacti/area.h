@@ -29,43 +29,35 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __AREA_H__
 #define __AREA_H__
 
-#include "cacti_interface.h"
 #include "basic_circuit.h"
+#include "cacti_interface.h"
 
 using namespace std;
 
-class Area
-{
- public:
+class Area {
+public:
   double w;
   double h;
 
-  Area():w(0), h(0), area(0) { }
+  Area() : w(0), h(0), area(0) {}
   double get_w() const { return w; }
   double get_h() const { return h; }
-  double get_area() const
-  {
-    if (w == 0 && h == 0)
-    {
+  double get_area() const {
+    if (w == 0 && h == 0) {
       return area;
-    }
-    else
-    {
-      return w*h;
+    } else {
+      return w * h;
     }
   }
   void set_w(double w_) { w = w_; }
   void set_h(double h_) { h = h_; }
   void set_area(double a_) { area = a_; }
 
- private:
+private:
   double area;
 };
 
 #endif
-
