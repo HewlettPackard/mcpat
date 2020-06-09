@@ -1,5 +1,5 @@
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "DO NOT BUILD in-tree.")
+  message(FATAL_ERROR "Create a separate build directory")
 endif()
 
 cmake_minimum_required (VERSION 3.1)
@@ -15,11 +15,14 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-#set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb -O0")
-#set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-#set(CMAKE_C_COMPILER clang)
-#set(CMAKE_CXX_COMPILER clang++)
+#Including custom CMake rules
+include(cmake/clang-cxx-dev-tools.cmake)
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
 
 add_definitions(-DNTHREADS=1)
 

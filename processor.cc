@@ -40,10 +40,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <fstream>
-#include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 
 Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface), // TODO: using one global copy may have problems.

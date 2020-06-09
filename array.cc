@@ -209,7 +209,7 @@ void ArrayST::optimize_array() {
     // below
     //"<<area_efficiency_threshold<<"% " << endl; 		if
     //(latency_overflow==true) 			cout<< "Warning: " <<" McPAT stopped
-    //optimization on latency for "<< name
+    // optimization on latency for "<< name
     //				<<" array structure because its area efficiency is
     // below
     //"<<area_efficiency_threshold<<"% " << endl;
