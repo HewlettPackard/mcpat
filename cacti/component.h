@@ -29,56 +29,41 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __COMPONENT_H__
 #define __COMPONENT_H__
 
-#include "parameter.h"
 #include "area.h"
+#include "parameter.h"
 
 using namespace std;
 
 class Crossbar;
 class Bank;
 
-class Component
-{
-  public:
-    Component();
-    ~Component();
+class Component {
+public:
+  Component();
+  ~Component();
 
-    Area area;
-    powerDef power,rt_power;
-    double delay;
-    double cycle_time;
+  Area area;
+  powerDef power, rt_power;
+  double delay;
+  double cycle_time;
 
-    double compute_gate_area(
-        int gate_type,
-        int num_inputs,
-        double w_pmos,
-        double w_nmos,
-        double h_gate);
+  double compute_gate_area(int gate_type, int num_inputs, double w_pmos,
+                           double w_nmos, double h_gate);
 
-    double compute_tr_width_after_folding(double input_width, double threshold_folding_width);
-    double height_sense_amplifier(double pitch_sense_amp);
+  double compute_tr_width_after_folding(double input_width,
+                                        double threshold_folding_width);
+  double height_sense_amplifier(double pitch_sense_amp);
 
-  protected:
-    int logical_effort(
-        int    num_gates_min,
-        double g,
-        double F,
-        double * w_n,
-        double * w_p,
-        double C_load,
-        double p_to_n_sz_ratio,
-        bool   is_dram_,
-        bool   is_wl_tr_,
-        double max_w_nmos);
+protected:
+  int logical_effort(int num_gates_min, double g, double F, double *w_n,
+                     double *w_p, double C_load, double p_to_n_sz_ratio,
+                     bool is_dram_, bool is_wl_tr_, double max_w_nmos);
 
-  private:
-    double compute_diffusion_width(int num_stacked_in, int num_folded_tr);
+private:
+  double compute_diffusion_width(int num_stacked_in, int num_folded_tr);
 };
 
 #endif
-

@@ -26,26 +26,6 @@ print_info () {
   echo -e "[ $script_name ] $1"
 }
 
-print_pass () {
-  green="\e[32m"
-  nc="\e[0m"
-  echo -e "$green[ $script_name ] PASS:$nc $1"
-}
-
-print_error () {
-  red="\e[31m"
-  nc="\e[0m"
-  echo -e "$red[ $script_name ] ERROR:$nc $1"
-}
-
-print_test_results () {
-  green="\e[32m"
-  red="\e[31m"
-  nc="\e[0m"
-  echo -e "[ $script_name ] Passed $green$1$nc; Failed $red$2$nc; out of $3 Unit Tests"
-}
-
-
 #--------------------------------------------------------------------
 # Output Directories
 #   ___  _   _ _____ ____  _   _ _____   ____ ___ ____  
@@ -64,8 +44,6 @@ else
   rm -f $OUTPUT/*
 fi
 
-GOLDEN="./golden"
-
 #--------------------------------------------------------------------
 # Run Tests
 #  _____ _____ ____ _____ ____  
@@ -75,33 +53,4 @@ GOLDEN="./golden"
 #   |_| |_____|____/ |_| |____/ 
 #                             
 #--------------------------------------------------------------------
-INPUT="./input"
-PASS_COUNT=0
-TOTAL_COUNT=0
-FAIL_COUNT=0
-for t in $(ls $INPUT); do 
-  test_name=$(basename $t .xml)
-  TOTAL_COUNT=$((TOTAL_COUNT + 1))
-  ../mcpat -infile $INPUT/$test_name.xml -print_level 5 -opt_for_clk 1 > $OUTPUT/$test_name.out 2> $OUTPUT/$test_name.err
-  if [ -s $OUTPUT/$test_name.err ] || [ ! -s $OUTPUT/$test_name.out ];
-  then
-    print_error "$test_name; check $OUTPUT/$test_name.err"
-    FAIL_COUNT=$((FAIL_COUNT + 1))
-  else
-    if [ $(grep -rnI "nan\|inf" $OUTPUT/${test_name}.out | wc -l) -ne 0 ];
-    then
-      print_pass "$test_name; nan, inf present in output; check $OUTPUT/$test_name.out"
-      FAIL_COUNT=$((FAIL_COUNT + 1))
-    else
-      if [ $(diff $GOLDEN/$test_name.golden $OUTPUT/$test_name.out | wc -l) -eq 0 ];
-      then
-        print_pass "$test_name"
-        PASS_COUNT=$((PASS_COUNT + 1))
-      else
-        print_error "$test_name; output differs from golden output"
-        FAIL_COUNT=$((FAIL_COUNT + 1))
-      fi
-    fi
-  fi
-done
-print_test_results $PASS_COUNT $FAIL_COUNT $TOTAL_COUNT
+./unit_test.py

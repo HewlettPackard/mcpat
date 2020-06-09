@@ -29,46 +29,40 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __BANK_H__
 #define __BANK_H__
 
 #include "component.h"
 #include "decoder.h"
-#include "mat.h"
 #include "htree2.h"
+#include "mat.h"
 
+class Bank : public Component {
+public:
+  Bank(const DynamicParameter &dyn_p);
+  ~Bank();
+  double compute_delays(double inrisetime); // return outrisetime
+  void compute_power_energy();
 
-class Bank : public Component
-{
-  public:
-    Bank(const DynamicParameter & dyn_p);
-    ~Bank();
-    double compute_delays(double inrisetime);  // return outrisetime
-    void   compute_power_energy();
+  const DynamicParameter &dp;
+  Mat mat;
+  Htree2 *htree_in_add;
+  Htree2 *htree_in_data;
+  Htree2 *htree_out_data;
+  Htree2 *htree_in_search;
+  Htree2 *htree_out_search;
 
-    const DynamicParameter & dp;
-    Mat   mat;
-    Htree2 *htree_in_add;
-    Htree2 *htree_in_data;
-    Htree2 *htree_out_data;
-    Htree2 *htree_in_search;
-    Htree2 *htree_out_search;
+  int num_addr_b_mat;
+  int num_mats_hor_dir;
+  int num_mats_ver_dir;
 
-    int  num_addr_b_mat;
-    int  num_mats_hor_dir;
-    int  num_mats_ver_dir;
+  int num_addr_b_row_dec;
+  int num_addr_b_routed_to_mat_for_act;
+  int num_addr_b_routed_to_mat_for_rd_or_wr;
 
-    int  num_addr_b_row_dec;
-    int  num_addr_b_routed_to_mat_for_act;
-    int  num_addr_b_routed_to_mat_for_rd_or_wr;
-
-    double  array_leakage;
-    double  wl_leakage;
-    double  cl_leakage;
+  double array_leakage;
+  double wl_leakage;
+  double cl_leakage;
 };
-
-
 
 #endif

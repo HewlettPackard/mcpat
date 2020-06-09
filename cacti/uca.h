@@ -29,70 +29,65 @@
  *
  ***************************************************************************/
 
-
-
 #ifndef __UCA_H__
 #define __UCA_H__
 
 #include "area.h"
 #include "bank.h"
 #include "component.h"
-#include "parameter.h"
 #include "htree2.h"
+#include "parameter.h"
 
+class UCA : public Component {
+public:
+  UCA(const DynamicParameter &dyn_p);
+  ~UCA();
+  double compute_delays(double inrisetime); // returns outrisetime
+  void compute_power_energy();
 
-class UCA : public Component
-{
-  public:
-    UCA(const DynamicParameter & dyn_p);
-    ~UCA();
-    double compute_delays(double inrisetime);  // returns outrisetime
-    void   compute_power_energy();
+  DynamicParameter dp;
+  Bank bank;
 
-    DynamicParameter dp;
-    Bank   bank;
+  Htree2 *htree_in_add;
+  Htree2 *htree_in_data;
+  Htree2 *htree_out_data;
+  Htree2 *htree_in_search;
+  Htree2 *htree_out_search;
 
-    Htree2   * htree_in_add;
-    Htree2   * htree_in_data;
-    Htree2   * htree_out_data;
-    Htree2   * htree_in_search;
-    Htree2   * htree_out_search;
+  powerDef power_routing_to_bank;
 
-    powerDef power_routing_to_bank;
+  uint32_t nbanks;
 
-    uint32_t nbanks;
+  int num_addr_b_bank;
+  int num_di_b_bank;
+  int num_do_b_bank;
+  int num_si_b_bank;
+  int num_so_b_bank;
+  int RWP, ERP, EWP, SCHP;
+  double area_all_dataramcells;
 
-    int   num_addr_b_bank;
-    int   num_di_b_bank;
-    int   num_do_b_bank;
-    int   num_si_b_bank;
-    int   num_so_b_bank;
-    int   RWP, ERP, EWP,SCHP;
-    double area_all_dataramcells;
+  double dyn_read_energy_from_closed_page;
+  double dyn_read_energy_from_open_page;
+  double dyn_read_energy_remaining_words_in_burst;
 
-    double dyn_read_energy_from_closed_page;
-    double dyn_read_energy_from_open_page;
-    double dyn_read_energy_remaining_words_in_burst;
+  double refresh_power; // only for DRAM
+  double activate_energy;
+  double read_energy;
+  double write_energy;
+  double precharge_energy;
+  double leak_power_subbank_closed_page;
+  double leak_power_subbank_open_page;
+  double leak_power_request_and_reply_networks;
 
-    double refresh_power;  // only for DRAM
-    double activate_energy;
-    double read_energy;
-    double write_energy;
-    double precharge_energy;
-    double leak_power_subbank_closed_page;
-    double leak_power_subbank_open_page;
-    double leak_power_request_and_reply_networks;
-
-    double delay_array_to_sa_mux_lev_1_decoder;
-    double delay_array_to_sa_mux_lev_2_decoder;
-    double delay_before_subarray_output_driver;
-    double delay_from_subarray_out_drv_to_out;
-    double access_time;
-    double precharge_delay;
-    double multisubbank_interleave_cycle_time;
-    double long_channel_leakage_reduction_periperal;
-    double long_channel_leakage_reduction_memcell;
+  double delay_array_to_sa_mux_lev_1_decoder;
+  double delay_array_to_sa_mux_lev_2_decoder;
+  double delay_before_subarray_output_driver;
+  double delay_from_subarray_out_drv_to_out;
+  double access_time;
+  double precharge_delay;
+  double multisubbank_interleave_cycle_time;
+  double long_channel_leakage_reduction_periperal;
+  double long_channel_leakage_reduction_memcell;
 };
 
 #endif
-
