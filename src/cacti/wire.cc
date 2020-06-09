@@ -33,8 +33,13 @@
 
 #include "cmath"
 // use this constructor to calculate wire stats
-Wire::Wire(enum Wire_type wire_model, double wl, int n, double w_s, double s_s,
-           enum Wire_placement wp, double resistivity,
+Wire::Wire(enum Wire_type wire_model,
+           double wl,
+           int n,
+           double w_s,
+           double s_s,
+           enum Wire_placement wp,
+           double resistivity,
            TechnologyParameter::DeviceType *dt)
     : wt(wire_model), wire_length(wl * 1e-6), nsense(n), w_scale(w_s),
       s_scale(s_s), resistivity(resistivity), deviceType(dt) {
@@ -74,8 +79,10 @@ double Wire::repeater_size_init; // value used in initialization should not be
                                  // reused in final output
 double Wire::repeater_spacing_init;
 
-Wire::Wire(double w_s, double s_s,
-           /*bool reset_repeater_sizing,*/ enum Wire_placement wp, double resis,
+Wire::Wire(double w_s,
+           double s_s,
+           /*bool reset_repeater_sizing,*/ enum Wire_placement wp,
+           double resis,
            TechnologyParameter::DeviceType *dt) {
   w_scale = w_s;
   s_scale = s_s;
@@ -144,7 +151,9 @@ void Wire::calculate_wire_stats() {
       repeater_spacing = global.area.w;
       repeater_size = global.area.h;
       area.set_area((wire_length / repeater_spacing) *
-                    compute_gate_area(INV, 1, min_w_pmos * repeater_size,
+                    compute_gate_area(INV,
+                                      1,
+                                      min_w_pmos * repeater_size,
                                       g_tp.min_w_nmos_ * repeater_size,
                                       g_tp.cell_h_def));
     } else if (wt == Global_5) {
@@ -156,7 +165,9 @@ void Wire::calculate_wire_stats() {
       repeater_spacing = global_5.area.w;
       repeater_size = global_5.area.h;
       area.set_area((wire_length / repeater_spacing) *
-                    compute_gate_area(INV, 1, min_w_pmos * repeater_size,
+                    compute_gate_area(INV,
+                                      1,
+                                      min_w_pmos * repeater_size,
                                       g_tp.min_w_nmos_ * repeater_size,
                                       g_tp.cell_h_def));
     } else if (wt == Global_10) {
@@ -168,7 +179,9 @@ void Wire::calculate_wire_stats() {
       repeater_spacing = global_10.area.w;
       repeater_size = global_10.area.h;
       area.set_area((wire_length / repeater_spacing) *
-                    compute_gate_area(INV, 1, min_w_pmos * repeater_size,
+                    compute_gate_area(INV,
+                                      1,
+                                      min_w_pmos * repeater_size,
                                       g_tp.min_w_nmos_ * repeater_size,
                                       g_tp.cell_h_def));
     } else if (wt == Global_20) {
@@ -180,7 +193,9 @@ void Wire::calculate_wire_stats() {
       repeater_spacing = global_20.area.w;
       repeater_size = global_20.area.h;
       area.set_area((wire_length / repeater_spacing) *
-                    compute_gate_area(INV, 1, min_w_pmos * repeater_size,
+                    compute_gate_area(INV,
+                                      1,
+                                      min_w_pmos * repeater_size,
                                       g_tp.min_w_nmos_ * repeater_size,
                                       g_tp.cell_h_def));
     } else if (wt == Global_30) {
@@ -192,7 +207,9 @@ void Wire::calculate_wire_stats() {
       repeater_spacing = global_30.area.w;
       repeater_size = global_30.area.h;
       area.set_area((wire_length / repeater_spacing) *
-                    compute_gate_area(INV, 1, min_w_pmos * repeater_size,
+                    compute_gate_area(INV,
+                                      1,
+                                      min_w_pmos * repeater_size,
                                       g_tp.min_w_nmos_ * repeater_size,
                                       g_tp.cell_h_def));
     }
@@ -239,15 +256,21 @@ double Wire::signal_fall_time() {
                drain_C_(min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
                gate_C(min_w_pmos + g_tp.min_w_nmos_, 0)) *
               tr_R_on(min_w_pmos, PCH, 1);
-  rt = horowitz(0, timeconst, deviceType->Vth / deviceType->Vdd,
-                deviceType->Vth / deviceType->Vdd, FALL) /
+  rt = horowitz(0,
+                timeconst,
+                deviceType->Vth / deviceType->Vdd,
+                deviceType->Vth / deviceType->Vdd,
+                FALL) /
        (deviceType->Vdd - deviceType->Vth);
   timeconst = (drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def) +
                drain_C_(min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
                gate_C(min_w_pmos + g_tp.min_w_nmos_, 0)) *
               tr_R_on(g_tp.min_w_nmos_, NCH, 1);
-  ft = horowitz(rt, timeconst, deviceType->Vth / deviceType->Vdd,
-                deviceType->Vth / deviceType->Vdd, RISE) /
+  ft = horowitz(rt,
+                timeconst,
+                deviceType->Vth / deviceType->Vdd,
+                deviceType->Vth / deviceType->Vdd,
+                RISE) /
        deviceType->Vth;
   return ft;
 }
@@ -264,15 +287,21 @@ double Wire::signal_rise_time() {
                drain_C_(min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
                gate_C(min_w_pmos + g_tp.min_w_nmos_, 0)) *
               tr_R_on(g_tp.min_w_nmos_, NCH, 1);
-  rt = horowitz(0, timeconst, deviceType->Vth / deviceType->Vdd,
-                deviceType->Vth / deviceType->Vdd, RISE) /
+  rt = horowitz(0,
+                timeconst,
+                deviceType->Vth / deviceType->Vdd,
+                deviceType->Vth / deviceType->Vdd,
+                RISE) /
        deviceType->Vth;
   timeconst = (drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def) +
                drain_C_(min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
                gate_C(min_w_pmos + g_tp.min_w_nmos_, 0)) *
               tr_R_on(min_w_pmos, PCH, 1);
-  ft = horowitz(rt, timeconst, deviceType->Vth / deviceType->Vdd,
-                deviceType->Vth / deviceType->Vdd, FALL) /
+  ft = horowitz(rt,
+                timeconst,
+                deviceType->Vth / deviceType->Vdd,
+                deviceType->Vth / deviceType->Vdd,
+                FALL) /
        (deviceType->Vdd - deviceType->Vth);
   return ft; // sec
 }
@@ -453,8 +482,11 @@ void Wire::low_swing_model() {
 
   double timeconst = res_eq * cap_eq;
 
-  delay = horowitz(inputrise, timeconst, deviceType->Vth / deviceType->Vdd,
-                   deviceType->Vth / deviceType->Vdd, RISE);
+  delay = horowitz(inputrise,
+                   timeconst,
+                   deviceType->Vth / deviceType->Vdd,
+                   deviceType->Vth / deviceType->Vdd,
+                   RISE);
   double temp_power = cap_eq * deviceType->Vdd * deviceType->Vdd;
 
   inputrise =
@@ -471,8 +503,11 @@ void Wire::low_swing_model() {
            gate_C(nsize, 0);
   timeconst = res_eq * cap_eq;
 
-  delay += horowitz(inputrise, timeconst, deviceType->Vth / deviceType->Vdd,
-                    deviceType->Vth / deviceType->Vdd, FALL);
+  delay += horowitz(inputrise,
+                    timeconst,
+                    deviceType->Vth / deviceType->Vdd,
+                    deviceType->Vth / deviceType->Vdd,
+                    FALL);
   temp_power += cap_eq * deviceType->Vdd * deviceType->Vdd;
 
   transmitter.delay = delay;
@@ -603,7 +638,9 @@ void Wire::delay_optimal_wire(/*bool reset_repeater_sizing*/) {
               repeater_scaling * tc;
 
   area.set_area((len / repeater_spacing_init) *
-                compute_gate_area(INV, 1, min_w_pmos * repeater_scaling,
+                compute_gate_area(INV,
+                                  1,
+                                  min_w_pmos * repeater_scaling,
                                   g_tp.min_w_nmos_ * repeater_scaling,
                                   g_tp.cell_h_def));
   power.readOp.dynamic =
@@ -611,11 +648,15 @@ void Wire::delay_optimal_wire(/*bool reset_repeater_sizing*/) {
   power.readOp.leakage =
       ((len / repeater_spacing_init) * deviceType->Vdd *
        cmos_Isub_leakage(g_tp.min_w_nmos_ * repeater_scaling,
-                         beta * g_tp.min_w_nmos_ * repeater_scaling, 1, inv));
+                         beta * g_tp.min_w_nmos_ * repeater_scaling,
+                         1,
+                         inv));
   power.readOp.gate_leakage =
       ((len / repeater_spacing_init) * deviceType->Vdd *
        cmos_Ig_leakage(g_tp.min_w_nmos_ * repeater_scaling,
-                       beta * g_tp.min_w_nmos_ * repeater_scaling, 1, inv));
+                       beta * g_tp.min_w_nmos_ * repeater_scaling,
+                       1,
+                       inv));
 }
 
 // calculate power/delay values for wires with suboptimal repeater
@@ -761,12 +802,16 @@ powerDef Wire::wire_model(double space, double size, double *delay) {
   ptemp.readOp.leakage =
       ((len / repeater_spacing) * deviceType->Vdd *
        cmos_Isub_leakage(g_tp.min_w_nmos_ * repeater_size,
-                         beta * g_tp.min_w_nmos_ * repeater_size, 1, inv));
+                         beta * g_tp.min_w_nmos_ * repeater_size,
+                         1,
+                         inv));
 
   ptemp.readOp.gate_leakage =
       ((len / repeater_spacing) * deviceType->Vdd *
        cmos_Ig_leakage(g_tp.min_w_nmos_ * repeater_size,
-                       beta * g_tp.min_w_nmos_ * repeater_size, 1, inv));
+                       beta * g_tp.min_w_nmos_ * repeater_size,
+                       1,
+                       inv));
 
   return ptemp;
 }

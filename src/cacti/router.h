@@ -50,7 +50,9 @@ public:
          double vc_buf, /* vc size = vc_buffer_size * flit_size */
          double vc_count,
          TechnologyParameter::DeviceType *dt = &(g_tp.peri_global),
-         double I_ = 5, double O_ = 5, double M_ = 0.6);
+         double I_ = 5,
+         double O_ = 5,
+         double M_ = 0.6);
   ~Router();
 
   void print_router();
@@ -67,8 +69,8 @@ private:
   double FREQUENCY; // move this to config file --TODO
   double Cw3(double len);
   double gate_cap(double w);
-  double diff_cap(double w, int type /*0 for n-mos and 1 for p-mos*/,
-                  double stack);
+  double
+  diff_cap(double w, int type /*0 for n-mos and 1 for p-mos*/, double stack);
   enum Wire_type wtype;
   enum Wire_placement wire_placement;
   // corssbar

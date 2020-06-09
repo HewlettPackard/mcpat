@@ -71,7 +71,9 @@ using namespace std;
  */
 Sleep_tx::Sleep_tx(double _perf_with_sleep_tx,
                    double _active_Isat, // of circuit block, not sleep tx
-                   bool _is_footer, double _c_circuit_wakeup, double _V_delta,
+                   bool _is_footer,
+                   double _c_circuit_wakeup,
+                   double _V_delta,
                    int _num_sleep_tx,
                    // double  _vt_circuit,
                    // double  _vt_sleep_tx,
@@ -134,8 +136,15 @@ auto Sleep_tx::compute_penalty() -> double {
     // no 0.5 because the half of the energy spend in entering sleep and half of
     // the energy will be spent in waking up. And they are pairs
   } else {
-    c_intrinsic_sleep = drain_C_(width * p_to_n_sz_ratio, PCH, 1, 1, area.h,
-                                 false, false, false, is_sleep_tx);
+    c_intrinsic_sleep = drain_C_(width * p_to_n_sz_ratio,
+                                 PCH,
+                                 1,
+                                 1,
+                                 area.h,
+                                 false,
+                                 false,
+                                 false,
+                                 is_sleep_tx);
     //    V_delta = _V_delta;
     wakeup_delay =
         (c_circuit_wakeup + c_intrinsic_sleep) * V_delta /

@@ -43,9 +43,12 @@
 
 using namespace std;
 
-ArrayST::ArrayST(const InputParameter *configure_interface, string _name,
-                 enum Device_ty device_ty_, bool opt_local_,
-                 enum Core_type core_ty_, bool _is_default)
+ArrayST::ArrayST(const InputParameter *configure_interface,
+                 string _name,
+                 enum Device_ty device_ty_,
+                 bool opt_local_,
+                 enum Core_type core_ty_,
+                 bool _is_default)
     : l_ip(*configure_interface), name(_name), device_ty(device_ty_),
       opt_local(opt_local_), core_ty(core_ty_), is_default(_is_default) {
 
@@ -221,7 +224,8 @@ void ArrayST::optimize_array() {
     if (candidate_solutions.empty() == false) {
       local_result.valid = true;
       for (candidate_iter = candidate_solutions.begin();
-           candidate_iter != candidate_solutions.end(); ++candidate_iter)
+           candidate_iter != candidate_solutions.end();
+           ++candidate_iter)
 
       {
         if (min_dynamic_energy > (candidate_iter)->power.readOp.dynamic) {

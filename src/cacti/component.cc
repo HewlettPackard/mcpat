@@ -63,8 +63,10 @@ double Component::compute_diffusion_width(int num_stacked_in,
   return total_diff_w;
 }
 
-double Component::compute_gate_area(int gate_type, int num_inputs,
-                                    double w_pmos, double w_nmos,
+double Component::compute_gate_area(int gate_type,
+                                    int num_inputs,
+                                    double w_pmos,
+                                    double w_nmos,
                                     double h_gate) {
   if (w_pmos <= 0.0 || w_nmos <= 0.0) {
     return 0.0;
@@ -160,10 +162,16 @@ double Component::height_sense_amplifier(double pitch_sense_amp) {
   return h_pmos_tr + h_nmos_tr + g_tp.MIN_GAP_BET_P_AND_N_DIFFS;
 }
 
-int Component::logical_effort(int num_gates_min, double g, double F,
-                              double *w_n, double *w_p, double C_load,
-                              double p_to_n_sz_ratio, bool is_dram_,
-                              bool is_wl_tr_, double max_w_nmos) {
+int Component::logical_effort(int num_gates_min,
+                              double g,
+                              double F,
+                              double *w_n,
+                              double *w_p,
+                              double C_load,
+                              double p_to_n_sz_ratio,
+                              bool is_dram_,
+                              bool is_wl_tr_,
+                              double max_w_nmos) {
   int num_gates = (int)(log(F) / log(fopt));
 
   // check if num_gates is odd. if so, add 1 to make it even
@@ -180,8 +188,8 @@ int Component::logical_effort(int num_gates_min, double g, double F,
   w_p[i] = p_to_n_sz_ratio * w_n[i];
 
   if (w_n[i] > max_w_nmos) {
-    double C_ld = gate_C((1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, false,
-                         is_wl_tr_);
+    double C_ld = gate_C(
+        (1 + p_to_n_sz_ratio) * max_w_nmos, 0, is_dram_, false, is_wl_tr_);
     F = g * C_ld / gate_C(w_n[0] + w_p[0], 0, is_dram_, false, is_wl_tr_);
     num_gates = (int)(log(F) / log(fopt)) + 1;
     num_gates += (num_gates % 2) ? 1 : 0;

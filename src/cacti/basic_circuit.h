@@ -71,92 +71,150 @@ enum Half_net_topology { parallel, series };
 
 double logtwo(double x);
 
-double gate_C(double width, double wirelength, bool _is_dram = false,
-              bool _is_sram = false, bool _is_wl_tr = false,
+double gate_C(double width,
+              double wirelength,
+              bool _is_dram = false,
+              bool _is_sram = false,
+              bool _is_wl_tr = false,
               bool _is_sleep_tx = false);
 
-double gate_C_pass(double width, double wirelength, bool _is_dram = false,
-                   bool _is_sram = false, bool _is_wl_tr = false,
+double gate_C_pass(double width,
+                   double wirelength,
+                   bool _is_dram = false,
+                   bool _is_sram = false,
+                   bool _is_wl_tr = false,
                    bool _is_sleep_tx = false);
 
-double drain_C_(double width, int nchannel, int stack,
+double drain_C_(double width,
+                int nchannel,
+                int stack,
                 int next_arg_thresh_folding_width_or_height_cell,
-                double fold_dimension, bool _is_dram = false,
-                bool _is_sram = false, bool _is_wl_tr = false,
+                double fold_dimension,
+                bool _is_dram = false,
+                bool _is_sram = false,
+                bool _is_wl_tr = false,
                 bool _is_sleep_tx = false);
 
-double tr_R_on(double width, int nchannel, int stack, bool _is_dram = false,
-               bool _is_sram = false, bool _is_wl_tr = false,
+double tr_R_on(double width,
+               int nchannel,
+               int stack,
+               bool _is_dram = false,
+               bool _is_sram = false,
+               bool _is_wl_tr = false,
                bool _is_sleep_tx = false);
 
-double R_to_w(double res, int nchannel, bool _is_dram = false,
-              bool _is_sram = false, bool _is_wl_tr = false,
+double R_to_w(double res,
+              int nchannel,
+              bool _is_dram = false,
+              bool _is_sram = false,
+              bool _is_wl_tr = false,
               bool _is_sleep_tx = false);
 
-double horowitz(double inputramptime, double tf, double vs1, double vs2,
-                int rise);
+double
+horowitz(double inputramptime, double tf, double vs1, double vs2, int rise);
 
-double pmos_to_nmos_sz_ratio(bool _is_dram = false, bool _is_wl_tr = false,
+double pmos_to_nmos_sz_ratio(bool _is_dram = false,
+                             bool _is_wl_tr = false,
                              bool _is_sleep_tx = false);
 
-double simplified_nmos_leakage(double nwidth, bool _is_dram = false,
-                               bool _is_cell = false, bool _is_wl_tr = false,
+double simplified_nmos_leakage(double nwidth,
+                               bool _is_dram = false,
+                               bool _is_cell = false,
+                               bool _is_wl_tr = false,
                                bool _is_sleep_tx = false);
 
-double simplified_pmos_leakage(double pwidth, bool _is_dram = false,
-                               bool _is_cell = false, bool _is_wl_tr = false,
+double simplified_pmos_leakage(double pwidth,
+                               bool _is_dram = false,
+                               bool _is_cell = false,
+                               bool _is_wl_tr = false,
                                bool _is_sleep_tx = false);
 
-double simplified_nmos_Isat(double nwidth, bool _is_dram = false,
-                            bool _is_cell = false, bool _is_wl_tr = false,
+double simplified_nmos_Isat(double nwidth,
+                            bool _is_dram = false,
+                            bool _is_cell = false,
+                            bool _is_wl_tr = false,
                             bool _is_sleep_tx = false);
 
-double simplified_pmos_Isat(double pwidth, bool _is_dram = false,
-                            bool _is_cell = false, bool _is_wl_tr = false,
+double simplified_pmos_Isat(double pwidth,
+                            bool _is_dram = false,
+                            bool _is_cell = false,
+                            bool _is_wl_tr = false,
                             bool _is_sleep_tx = false);
 
-double cmos_Ileak(double nWidth, double pWidth, bool _is_dram = false,
-                  bool _is_cell = false, bool _is_wl_tr = false,
+double cmos_Ileak(double nWidth,
+                  double pWidth,
+                  bool _is_dram = false,
+                  bool _is_cell = false,
+                  bool _is_wl_tr = false,
                   bool _is_sleep_tx = false);
 
-double cmos_Ig_n(double nWidth, bool _is_dram = false, bool _is_cell = false,
-                 bool _is_wl_tr = false, bool _is_sleep_tx = false);
+double cmos_Ig_n(double nWidth,
+                 bool _is_dram = false,
+                 bool _is_cell = false,
+                 bool _is_wl_tr = false,
+                 bool _is_sleep_tx = false);
 
-double cmos_Ig_p(double pWidth, bool _is_dram = false, bool _is_cell = false,
-                 bool _is_wl_tr = false, bool _is_sleep_tx = false);
+double cmos_Ig_p(double pWidth,
+                 bool _is_dram = false,
+                 bool _is_cell = false,
+                 bool _is_wl_tr = false,
+                 bool _is_sleep_tx = false);
 
-double cmos_Isub_leakage(double nWidth, double pWidth, int fanin,
-                         enum Gate_type g_type, bool _is_dram = false,
-                         bool _is_cell = false, bool _is_wl_tr = false,
+double cmos_Isub_leakage(double nWidth,
+                         double pWidth,
+                         int fanin,
+                         enum Gate_type g_type,
+                         bool _is_dram = false,
+                         bool _is_cell = false,
+                         bool _is_wl_tr = false,
                          bool _is_sleep_tx = false,
                          enum Half_net_topology topo = series);
 
-double cmos_Ig_leakage(double nWidth, double pWidth, int fanin,
-                       enum Gate_type g_type, bool _is_dram = false,
-                       bool _is_cell = false, bool _is_wl_tr = false,
+double cmos_Ig_leakage(double nWidth,
+                       double pWidth,
+                       int fanin,
+                       enum Gate_type g_type,
+                       bool _is_dram = false,
+                       bool _is_cell = false,
+                       bool _is_wl_tr = false,
                        bool _is_sleep_tx = false,
                        enum Half_net_topology topo = series);
 
-double shortcircuit(double vt, double velocity_index, double c_in, double c_out,
-                    double w_nmos, double w_pmos, double i_on_n, double i_on_p,
-                    double i_on_n_in, double i_on_p_in, double vdd);
+double shortcircuit(double vt,
+                    double velocity_index,
+                    double c_in,
+                    double c_out,
+                    double w_nmos,
+                    double w_pmos,
+                    double i_on_n,
+                    double i_on_p,
+                    double i_on_n_in,
+                    double i_on_p_in,
+                    double vdd);
 
-double shortcircuit_simple(double vt, double velocity_index, double c_in,
-                           double c_out, double w_nmos, double w_pmos,
-                           double i_on_n, double i_on_p, double i_on_n_in,
-                           double i_on_p_in, double vdd);
+double shortcircuit_simple(double vt,
+                           double velocity_index,
+                           double c_in,
+                           double c_out,
+                           double w_nmos,
+                           double w_pmos,
+                           double i_on_n,
+                           double i_on_p,
+                           double i_on_n_in,
+                           double i_on_p_in,
+                           double vdd);
 // set power point product mask; strictly speaking this is not real point
 // product
-inline void set_pppm(double *pppv, double a = 1, double b = 1, double c = 1,
-                     double d = 1) {
+inline void
+set_pppm(double *pppv, double a = 1, double b = 1, double c = 1, double d = 1) {
   pppv[0] = a;
   pppv[1] = b;
   pppv[2] = c;
   pppv[3] = d;
 }
 
-inline void set_sppm(double *sppv, double a = 1, double b = 1, double c = 1,
-                     double d = 1) {
+inline void
+set_sppm(double *sppv, double a = 1, double b = 1, double c = 1, double d = 1) {
   sppv[0] = a;
   sppv[1] = b;
   sppv[2] = c;

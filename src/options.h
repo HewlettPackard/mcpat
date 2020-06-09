@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                McPAT
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -27,47 +27,40 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
+ *
+ * Author:
+ *    Andrew Smith
  ***************************************************************************/
 
-#ifndef __ARBITER__
-#define __ARBITER__
+#ifndef __OPTIONS_H__
+#define __OPTIONS_H__
 
-#include "basic_circuit.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "mat.h"
-#include "parameter.h"
-#include "wire.h"
-
-#include <assert.h>
+#include <boost/program_options.hpp>
 #include <iostream>
+#include <string>
 
-class Arbiter : public Component {
+namespace mcpat {
+
+namespace po = boost::program_options;
+
+class Options {
 public:
-  Arbiter(double Req,
-          double flit_sz,
-          double output_len,
-          TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
-  ~Arbiter();
+  // IO Options
+  std::string input_xml = "";
+  int print_level = 2;
 
-  void print_arbiter();
-  double arb_req();
-  double arb_pri();
-  double arb_grant();
-  double arb_int();
-  void compute_power();
-  double Cw3(double len);
-  double crossbar_ctrline();
-  double transmission_buf_ctrcap();
+  // Optimization Options
+  bool opt_for_clk = true;
 
-private:
-  double NTn1, PTn1, NTn2, PTn2, R, PTi, NTi;
-  double flit_size;
-  double NTtr, PTtr;
-  double o_len;
-  TechnologyParameter::DeviceType *deviceType;
-  // double TriS1, TriS2;
-  double min_w_pmos, Vdd;
-};
+  // Serialization Options
+  std::string serialization_path = "";
+  bool serialization_create = false;
+  bool serialization_restore = false;
 
-#endif
+  // Get Options from Command Line
+  bool parse(int argc, char **argv);
+}; // class Options
+
+} // namespace mcpat
+
+#endif // __OPTIONS_H__

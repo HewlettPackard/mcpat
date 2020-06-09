@@ -36,10 +36,19 @@
 #include <assert.h>
 #include <iostream>
 
-Htree2::Htree2(enum Wire_type wire_model, double mat_w, double mat_h,
-               int a_bits, int d_inbits, int search_data_in, int d_outbits,
-               int search_data_out, int bl, int wl, enum Htree_type htree_type,
-               bool uca_tree_, bool search_tree_,
+Htree2::Htree2(enum Wire_type wire_model,
+               double mat_w,
+               double mat_h,
+               int a_bits,
+               int d_inbits,
+               int search_data_in,
+               int d_outbits,
+               int search_data_out,
+               int bl,
+               int wl,
+               enum Htree_type htree_type,
+               bool uca_tree_,
+               bool search_tree_,
                TechnologyParameter::DeviceType *dt)
     : in_rise_time(0), out_rise_time(0), tree_type(htree_type),
       mat_width(mat_w), mat_height(mat_h), add_bits(a_bits),
@@ -110,34 +119,40 @@ void Htree2::input_nand(double s1, double s2, double l_eff) {
   double tc = 2 * tr_R_on(nsize * min_w_nmos, NCH, 1) *
               (drain_C_(nsize * min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) * 2 +
                2 * gate_C(s2 * (min_w_nmos + min_w_pmos), 0));
-  delay += horowitz(w1.out_rise_time, tc, deviceType->Vth / deviceType->Vdd,
-                    deviceType->Vth / deviceType->Vdd, RISE);
+  delay += horowitz(w1.out_rise_time,
+                    tc,
+                    deviceType->Vth / deviceType->Vdd,
+                    deviceType->Vth / deviceType->Vdd,
+                    RISE);
   power.readOp.dynamic +=
       0.5 *
-      (2 * drain_C_(pton_size * nsize * min_w_pmos, PCH, 1, 1,
-                    g_tp.cell_h_def) +
+      (2 * drain_C_(
+               pton_size * nsize * min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
        drain_C_(nsize * min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
        2 * gate_C(s2 * (min_w_nmos + min_w_pmos), 0)) *
       deviceType->Vdd * deviceType->Vdd;
 
   power.searchOp.dynamic +=
       0.5 *
-      (2 * drain_C_(pton_size * nsize * min_w_pmos, PCH, 1, 1,
-                    g_tp.cell_h_def) +
+      (2 * drain_C_(
+               pton_size * nsize * min_w_pmos, PCH, 1, 1, g_tp.cell_h_def) +
        drain_C_(nsize * min_w_nmos, NCH, 1, 1, g_tp.cell_h_def) +
        2 * gate_C(s2 * (min_w_nmos + min_w_pmos), 0)) *
       deviceType->Vdd * deviceType->Vdd * wire_bw;
-  power.readOp.leakage +=
-      (wire_bw * cmos_Isub_leakage(min_w_nmos * (nsize * 2),
-                                   min_w_pmos * nsize * 2, 2, nand)) *
-      deviceType->Vdd;
+  power.readOp.leakage += (wire_bw * cmos_Isub_leakage(min_w_nmos * (nsize * 2),
+                                                       min_w_pmos * nsize * 2,
+                                                       2,
+                                                       nand)) *
+                          deviceType->Vdd;
   power.readOp.power_gated_leakage +=
-      (wire_bw * cmos_Isub_leakage(min_w_nmos * (nsize * 2),
-                                   min_w_pmos * nsize * 2, 2, nand)) *
+      (wire_bw *
+       cmos_Isub_leakage(
+           min_w_nmos * (nsize * 2), min_w_pmos * nsize * 2, 2, nand)) *
       deviceType->Vcc_min;
   power.readOp.gate_leakage +=
-      (wire_bw * cmos_Ig_leakage(min_w_nmos * (nsize * 2),
-                                 min_w_pmos * nsize * 2, 2, nand)) *
+      (wire_bw *
+       cmos_Ig_leakage(
+           min_w_nmos * (nsize * 2), min_w_pmos * nsize * 2, 2, nand)) *
       deviceType->Vdd;
 }
 
@@ -168,8 +183,11 @@ void Htree2::output_buffer(double s1, double s2, double l_eff) {
 
   double tc = res_nor * cap_nand_out + (res_nor + res_ptrans) * cap_ptrans_out;
 
-  delay += horowitz(w1.out_rise_time, tc, deviceType->Vth / deviceType->Vdd,
-                    deviceType->Vth / deviceType->Vdd, RISE);
+  delay += horowitz(w1.out_rise_time,
+                    tc,
+                    deviceType->Vth / deviceType->Vdd,
+                    deviceType->Vth / deviceType->Vdd,
+                    RISE);
 
   // nand
   power.readOp.dynamic +=
@@ -235,32 +253,36 @@ void Htree2::output_buffer(double s1, double s2, double l_eff) {
 
   if (uca_tree) {
     power.readOp.leakage +=
-        cmos_Isub_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                          inv) *
+        cmos_Isub_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vdd * wire_bw; /*inverter + output tr*/
-    power.readOp.leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
-                                              min_w_pmos * size * 3, 2, nand) *
-                            deviceType->Vdd * wire_bw; // nand
-    power.readOp.leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
-                                              min_w_pmos * size * 3, 2, nor) *
-                            deviceType->Vdd * wire_bw; // nor
+    power.readOp.leakage +=
+        cmos_Isub_leakage(
+            min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nand) *
+        deviceType->Vdd * wire_bw; // nand
+    power.readOp.leakage +=
+        cmos_Isub_leakage(
+            min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nor) *
+        deviceType->Vdd * wire_bw; // nor
 
     power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                          inv) *
+        cmos_Isub_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vcc_min * wire_bw; /*inverter + output tr*/
-    power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2,
-                          nand) *
-        deviceType->Vcc_min * wire_bw; // nand
-    power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2,
-                          nor) *
-        deviceType->Vcc_min * wire_bw; // nor
+    power.readOp.power_gated_leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
+                                                          min_w_pmos * size * 3,
+                                                          2,
+                                                          nand) *
+                                        deviceType->Vcc_min * wire_bw; // nand
+    power.readOp.power_gated_leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
+                                                          min_w_pmos * size * 3,
+                                                          2,
+                                                          nor) *
+                                        deviceType->Vcc_min * wire_bw; // nor
 
     power.readOp.gate_leakage +=
-        cmos_Ig_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                        inv) *
+        cmos_Ig_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vdd * wire_bw; /*inverter + output tr*/
     power.readOp.gate_leakage +=
         cmos_Ig_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nand) *
@@ -271,32 +293,36 @@ void Htree2::output_buffer(double s1, double s2, double l_eff) {
     // power.readOp.gate_leakage *=;
   } else {
     power.readOp.leakage +=
-        cmos_Isub_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                          inv) *
+        cmos_Isub_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vdd * wire_bw; /*inverter + output tr*/
-    power.readOp.leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
-                                              min_w_pmos * size * 3, 2, nand) *
-                            deviceType->Vdd * wire_bw; // nand
-    power.readOp.leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
-                                              min_w_pmos * size * 3, 2, nor) *
-                            deviceType->Vdd * wire_bw; // nor
+    power.readOp.leakage +=
+        cmos_Isub_leakage(
+            min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nand) *
+        deviceType->Vdd * wire_bw; // nand
+    power.readOp.leakage +=
+        cmos_Isub_leakage(
+            min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nor) *
+        deviceType->Vdd * wire_bw; // nor
 
     power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                          inv) *
+        cmos_Isub_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vcc_min * wire_bw; /*inverter + output tr*/
-    power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2,
-                          nand) *
-        deviceType->Vcc_min * wire_bw; // nand
-    power.readOp.power_gated_leakage +=
-        cmos_Isub_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2,
-                          nor) *
-        deviceType->Vcc_min * wire_bw; // nor
+    power.readOp.power_gated_leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
+                                                          min_w_pmos * size * 3,
+                                                          2,
+                                                          nand) *
+                                        deviceType->Vcc_min * wire_bw; // nand
+    power.readOp.power_gated_leakage += cmos_Isub_leakage(min_w_nmos * size * 3,
+                                                          min_w_pmos * size * 3,
+                                                          2,
+                                                          nor) *
+                                        deviceType->Vcc_min * wire_bw; // nor
 
     power.readOp.gate_leakage +=
-        cmos_Ig_leakage(min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1,
-                        inv) *
+        cmos_Ig_leakage(
+            min_w_nmos * tr_size * 2, min_w_pmos * tr_size * 2, 1, inv) *
         deviceType->Vdd * wire_bw; /*inverter + output tr*/
     power.readOp.gate_leakage +=
         cmos_Ig_leakage(min_w_nmos * size * 3, min_w_pmos * size * 3, 2, nand) *

@@ -33,8 +33,11 @@
 
 Router::Router(double flit_size_,
                double vc_buf, /* vc size = vc_buffer_size * flit_size */
-               double vc_c, TechnologyParameter::DeviceType *dt, double I_,
-               double O_, double M_)
+               double vc_c,
+               TechnologyParameter::DeviceType *dt,
+               double I_,
+               double O_,
+               double M_)
     : flit_size(flit_size_), deviceType(dt), I(I_), O(O_), M(M_) {
   vc_buffer_size = vc_buf;
   vc_count = vc_c;
@@ -73,7 +76,8 @@ Router::Cw3(double length) {
 double Router::gate_cap(double w) { return (double)gate_C(w * 1e6 /*u*/, 0); }
 
 /*Function to calculate the diffusion capacitance*/
-double Router::diff_cap(double w, int type /*0 for n-mos and 1 for p-mos*/,
+double Router::diff_cap(double w,
+                        int type /*0 for n-mos and 1 for p-mos*/,
                         double s /*number of stacking transistors*/) {
   return (double)drain_C_(w * 1e6 /*u*/, type, (int)s, 1, g_tp.cell_h_def);
 }

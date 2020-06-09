@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT/CACTI
+ *                                McPAT
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -27,47 +27,60 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
+ *
+ * Author:
+ *    Andrew Smith
  ***************************************************************************/
+#include "options.h"
 
-#ifndef __ARBITER__
-#define __ARBITER__
-
-#include "basic_circuit.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "mat.h"
-#include "parameter.h"
-#include "wire.h"
-
-#include <assert.h>
+#include <boost/program_options.hpp>
 #include <iostream>
+#include <string>
 
-class Arbiter : public Component {
-public:
-  Arbiter(double Req,
-          double flit_sz,
-          double output_len,
-          TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
-  ~Arbiter();
+bool mcpat::Options::parse(int argc, char **argv) {
+  // clang-format off
+  po::options_description desc("General Options");
+  desc.add_options()
+    ("help,h", "Display help message")
+  ;
 
-  void print_arbiter();
-  double arb_req();
-  double arb_pri();
-  double arb_grant();
-  double arb_int();
-  void compute_power();
-  double Cw3(double len);
-  double crossbar_ctrline();
-  double transmission_buf_ctrcap();
+  po::options_description io("IO Options");
+  io.add_options()
+    ("infile,i", po::value<std::string>(&input_xml), "Input XML File")
+    ("print_level,p", po::value<int>(&print_level), "How detailed to print device tree; [1,5] being most detailed");
+  ;
 
-private:
-  double NTn1, PTn1, NTn2, PTn2, R, PTi, NTi;
-  double flit_size;
-  double NTtr, PTtr;
-  double o_len;
-  TechnologyParameter::DeviceType *deviceType;
-  // double TriS1, TriS2;
-  double min_w_pmos, Vdd;
-};
+  po::options_description serialization("Serialization Options");
+  serialization.add_options()
+    ("serial_path", po::value<std::string>(&serialization_path), "Path/to/serialization")
+    ("serial_create", po::value<bool>(&serialization_create)->default_value(true), "Create A Serialization Checkpoint") 
+    ("serial_restore", po::value<bool>(&serialization_restore)->default_value(true), "Restore from a Serialization Checkpoint")
+  ;
 
-#endif
+  po::options_description optimization("Optimization Options");
+  optimization.add_options()
+    ("opt_for_clk,o", po::value<bool>(&opt_for_clk)->default_value(true), "0: optimize for ED^2P only; 1: optimzed for target clock rate")
+  ;
+  // clang-format on
+
+  po::options_description all_options;
+  all_options.add(desc);
+  all_options.add(io);
+  all_options.add(serialization);
+  all_options.add(optimization);
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, all_options), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cout << all_options << "\n";
+    return false;
+  }
+  if (input_xml == "") {
+    std::cerr << "Must specify an Input XML File; \"./mcpat --help\" for more "
+                 "options\n";
+    return false;
+  }
+  return true;
+}

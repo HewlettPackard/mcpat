@@ -66,42 +66,106 @@ UCA::UCA(const DynamicParameter &dyn_p)
       num_do_b_bank *= g_ip->data_assoc;
     }
 
-    htree_in_add =
-        new Htree2(g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank,
-                   num_di_b_bank, 0, num_do_b_bank, 0, num_banks_ver_dir * 2,
-                   num_banks_hor_dir * 2, Add_htree, true);
-    htree_in_data =
-        new Htree2(g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank,
-                   num_di_b_bank, 0, num_do_b_bank, 0, num_banks_ver_dir * 2,
-                   num_banks_hor_dir * 2, Data_in_htree, true);
-    htree_out_data =
-        new Htree2(g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank,
-                   num_di_b_bank, 0, num_do_b_bank, 0, num_banks_ver_dir * 2,
-                   num_banks_hor_dir * 2, Data_out_htree, true);
+    htree_in_add = new Htree2(g_ip->wt,
+                              bank.area.w,
+                              bank.area.h,
+                              num_addr_b_bank,
+                              num_di_b_bank,
+                              0,
+                              num_do_b_bank,
+                              0,
+                              num_banks_ver_dir * 2,
+                              num_banks_hor_dir * 2,
+                              Add_htree,
+                              true);
+    htree_in_data = new Htree2(g_ip->wt,
+                               bank.area.w,
+                               bank.area.h,
+                               num_addr_b_bank,
+                               num_di_b_bank,
+                               0,
+                               num_do_b_bank,
+                               0,
+                               num_banks_ver_dir * 2,
+                               num_banks_hor_dir * 2,
+                               Data_in_htree,
+                               true);
+    htree_out_data = new Htree2(g_ip->wt,
+                                bank.area.w,
+                                bank.area.h,
+                                num_addr_b_bank,
+                                num_di_b_bank,
+                                0,
+                                num_do_b_bank,
+                                0,
+                                num_banks_ver_dir * 2,
+                                num_banks_hor_dir * 2,
+                                Data_out_htree,
+                                true);
   }
 
   else {
 
-    htree_in_add = new Htree2(
-        g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank, num_di_b_bank,
-        num_si_b_bank, num_do_b_bank, num_so_b_bank, num_banks_ver_dir * 2,
-        num_banks_hor_dir * 2, Add_htree, true);
-    htree_in_data = new Htree2(
-        g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank, num_di_b_bank,
-        num_si_b_bank, num_do_b_bank, num_so_b_bank, num_banks_ver_dir * 2,
-        num_banks_hor_dir * 2, Data_in_htree, true);
-    htree_out_data = new Htree2(
-        g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank, num_di_b_bank,
-        num_si_b_bank, num_do_b_bank, num_so_b_bank, num_banks_ver_dir * 2,
-        num_banks_hor_dir * 2, Data_out_htree, true);
-    htree_in_search = new Htree2(
-        g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank, num_di_b_bank,
-        num_si_b_bank, num_do_b_bank, num_so_b_bank, num_banks_ver_dir * 2,
-        num_banks_hor_dir * 2, Data_in_htree, true);
-    htree_out_search = new Htree2(
-        g_ip->wt, bank.area.w, bank.area.h, num_addr_b_bank, num_di_b_bank,
-        num_si_b_bank, num_do_b_bank, num_so_b_bank, num_banks_ver_dir * 2,
-        num_banks_hor_dir * 2, Data_out_htree, true);
+    htree_in_add = new Htree2(g_ip->wt,
+                              bank.area.w,
+                              bank.area.h,
+                              num_addr_b_bank,
+                              num_di_b_bank,
+                              num_si_b_bank,
+                              num_do_b_bank,
+                              num_so_b_bank,
+                              num_banks_ver_dir * 2,
+                              num_banks_hor_dir * 2,
+                              Add_htree,
+                              true);
+    htree_in_data = new Htree2(g_ip->wt,
+                               bank.area.w,
+                               bank.area.h,
+                               num_addr_b_bank,
+                               num_di_b_bank,
+                               num_si_b_bank,
+                               num_do_b_bank,
+                               num_so_b_bank,
+                               num_banks_ver_dir * 2,
+                               num_banks_hor_dir * 2,
+                               Data_in_htree,
+                               true);
+    htree_out_data = new Htree2(g_ip->wt,
+                                bank.area.w,
+                                bank.area.h,
+                                num_addr_b_bank,
+                                num_di_b_bank,
+                                num_si_b_bank,
+                                num_do_b_bank,
+                                num_so_b_bank,
+                                num_banks_ver_dir * 2,
+                                num_banks_hor_dir * 2,
+                                Data_out_htree,
+                                true);
+    htree_in_search = new Htree2(g_ip->wt,
+                                 bank.area.w,
+                                 bank.area.h,
+                                 num_addr_b_bank,
+                                 num_di_b_bank,
+                                 num_si_b_bank,
+                                 num_do_b_bank,
+                                 num_so_b_bank,
+                                 num_banks_ver_dir * 2,
+                                 num_banks_hor_dir * 2,
+                                 Data_in_htree,
+                                 true);
+    htree_out_search = new Htree2(g_ip->wt,
+                                  bank.area.w,
+                                  bank.area.h,
+                                  num_addr_b_bank,
+                                  num_di_b_bank,
+                                  num_si_b_bank,
+                                  num_do_b_bank,
+                                  num_so_b_bank,
+                                  num_banks_ver_dir * 2,
+                                  num_banks_hor_dir * 2,
+                                  Data_out_htree,
+                                  true);
   }
 
   area.w = htree_in_data->area.w;

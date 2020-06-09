@@ -43,9 +43,15 @@ using namespace std;
 
 class Decoder : public Component {
 public:
-  Decoder(int _num_dec_signals, bool flag_way_select, double _C_ld_dec_out,
-          double _R_wire_dec_out, bool fully_assoc_, bool is_dram_,
-          bool is_wl_tr_, const Area &cell_, bool power_gating_ = false,
+  Decoder(int _num_dec_signals,
+          bool flag_way_select,
+          double _C_ld_dec_out,
+          double _R_wire_dec_out,
+          bool fully_assoc_,
+          bool is_dram_,
+          bool is_wl_tr_,
+          const Area &cell_,
+          bool power_gating_ = false,
           int nodes_DSTN_ = 1);
 
   bool exist;
@@ -85,8 +91,12 @@ public:
 
 class PredecBlk : public Component {
 public:
-  PredecBlk(int num_dec_signals, Decoder *dec, double C_wire_predec_blk_out,
-            double R_wire_predec_blk_out, int num_dec_per_predec, bool is_dram_,
+  PredecBlk(int num_dec_signals,
+            Decoder *dec,
+            double C_wire_predec_blk_out,
+            double R_wire_predec_blk_out,
+            int num_dec_per_predec,
+            bool is_dram_,
             bool is_blk1);
 
   Decoder *dec;
@@ -206,8 +216,12 @@ private:
 
 class Driver : public Component {
 public:
-  Driver(double c_gate_load_, double c_wire_load_, double r_wire_load_,
-         bool is_dram, bool power_gating_ = false, int nodes_DSTN_ = 1);
+  Driver(double c_gate_load_,
+         double c_wire_load_,
+         double r_wire_load_,
+         bool is_dram,
+         bool power_gating_ = false,
+         int nodes_DSTN_ = 1);
 
   int number_gates;
   int min_number_gates;

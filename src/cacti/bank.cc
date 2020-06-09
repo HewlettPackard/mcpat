@@ -74,18 +74,39 @@ Bank::Bank(const DynamicParameter &dyn_p)
       dataoutbits *= g_ip->data_assoc;
     }
 
-    htree_in_add =
-        new Htree2(g_ip->wt, (double)mat.area.w, (double)mat.area.h,
-                   total_addrbits, datainbits, 0, dataoutbits, 0,
-                   num_mats_ver_dir * 2, num_mats_hor_dir * 2, Add_htree);
-    htree_in_data =
-        new Htree2(g_ip->wt, (double)mat.area.w, (double)mat.area.h,
-                   total_addrbits, datainbits, 0, dataoutbits, 0,
-                   num_mats_ver_dir * 2, num_mats_hor_dir * 2, Data_in_htree);
-    htree_out_data =
-        new Htree2(g_ip->wt, (double)mat.area.w, (double)mat.area.h,
-                   total_addrbits, datainbits, 0, dataoutbits, 0,
-                   num_mats_ver_dir * 2, num_mats_hor_dir * 2, Data_out_htree);
+    htree_in_add = new Htree2(g_ip->wt,
+                              (double)mat.area.w,
+                              (double)mat.area.h,
+                              total_addrbits,
+                              datainbits,
+                              0,
+                              dataoutbits,
+                              0,
+                              num_mats_ver_dir * 2,
+                              num_mats_hor_dir * 2,
+                              Add_htree);
+    htree_in_data = new Htree2(g_ip->wt,
+                               (double)mat.area.w,
+                               (double)mat.area.h,
+                               total_addrbits,
+                               datainbits,
+                               0,
+                               dataoutbits,
+                               0,
+                               num_mats_ver_dir * 2,
+                               num_mats_hor_dir * 2,
+                               Data_in_htree);
+    htree_out_data = new Htree2(g_ip->wt,
+                                (double)mat.area.w,
+                                (double)mat.area.h,
+                                total_addrbits,
+                                datainbits,
+                                0,
+                                dataoutbits,
+                                0,
+                                num_mats_ver_dir * 2,
+                                num_mats_hor_dir * 2,
+                                Data_out_htree);
 
     //  htree_out_data = new Htree2 (g_ip->wt,(double) 100, (double)100,
     //		  total_addrbits, datainbits, 0,dataoutbits,0,
@@ -94,26 +115,64 @@ Bank::Bank(const DynamicParameter &dyn_p)
     area.w = htree_in_data->area.w;
     area.h = htree_in_data->area.h;
   } else {
-    htree_in_add = new Htree2(g_ip->wt, (double)mat.area.w, (double)mat.area.h,
-                              total_addrbits, datainbits, searchinbits,
-                              dataoutbits, searchoutbits, num_mats_ver_dir * 2,
-                              num_mats_hor_dir * 2, Add_htree);
-    htree_in_data = new Htree2(g_ip->wt, (double)mat.area.w, (double)mat.area.h,
-                               total_addrbits, datainbits, searchinbits,
-                               dataoutbits, searchoutbits, num_mats_ver_dir * 2,
-                               num_mats_hor_dir * 2, Data_in_htree);
-    htree_out_data = new Htree2(
-        g_ip->wt, (double)mat.area.w, (double)mat.area.h, total_addrbits,
-        datainbits, searchinbits, dataoutbits, searchoutbits,
-        num_mats_ver_dir * 2, num_mats_hor_dir * 2, Data_out_htree);
-    htree_in_search = new Htree2(
-        g_ip->wt, (double)mat.area.w, (double)mat.area.h, total_addrbits,
-        datainbits, searchinbits, dataoutbits, searchoutbits,
-        num_mats_ver_dir * 2, num_mats_hor_dir * 2, Data_in_htree, true, true);
-    htree_out_search = new Htree2(
-        g_ip->wt, (double)mat.area.w, (double)mat.area.h, total_addrbits,
-        datainbits, searchinbits, dataoutbits, searchoutbits,
-        num_mats_ver_dir * 2, num_mats_hor_dir * 2, Data_out_htree, true);
+    htree_in_add = new Htree2(g_ip->wt,
+                              (double)mat.area.w,
+                              (double)mat.area.h,
+                              total_addrbits,
+                              datainbits,
+                              searchinbits,
+                              dataoutbits,
+                              searchoutbits,
+                              num_mats_ver_dir * 2,
+                              num_mats_hor_dir * 2,
+                              Add_htree);
+    htree_in_data = new Htree2(g_ip->wt,
+                               (double)mat.area.w,
+                               (double)mat.area.h,
+                               total_addrbits,
+                               datainbits,
+                               searchinbits,
+                               dataoutbits,
+                               searchoutbits,
+                               num_mats_ver_dir * 2,
+                               num_mats_hor_dir * 2,
+                               Data_in_htree);
+    htree_out_data = new Htree2(g_ip->wt,
+                                (double)mat.area.w,
+                                (double)mat.area.h,
+                                total_addrbits,
+                                datainbits,
+                                searchinbits,
+                                dataoutbits,
+                                searchoutbits,
+                                num_mats_ver_dir * 2,
+                                num_mats_hor_dir * 2,
+                                Data_out_htree);
+    htree_in_search = new Htree2(g_ip->wt,
+                                 (double)mat.area.w,
+                                 (double)mat.area.h,
+                                 total_addrbits,
+                                 datainbits,
+                                 searchinbits,
+                                 dataoutbits,
+                                 searchoutbits,
+                                 num_mats_ver_dir * 2,
+                                 num_mats_hor_dir * 2,
+                                 Data_in_htree,
+                                 true,
+                                 true);
+    htree_out_search = new Htree2(g_ip->wt,
+                                  (double)mat.area.w,
+                                  (double)mat.area.h,
+                                  total_addrbits,
+                                  datainbits,
+                                  searchinbits,
+                                  dataoutbits,
+                                  searchoutbits,
+                                  num_mats_ver_dir * 2,
+                                  num_mats_hor_dir * 2,
+                                  Data_out_htree,
+                                  true);
 
     area.w = htree_in_data->area.w;
     area.h = htree_in_data->area.h;

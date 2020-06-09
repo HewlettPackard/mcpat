@@ -88,7 +88,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-internal prefetch width", line,
+    if (!strncmp("-internal prefetch width",
+                 line,
                  strlen("-internal prefetch width"))) {
       sscanf(line, "-internal prefetch %[(:-~)*]%u", jk, &(int_prefetch_w));
       continue;
@@ -195,8 +196,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Powergating voltage", line,
-                 strlen("-Powergating voltage"))) {
+    if (!strncmp(
+            "-Powergating voltage", line, strlen("-Powergating voltage"))) {
       sscanf(line, "-Powergating voltage%[^\"]\"%[^\"]\"", jk, temp_var);
       if (!strncmp("default", temp_var, sizeof("default"))) {
         specific_vcc_min = false;
@@ -216,8 +217,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-operating temperature", line,
-                 strlen("-operating temperature"))) {
+    if (!strncmp(
+            "-operating temperature", line, strlen("-operating temperature"))) {
       sscanf(line, "-operating temperature %[(:-~)*]%d", jk, &(temp));
       continue;
     }
@@ -285,8 +286,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Data array cell type", line,
-                 strlen("-Data array cell type"))) {
+    if (!strncmp(
+            "-Data array cell type", line, strlen("-Data array cell type"))) {
       sscanf(line, "-Data array cell type %[^\"]\"%[^\"]\"", jk, temp_var);
 
       if (!strncmp("itrs-hp", temp_var, strlen("itrs-hp"))) {
@@ -306,10 +307,11 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Data array peripheral type", line,
+    if (!strncmp("-Data array peripheral type",
+                 line,
                  strlen("-Data array peripheral type"))) {
-      sscanf(line, "-Data array peripheral type %[^\"]\"%[^\"]\"", jk,
-             temp_var);
+      sscanf(
+          line, "-Data array peripheral type %[^\"]\"%[^\"]\"", jk, temp_var);
 
       if (!strncmp("itrs-hp", temp_var, strlen("itrs-hp"))) {
         data_arr_peri_global_tech_type = 0;
@@ -324,8 +326,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Tag array cell type", line,
-                 strlen("-Tag array cell type"))) {
+    if (!strncmp(
+            "-Tag array cell type", line, strlen("-Tag array cell type"))) {
       sscanf(line, "-Tag array cell type %[^\"]\"%[^\"]\"", jk, temp_var);
 
       if (!strncmp("itrs-hp", temp_var, strlen("itrs-hp"))) {
@@ -345,7 +347,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Tag array peripheral type", line,
+    if (!strncmp("-Tag array peripheral type",
+                 line,
                  strlen("-Tag array peripheral type"))) {
       sscanf(line, "-Tag array peripheral type %[^\"]\"%[^\"]\"", jk, temp_var);
 
@@ -362,15 +365,25 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
     if (!strncmp("-design", line, strlen("-design"))) {
-      sscanf(line, "-%[((:-~)| |,)*]%d:%d:%d:%d:%d", jk, &(delay_wt),
-             &(dynamic_power_wt), &(leakage_power_wt), &(cycle_time_wt),
+      sscanf(line,
+             "-%[((:-~)| |,)*]%d:%d:%d:%d:%d",
+             jk,
+             &(delay_wt),
+             &(dynamic_power_wt),
+             &(leakage_power_wt),
+             &(cycle_time_wt),
              &(area_wt));
       continue;
     }
 
     if (!strncmp("-deviate", line, strlen("-deviate"))) {
-      sscanf(line, "-%[((:-~)| |,)*]%d:%d:%d:%d:%d", jk, &(delay_dev),
-             &(dynamic_power_dev), &(leakage_power_dev), &(cycle_time_dev),
+      sscanf(line,
+             "-%[((:-~)| |,)*]%d:%d:%d:%d:%d",
+             jk,
+             &(delay_dev),
+             &(dynamic_power_dev),
+             &(leakage_power_dev),
+             &(cycle_time_dev),
              &(area_dev));
       continue;
     }
@@ -388,16 +401,26 @@ void InputParameter::parse_cfg(const string &in_file) {
     }
 
     if (!strncmp("-NUCAdesign", line, strlen("-NUCAdesign"))) {
-      sscanf(line, "-%[((:-~)| |,)*]%d:%d:%d:%d:%d", jk, &(delay_wt_nuca),
-             &(dynamic_power_wt_nuca), &(leakage_power_wt_nuca),
-             &(cycle_time_wt_nuca), &(area_wt_nuca));
+      sscanf(line,
+             "-%[((:-~)| |,)*]%d:%d:%d:%d:%d",
+             jk,
+             &(delay_wt_nuca),
+             &(dynamic_power_wt_nuca),
+             &(leakage_power_wt_nuca),
+             &(cycle_time_wt_nuca),
+             &(area_wt_nuca));
       continue;
     }
 
     if (!strncmp("-NUCAdeviate", line, strlen("-NUCAdeviate"))) {
-      sscanf(line, "-%[((:-~)| |,)*]%d:%d:%d:%d:%d", jk, &(delay_dev_nuca),
-             &(dynamic_power_dev_nuca), &(leakage_power_dev_nuca),
-             &(cycle_time_dev_nuca), &(area_dev_nuca));
+      sscanf(line,
+             "-%[((:-~)| |,)*]%d:%d:%d:%d:%d",
+             jk,
+             &(delay_dev_nuca),
+             &(dynamic_power_dev_nuca),
+             &(leakage_power_dev_nuca),
+             &(cycle_time_dev_nuca),
+             &(area_dev_nuca));
       continue;
     }
 
@@ -447,7 +470,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       continue;
     }
 
-    if (!strncmp("-Interconnect projection", line,
+    if (!strncmp("-Interconnect projection",
+                 line,
                  strlen("-Interconnect projection"))) {
       sscanf(line, "-Interconnect projection%[^\"]\"%[^\"]\"", jk, temp_var);
 
@@ -566,7 +590,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       }
     }
 
-    if (!strncmp("-Interconnect Power Gating", line,
+    if (!strncmp("-Interconnect Power Gating",
+                 line,
                  strlen("-Interconnect Power Gating"))) {
       sscanf(line, "-Interconnect Power Gating %[^\"]\"%[^\"]\"", jk, temp_var);
       if (!strncmp("true", temp_var, strlen("true"))) {
@@ -576,7 +601,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       }
     }
 
-    if (!strncmp("-Power Gating Performance Loss", line,
+    if (!strncmp("-Power Gating Performance Loss",
+                 line,
                  strlen("-Power Gating Performance Loss"))) {
       sscanf(line, "-Power Gating Performance Loss %lf", &(perfloss));
       continue;
@@ -591,8 +617,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       }
     }
 
-    if (!strncmp("-Long channel devices", line,
-                 strlen("-Long channel devices"))) {
+    if (!strncmp(
+            "-Long channel devices", line, strlen("-Long channel devices"))) {
       sscanf(line, "-Long channel devices %[^\"]\"%[^\"]\"", jk, temp_var);
       if (!strncmp("true", temp_var, strlen("true"))) {
         long_channel_device = true;
@@ -601,7 +627,8 @@ void InputParameter::parse_cfg(const string &in_file) {
       }
     }
 
-    if (!strncmp("-Print input parameters", line,
+    if (!strncmp("-Print input parameters",
+                 line,
                  strlen("-Print input parameters"))) {
       sscanf(line, "-Print input %[^\"]\"%[^\"]\"", jk, temp_var);
       if (!strncmp("true", temp_var, strlen("true"))) {
@@ -877,35 +904,58 @@ uca_org_t cacti_interface(const string &infile_name) {
 
 // cacti6.5's plain interface, please keep !!!
 uca_org_t cacti_interface(
-    int cache_size, int line_size, int associativity, int rw_ports,
-    int excl_read_ports, int excl_write_ports, int single_ended_read_ports,
+    int cache_size,
+    int line_size,
+    int associativity,
+    int rw_ports,
+    int excl_read_ports,
+    int excl_write_ports,
+    int single_ended_read_ports,
     int banks,
     double tech_node, // in nm
-    int page_sz, int burst_length, int pre_width, int output_width,
-    int specific_tag, int tag_width,
+    int page_sz,
+    int burst_length,
+    int pre_width,
+    int output_width,
+    int specific_tag,
+    int tag_width,
     int access_mode, // 0 normal, 1 seq, 2 fast
     int cache,       // scratch ram or cache
-    int main_mem, int obj_func_delay, int obj_func_dynamic_power,
-    int obj_func_leakage_power, int obj_func_area, int obj_func_cycle_time,
-    int dev_func_delay, int dev_func_dynamic_power, int dev_func_leakage_power,
-    int dev_func_area, int dev_func_cycle_time,
+    int main_mem,
+    int obj_func_delay,
+    int obj_func_dynamic_power,
+    int obj_func_leakage_power,
+    int obj_func_area,
+    int obj_func_cycle_time,
+    int dev_func_delay,
+    int dev_func_dynamic_power,
+    int dev_func_leakage_power,
+    int dev_func_area,
+    int dev_func_cycle_time,
     int ed_ed2_none, // 0 - ED, 1 - ED^2, 2 - use weight and deviate
     int temp,
     int wt, // 0 - default(search across everything), 1 - global, 2 - 5% delay
             // penalty, 3 - 10%, 4 - 20 %, 5 - 30%, 6 - low-swing
     int data_arr_ram_cell_tech_flavor_in, // 0-4
     int data_arr_peri_global_tech_flavor_in,
-    int tag_arr_ram_cell_tech_flavor_in, int tag_arr_peri_global_tech_flavor_in,
+    int tag_arr_ram_cell_tech_flavor_in,
+    int tag_arr_peri_global_tech_flavor_in,
     int interconnect_projection_type_in, // 0 - aggressive, 1 - normal
-    int wire_inside_mat_type_in, int wire_outside_mat_type_in,
+    int wire_inside_mat_type_in,
+    int wire_outside_mat_type_in,
     int is_nuca, // 0 - UCA, 1 - NUCA
     int core_count,
     int cache_level, // 0 - L2, 1 - L3
-    int nuca_bank_count, int nuca_obj_func_delay,
-    int nuca_obj_func_dynamic_power, int nuca_obj_func_leakage_power,
-    int nuca_obj_func_area, int nuca_obj_func_cycle_time,
-    int nuca_dev_func_delay, int nuca_dev_func_dynamic_power,
-    int nuca_dev_func_leakage_power, int nuca_dev_func_area,
+    int nuca_bank_count,
+    int nuca_obj_func_delay,
+    int nuca_obj_func_dynamic_power,
+    int nuca_obj_func_leakage_power,
+    int nuca_obj_func_area,
+    int nuca_obj_func_cycle_time,
+    int nuca_dev_func_delay,
+    int nuca_dev_func_dynamic_power,
+    int nuca_dev_func_leakage_power,
+    int nuca_dev_func_area,
     int nuca_dev_func_cycle_time,
     int REPEATERS_IN_HTREE_SEGMENTS_in, // TODO for now only wires with
                                         // repeaters are supported
@@ -1046,17 +1096,29 @@ uca_org_t cacti_interface(
 
 // McPAT's plain interface, please keep !!!
 uca_org_t cacti_interface(
-    int cache_size, int line_size, int associativity, int rw_ports,
+    int cache_size,
+    int line_size,
+    int associativity,
+    int rw_ports,
     int excl_read_ports, // para5
-    int excl_write_ports, int single_ended_read_ports, int search_ports,
+    int excl_write_ports,
+    int single_ended_read_ports,
+    int search_ports,
     int banks,
     double tech_node, // para10
-    int output_width, int specific_tag, int tag_width, int access_mode,
+    int output_width,
+    int specific_tag,
+    int tag_width,
+    int access_mode,
     int cache, // para15
-    int main_mem, int obj_func_delay, int obj_func_dynamic_power,
+    int main_mem,
+    int obj_func_delay,
+    int obj_func_dynamic_power,
     int obj_func_leakage_power,
     int obj_func_cycle_time, // para20
-    int obj_func_area, int dev_func_delay, int dev_func_dynamic_power,
+    int obj_func_area,
+    int dev_func_delay,
+    int dev_func_dynamic_power,
     int dev_func_leakage_power,
     int dev_func_area, // para25
     int dev_func_cycle_time,
@@ -1066,19 +1128,27 @@ uca_org_t cacti_interface(
             // penalty, 3 - 10%, 4 - 20 %, 5 - 30%, 6 - low-swing
     int data_arr_ram_cell_tech_flavor_in, // para30
     int data_arr_peri_global_tech_flavor_in,
-    int tag_arr_ram_cell_tech_flavor_in, int tag_arr_peri_global_tech_flavor_in,
+    int tag_arr_ram_cell_tech_flavor_in,
+    int tag_arr_peri_global_tech_flavor_in,
     int interconnect_projection_type_in,
     int wire_inside_mat_type_in, // para35
-    int wire_outside_mat_type_in, int REPEATERS_IN_HTREE_SEGMENTS_in,
+    int wire_outside_mat_type_in,
+    int REPEATERS_IN_HTREE_SEGMENTS_in,
     int VERTICAL_HTREE_WIRES_OVER_THE_ARRAY_in,
     int BROADCAST_ADDR_DATAIN_OVER_VERTICAL_HTREES_in,
     int PAGE_SIZE_BITS_in, // para40
-    int BURST_LENGTH_in, int INTERNAL_PREFETCH_WIDTH_in, int force_wiretype,
+    int BURST_LENGTH_in,
+    int INTERNAL_PREFETCH_WIDTH_in,
+    int force_wiretype,
     int wiretype,
     int force_config, // para45
-    int ndwl, int ndbl, int nspd, int ndcm,
+    int ndwl,
+    int ndbl,
+    int nspd,
+    int ndcm,
     int ndsam1, // para50
-    int ndsam2, int ecc) {
+    int ndsam2,
+    int ecc) {
   g_ip = new InputParameter();
 
   uca_org_t fin_res;

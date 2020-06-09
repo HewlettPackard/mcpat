@@ -291,7 +291,8 @@ public:
 
   /// Parse an XML string and return the root of a XMLNode tree representing the
   /// string.
-  static XMLNode parseString(XMLCSTR lpXMLString, XMLCSTR tag = NULL,
+  static XMLNode parseString(XMLCSTR lpXMLString,
+                             XMLCSTR tag = NULL,
                              XMLResults *pResults = NULL);
   /**< The "parseString" function parse an XML string and return the root of a
    * XMLNode tree. The "opposite" of this function is the function
@@ -314,8 +315,8 @@ public:
 
   /// Parse an XML file and return the root of a XMLNode tree representing the
   /// file.
-  static XMLNode parseFile(XMLCSTR filename, XMLCSTR tag = NULL,
-                           XMLResults *pResults = NULL);
+  static XMLNode
+  parseFile(XMLCSTR filename, XMLCSTR tag = NULL, XMLResults *pResults = NULL);
   /**< The "parseFile" function parse an XML file and return the root of a
    * XMLNode tree. The "opposite" of this function is the function "writeToFile"
    * that re-creates an XML file from an XMLNode tree. If the XML document is
@@ -376,7 +377,8 @@ public:
    * returns the size in character of the string. */
 
   /// Save the content of an xmlNode inside a file
-  XMLError writeToFile(XMLCSTR filename, const char *encoding = NULL,
+  XMLError writeToFile(XMLCSTR filename,
+                       const char *encoding = NULL,
                        char nFormat = 1) const;
   /**< If nFormat==0, no formatting is required otherwise this returns an user
    * friendly XML string from a given element with appropriate white spaces and
@@ -406,13 +408,17 @@ public:
                int *i = NULL) const; ///< return next child node with specific
                                      ///< name (return an empty node if failing)
   XMLNode getChildNodeWithAttribute(
-      XMLCSTR tagName, XMLCSTR attributeName, XMLCSTR attributeValue = NULL,
+      XMLCSTR tagName,
+      XMLCSTR attributeName,
+      XMLCSTR attributeValue = NULL,
       int *i = NULL) const; ///< return child node with specific name/attribute
                             ///< (return an empty node if failing)
-  XMLNode getChildNodeByPath(XMLCSTR path, char createNodeIfMissing = 0,
+  XMLNode getChildNodeByPath(XMLCSTR path,
+                             char createNodeIfMissing = 0,
                              XMLCHAR sep = '/');
   ///< return the first child node with specific path
-  XMLNode getChildNodeByPathNonConst(XMLSTR path, char createNodeIfMissing = 0,
+  XMLNode getChildNodeByPathNonConst(XMLSTR path,
+                                     char createNodeIfMissing = 0,
                                      XMLCHAR sep = '/');
   ///< return the first child node with specific path.
 
@@ -474,7 +480,8 @@ public:
   createXMLTopNode(XMLCSTR lpszName,
                    char isDeclaration =
                        FALSE); ///< Create the top node of an XMLNode structure
-  XMLNode addChild(XMLCSTR lpszName, char isDeclaration = FALSE,
+  XMLNode addChild(XMLCSTR lpszName,
+                   char isDeclaration = FALSE,
                    XMLElementPosition pos = -1); ///< Add a new child node
   XMLNode addChild(XMLNode nodeToAdd,
                    XMLElementPosition pos =
@@ -485,8 +492,10 @@ public:
                              XMLCSTR lpszValuev); ///< Add a new attribute
   XMLCSTR addText(XMLCSTR lpszValue,
                   XMLElementPosition pos = -1); ///< Add a new text content
-  XMLClear *addClear(XMLCSTR lpszValue, XMLCSTR lpszOpen = NULL,
-                     XMLCSTR lpszClose = NULL, XMLElementPosition pos = -1);
+  XMLClear *addClear(XMLCSTR lpszValue,
+                     XMLCSTR lpszOpen = NULL,
+                     XMLCSTR lpszClose = NULL,
+                     XMLElementPosition pos = -1);
   /**< Add a new clear tag
    * @param lpszOpen default value "<![CDATA["
    * @param lpszClose default value "]]>"
@@ -504,11 +513,13 @@ public:
       XMLAttribute *oldAttribute); ///< if the attribute to update is missing, a
                                    ///< new one will be added
   XMLAttribute *
-  updateAttribute(XMLCSTR lpszNewValue, XMLCSTR lpszNewName = NULL,
+  updateAttribute(XMLCSTR lpszNewValue,
+                  XMLCSTR lpszNewName = NULL,
                   int i = 0); ///< if the attribute to update is missing, a new
                               ///< one will be added
   XMLAttribute *updateAttribute(
-      XMLCSTR lpszNewValue, XMLCSTR lpszNewName,
+      XMLCSTR lpszNewValue,
+      XMLCSTR lpszNewName,
       XMLCSTR
           lpszOldName); ///< set lpszNewName=NULL if you don't want to change
                         ///< the name of the attribute if the attribute to
@@ -605,13 +616,15 @@ public:
       XMLSTR lpszName,
       char isDeclaration =
           FALSE); ///< Create the top node of an XMLNode structure
-  XMLNode addChild_WOSD(XMLSTR lpszName, char isDeclaration = FALSE,
+  XMLNode addChild_WOSD(XMLSTR lpszName,
+                        char isDeclaration = FALSE,
                         XMLElementPosition pos = -1); ///< Add a new child node
   XMLAttribute *addAttribute_WOSD(XMLSTR lpszName,
                                   XMLSTR lpszValue); ///< Add a new attribute
   XMLCSTR addText_WOSD(XMLSTR lpszValue,
                        XMLElementPosition pos = -1); ///< Add a new text content
-  XMLClear *addClear_WOSD(XMLSTR lpszValue, XMLCSTR lpszOpen = NULL,
+  XMLClear *addClear_WOSD(XMLSTR lpszValue,
+                          XMLCSTR lpszOpen = NULL,
                           XMLCSTR lpszClose = NULL,
                           XMLElementPosition pos = -1); ///< Add a new clear Tag
 
@@ -621,11 +634,13 @@ public:
       XMLAttribute *oldAttribute); ///< if the attribute to update is missing, a
                                    ///< new one will be added
   XMLAttribute *
-  updateAttribute_WOSD(XMLSTR lpszNewValue, XMLSTR lpszNewName = NULL,
+  updateAttribute_WOSD(XMLSTR lpszNewValue,
+                       XMLSTR lpszNewName = NULL,
                        int i = 0); ///< if the attribute to update is missing, a
                                    ///< new one will be added
   XMLAttribute *updateAttribute_WOSD(
-      XMLSTR lpszNewValue, XMLSTR lpszNewName,
+      XMLSTR lpszNewValue,
+      XMLSTR lpszNewName,
       XMLCSTR
           lpszOldName); ///< set lpszNewName=NULL if you don't want to change
                         ///< the name of the attribute if the attribute to
@@ -687,7 +702,8 @@ public:
   /// Sets the global options for the conversions
   static char setGlobalOptions(
       XMLCharEncoding characterEncoding = XMLNode::char_encoding_UTF8,
-      char guessWideCharChars = 1, char dropWhiteSpace = 1,
+      char guessWideCharChars = 1,
+      char dropWhiteSpace = 1,
       char removeCommentsInMiddleOfText = 1);
   /**< The "setGlobalOptions" function allows you to change four global
    * parameters that affect string & file parsing. First of all, you
@@ -740,8 +756,8 @@ public:
    * WideChar) may fail (rarely). */
 
   /// Guess the character encoding of the string (ascii, utf8 or shift-JIS)
-  static XMLCharEncoding guessCharEncoding(void *buffer, int bufLen,
-                                           char useXMLEncodingAttribute = 1);
+  static XMLCharEncoding
+  guessCharEncoding(void *buffer, int bufLen, char useXMLEncodingAttribute = 1);
   /**< The "guessCharEncoding" function try to guess the character encoding. You
    * most-probably will never have to use this function. It then returns the
    * appropriate value of the global parameter "characterEncoding" described in
@@ -785,8 +801,8 @@ private:
   char parseClearTag(void *px, void *pa);
   char maybeAddTxT(void *pa, XMLCSTR tokenPStr);
   int ParseXMLElement(void *pXML);
-  void *addToOrder(int memInc, int *_pos, int nc, void *p, int size,
-                   XMLElementType xtype);
+  void *addToOrder(
+      int memInc, int *_pos, int nc, void *p, int size, XMLElementType xtype);
   int indexText(XMLCSTR lpszValue) const;
   int indexClear(XMLCSTR lpszValue) const;
   XMLNode addChild_priv(int, XMLSTR, char, int);
@@ -794,10 +810,10 @@ private:
   XMLCSTR addText_priv(int, XMLSTR, int);
   XMLClear *addClear_priv(int, XMLSTR, XMLCSTR, XMLCSTR, int);
   void emptyTheNode(char force);
-  static inline XMLElementPosition findPosition(XMLNodeData *d, int index,
-                                                XMLElementType xtype);
-  static int CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker,
-                              int nFormat);
+  static inline XMLElementPosition
+  findPosition(XMLNodeData *d, int index, XMLElementType xtype);
+  static int
+  CreateXMLStringR(XMLNodeData *pEntry, XMLSTR lpszMarker, int nFormat);
   static int removeOrderElement(XMLNodeData *d, XMLElementType t, int index);
   static void exactMemory(XMLNodeData *d);
   static int detachFromParent(XMLNodeData *d);
@@ -930,7 +946,8 @@ public:
    * free'd when the XMLParserBase64Tool object is deleted.
    * All returned strings are sharing the same memory space. */
   XMLSTR encode(
-      unsigned char *inByteBuf, unsigned int inByteLen,
+      unsigned char *inByteBuf,
+      unsigned int inByteLen,
       char formatted =
           0); ///< returns a pointer to an internal buffer containing the base64
               ///< string containing the binary data encoded from "inByteBuf"
@@ -945,7 +962,8 @@ public:
    * same memory space.
    * @param inString If "instring" is malformed, NULL will be returned */
   unsigned char *
-  decode(XMLCSTR inString, int *outByteLen = NULL,
+  decode(XMLCSTR inString,
+         int *outByteLen = NULL,
          XMLError *xe =
              NULL); ///< returns a pointer to an internal buffer containing the
                     ///< binary data decoded from "inString"
@@ -955,7 +973,8 @@ public:
    * (in byte) of "outByteBuf" in "inMaxByteOutBuflen". If "outByteBuf" is not
    * large enough or if data is malformed, then "FALSE" will be returned;
    * otherwise "TRUE". */
-  static unsigned char decode(XMLCSTR inString, unsigned char *outByteBuf,
+  static unsigned char decode(XMLCSTR inString,
+                              unsigned char *outByteBuf,
                               int inMaxByteOutBuflen,
                               XMLError *xe = NULL); ///< deprecated.
 

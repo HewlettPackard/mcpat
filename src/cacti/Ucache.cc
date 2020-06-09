@@ -166,19 +166,39 @@ void *calc_time_mt_wrapper(void *void_obj) {
             }
 
             if (is_tag == true) {
-              is_valid_partition =
-                  calculate_time(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl,
-                                 Ndcm, Ndsam_lev_1, Ndsam_lev_2, tag_arr.back(),
-                                 0, NULL, NULL, is_main_mem);
+              is_valid_partition = calculate_time(is_tag,
+                                                  pure_ram,
+                                                  pure_cam,
+                                                  Nspd,
+                                                  Ndwl,
+                                                  Ndbl,
+                                                  Ndcm,
+                                                  Ndsam_lev_1,
+                                                  Ndsam_lev_2,
+                                                  tag_arr.back(),
+                                                  0,
+                                                  NULL,
+                                                  NULL,
+                                                  is_main_mem);
             }
             // If it's a fully-associative cache, the data array partition
             // parameters are identical to that of the tag array, so compute
             // data array partition properties also here.
             if (is_tag == false || g_ip->fully_assoc) {
-              is_valid_partition =
-                  calculate_time(is_tag /*false*/, pure_ram, pure_cam, Nspd,
-                                 Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2,
-                                 data_arr.back(), 0, NULL, NULL, is_main_mem);
+              is_valid_partition = calculate_time(is_tag /*false*/,
+                                                  pure_ram,
+                                                  pure_cam,
+                                                  Nspd,
+                                                  Ndwl,
+                                                  Ndbl,
+                                                  Ndcm,
+                                                  Ndsam_lev_1,
+                                                  Ndsam_lev_2,
+                                                  data_arr.back(),
+                                                  0,
+                                                  NULL,
+                                                  NULL,
+                                                  is_main_mem);
             }
 
             if (is_valid_partition) {
@@ -218,14 +238,30 @@ void *calc_time_mt_wrapper(void *void_obj) {
   return NULL;
 }
 
-bool calculate_time(bool is_tag, int pure_ram, bool pure_cam, double Nspd,
-                    unsigned int Ndwl, unsigned int Ndbl, unsigned int Ndcm,
-                    unsigned int Ndsam_lev_1, unsigned int Ndsam_lev_2,
-                    mem_array *ptr_array, int flag_results_populate,
-                    results_mem_array *ptr_results, uca_org_t *ptr_fin_res,
+bool calculate_time(bool is_tag,
+                    int pure_ram,
+                    bool pure_cam,
+                    double Nspd,
+                    unsigned int Ndwl,
+                    unsigned int Ndbl,
+                    unsigned int Ndcm,
+                    unsigned int Ndsam_lev_1,
+                    unsigned int Ndsam_lev_2,
+                    mem_array *ptr_array,
+                    int flag_results_populate,
+                    results_mem_array *ptr_results,
+                    uca_org_t *ptr_fin_res,
                     bool is_main_mem) {
-  DynamicParameter dyn_p(is_tag, pure_ram, pure_cam, Nspd, Ndwl, Ndbl, Ndcm,
-                         Ndsam_lev_1, Ndsam_lev_2, is_main_mem);
+  DynamicParameter dyn_p(is_tag,
+                         pure_ram,
+                         pure_cam,
+                         Nspd,
+                         Ndwl,
+                         Ndbl,
+                         Ndcm,
+                         Ndsam_lev_1,
+                         Ndsam_lev_2,
+                         is_main_mem);
 
   if (dyn_p.is_valid == false) {
     return false;
@@ -238,8 +274,15 @@ bool calculate_time(bool is_tag, int pure_ram, bool pure_cam, double Nspd,
                                // necessary variables
   } else {
 
-    collect_uca_results(Nspd, Ndwl, Ndbl, Ndcm, Ndsam_lev_1, Ndsam_lev_2, uca,
-                        ptr_array, is_main_mem);
+    collect_uca_results(Nspd,
+                        Ndwl,
+                        Ndbl,
+                        Ndcm,
+                        Ndsam_lev_1,
+                        Ndsam_lev_2,
+                        uca,
+                        ptr_array,
+                        is_main_mem);
   }
 
   delete uca;
@@ -250,8 +293,13 @@ void collect_uca_results(
     //    bool is_tag,
     //    int pure_ram,
     //    bool pure_cam,
-    double Nspd, unsigned int Ndwl, unsigned int Ndbl, unsigned int Ndcm,
-    unsigned int Ndsam_lev_1, unsigned int Ndsam_lev_2, UCA const *const uca,
+    double Nspd,
+    unsigned int Ndwl,
+    unsigned int Ndbl,
+    unsigned int Ndcm,
+    unsigned int Ndsam_lev_1,
+    unsigned int Ndsam_lev_2,
+    UCA const *const uca,
     mem_array *const ptr_array,
     //    int flag_results_populate,
     //    results_mem_array *ptr_results,
@@ -569,7 +617,8 @@ bool check_mem_org(mem_array &u, const min_values_t *minval) {
   return true;
 }
 
-void find_optimal_uca(uca_org_t *res, min_values_t *minval,
+void find_optimal_uca(uca_org_t *res,
+                      min_values_t *minval,
                       list<uca_org_t> &ulist) {
   double cost = 0;
   double min_cost = BIGNUM;
@@ -767,14 +816,14 @@ void solve(uca_org_t *fin_res) {
         ((ram_cell_tech_type == lp_dram) || (ram_cell_tech_type == comm_dram));
     init_tech_params(g_ip->F_sz_um, is_tag);
 
-#if NTHREADS > 1 
+#if NTHREADS > 1
     // If Multithreadded:
     for (uint32_t t = 0; t < nthreads; t++) {
       calc_array[t].is_tag = is_tag;
       calc_array[t].is_main_mem = false;
       calc_array[t].Nspd_min = 0.125;
-      pthread_create(&threads[t], NULL, calc_time_mt_wrapper,
-                     (void *)(&(calc_array[t])));
+      pthread_create(
+          &threads[t], NULL, calc_time_mt_wrapper, (void *)(&(calc_array[t])));
     }
 
     for (uint32_t t = 0; t < nthreads; t++) {
@@ -807,7 +856,7 @@ void solve(uca_org_t *fin_res) {
       ((ram_cell_tech_type == lp_dram) || (ram_cell_tech_type == comm_dram));
   init_tech_params(g_ip->F_sz_um, is_tag);
 
-#if NTHREADS > 1 
+#if NTHREADS > 1
   for (uint32_t t = 0; t < nthreads; t++) {
     calc_array[t].is_tag = is_tag;
     calc_array[t].is_main_mem = g_ip->is_main_mem;
@@ -818,26 +867,25 @@ void solve(uca_org_t *fin_res) {
       calc_array[t].Nspd_min = 1;
     }
 
-    pthread_create(&threads[t], NULL, calc_time_mt_wrapper,
-                   (void *)(&(calc_array[t])));
+    pthread_create(
+        &threads[t], NULL, calc_time_mt_wrapper, (void *)(&(calc_array[t])));
   }
 
   for (uint32_t t = 0; t < nthreads; t++) {
     pthread_join(threads[t], NULL);
   }
 #else
-    // Else just a single thread dont bother with pthread overhead
-    calc_array[0].is_tag = is_tag;
-    calc_array[0].is_main_mem = g_ip->is_main_mem;
-    if (!(pure_cam || g_ip->fully_assoc)) {
-      calc_array[0].Nspd_min =
-          (double)(g_ip->out_w) / (double)(g_ip->block_sz * 8);
-    } else {
-      calc_array[0].Nspd_min = 1;
-    }
-    calc_time_mt_wrapper((void *)(&(calc_array[0])));
+  // Else just a single thread dont bother with pthread overhead
+  calc_array[0].is_tag = is_tag;
+  calc_array[0].is_main_mem = g_ip->is_main_mem;
+  if (!(pure_cam || g_ip->fully_assoc)) {
+    calc_array[0].Nspd_min =
+        (double)(g_ip->out_w) / (double)(g_ip->block_sz * 8);
+  } else {
+    calc_array[0].Nspd_min = 1;
+  }
+  calc_time_mt_wrapper((void *)(&(calc_array[0])));
 #endif
-  
 
   data_arr.clear();
   for (uint32_t t = 0; t < nthreads; t++) {
@@ -964,41 +1012,55 @@ void update_dvs(uca_org_t *fin_res) {
       //			Wire::print_wire();
 
       if (fin_res->tag_array2) {
-        DynamicParameter tag_arr_dyn_p(
-            true, g_ip->pure_ram, g_ip->pure_cam, fin_res->tag_array2->Nspd,
-            fin_res->tag_array2->Ndwl, fin_res->tag_array2->Ndbl,
-            fin_res->tag_array2->deg_bl_muxing,
-            fin_res->tag_array2->Ndsam_lev_1, fin_res->tag_array2->Ndsam_lev_2,
-            g_ip->is_main_mem);
+        DynamicParameter tag_arr_dyn_p(true,
+                                       g_ip->pure_ram,
+                                       g_ip->pure_cam,
+                                       fin_res->tag_array2->Nspd,
+                                       fin_res->tag_array2->Ndwl,
+                                       fin_res->tag_array2->Ndbl,
+                                       fin_res->tag_array2->deg_bl_muxing,
+                                       fin_res->tag_array2->Ndsam_lev_1,
+                                       fin_res->tag_array2->Ndsam_lev_2,
+                                       g_ip->is_main_mem);
         if (tag_arr_dyn_p.is_valid) {
 
           UCA *tag_arr = new UCA(tag_arr_dyn_p);
           fin_res->uca_q[i]->tag_array2 = new mem_array();
 
-          collect_uca_results(
-              fin_res->tag_array2->Nspd, fin_res->tag_array2->Ndwl,
-              fin_res->tag_array2->Ndbl, fin_res->tag_array2->deg_bl_muxing,
-              fin_res->tag_array2->Ndsam_lev_1,
-              fin_res->tag_array2->Ndsam_lev_2, tag_arr,
-              fin_res->uca_q[i]->tag_array2, g_ip->is_main_mem);
+          collect_uca_results(fin_res->tag_array2->Nspd,
+                              fin_res->tag_array2->Ndwl,
+                              fin_res->tag_array2->Ndbl,
+                              fin_res->tag_array2->deg_bl_muxing,
+                              fin_res->tag_array2->Ndsam_lev_1,
+                              fin_res->tag_array2->Ndsam_lev_2,
+                              tag_arr,
+                              fin_res->uca_q[i]->tag_array2,
+                              g_ip->is_main_mem);
           delete tag_arr;
         }
       }
-      DynamicParameter data_arr_dyn_p(
-          false, g_ip->pure_ram, g_ip->pure_cam, fin_res->data_array2->Nspd,
-          fin_res->data_array2->Ndwl, fin_res->data_array2->Ndbl,
-          fin_res->data_array2->deg_bl_muxing,
-          fin_res->data_array2->Ndsam_lev_1, fin_res->data_array2->Ndsam_lev_2,
-          g_ip->is_main_mem);
+      DynamicParameter data_arr_dyn_p(false,
+                                      g_ip->pure_ram,
+                                      g_ip->pure_cam,
+                                      fin_res->data_array2->Nspd,
+                                      fin_res->data_array2->Ndwl,
+                                      fin_res->data_array2->Ndbl,
+                                      fin_res->data_array2->deg_bl_muxing,
+                                      fin_res->data_array2->Ndsam_lev_1,
+                                      fin_res->data_array2->Ndsam_lev_2,
+                                      g_ip->is_main_mem);
       if (data_arr_dyn_p.is_valid) {
         UCA *data_arr = new UCA(data_arr_dyn_p);
         fin_res->uca_q[i]->data_array2 = new mem_array();
-        collect_uca_results(
-            fin_res->data_array2->Nspd, fin_res->data_array2->Ndwl,
-            fin_res->data_array2->Ndbl, fin_res->data_array2->deg_bl_muxing,
-            fin_res->data_array2->Ndsam_lev_1,
-            fin_res->data_array2->Ndsam_lev_2, data_arr,
-            fin_res->uca_q[i]->data_array2, g_ip->is_main_mem);
+        collect_uca_results(fin_res->data_array2->Nspd,
+                            fin_res->data_array2->Ndwl,
+                            fin_res->data_array2->Ndbl,
+                            fin_res->data_array2->deg_bl_muxing,
+                            fin_res->data_array2->Ndsam_lev_1,
+                            fin_res->data_array2->Ndsam_lev_2,
+                            data_arr,
+                            fin_res->uca_q[i]->data_array2,
+                            g_ip->is_main_mem);
         delete data_arr;
       }
 
@@ -1052,38 +1114,56 @@ void update_pg(uca_org_t *fin_res) {
     //(1,1, false); 		Wire::print_wire();
     if (fin_res->tag_array2) {
       //			init_tech_params(g_ip->F_sz_um,true);
-      DynamicParameter tag_arr_dyn_p(
-          true, g_ip->pure_ram, g_ip->pure_cam, fin_res->tag_array2->Nspd,
-          fin_res->tag_array2->Ndwl, fin_res->tag_array2->Ndbl,
-          fin_res->tag_array2->deg_bl_muxing, fin_res->tag_array2->Ndsam_lev_1,
-          fin_res->tag_array2->Ndsam_lev_2, g_ip->is_main_mem);
+      DynamicParameter tag_arr_dyn_p(true,
+                                     g_ip->pure_ram,
+                                     g_ip->pure_cam,
+                                     fin_res->tag_array2->Nspd,
+                                     fin_res->tag_array2->Ndwl,
+                                     fin_res->tag_array2->Ndbl,
+                                     fin_res->tag_array2->deg_bl_muxing,
+                                     fin_res->tag_array2->Ndsam_lev_1,
+                                     fin_res->tag_array2->Ndsam_lev_2,
+                                     g_ip->is_main_mem);
       if (tag_arr_dyn_p.is_valid) {
 
         UCA *tag_arr = new UCA(tag_arr_dyn_p);
         fin_res->uca_pg_reference->tag_array2 = new mem_array();
 
-        collect_uca_results(
-            fin_res->tag_array2->Nspd, fin_res->tag_array2->Ndwl,
-            fin_res->tag_array2->Ndbl, fin_res->tag_array2->deg_bl_muxing,
-            fin_res->tag_array2->Ndsam_lev_1, fin_res->tag_array2->Ndsam_lev_2,
-            tag_arr, fin_res->uca_pg_reference->tag_array2, g_ip->is_main_mem);
+        collect_uca_results(fin_res->tag_array2->Nspd,
+                            fin_res->tag_array2->Ndwl,
+                            fin_res->tag_array2->Ndbl,
+                            fin_res->tag_array2->deg_bl_muxing,
+                            fin_res->tag_array2->Ndsam_lev_1,
+                            fin_res->tag_array2->Ndsam_lev_2,
+                            tag_arr,
+                            fin_res->uca_pg_reference->tag_array2,
+                            g_ip->is_main_mem);
         delete tag_arr;
       }
     }
     //		init_tech_params(g_ip->F_sz_um,false);
-    DynamicParameter data_arr_dyn_p(
-        false, g_ip->pure_ram, g_ip->pure_cam, fin_res->data_array2->Nspd,
-        fin_res->data_array2->Ndwl, fin_res->data_array2->Ndbl,
-        fin_res->data_array2->deg_bl_muxing, fin_res->data_array2->Ndsam_lev_1,
-        fin_res->data_array2->Ndsam_lev_2, g_ip->is_main_mem);
+    DynamicParameter data_arr_dyn_p(false,
+                                    g_ip->pure_ram,
+                                    g_ip->pure_cam,
+                                    fin_res->data_array2->Nspd,
+                                    fin_res->data_array2->Ndwl,
+                                    fin_res->data_array2->Ndbl,
+                                    fin_res->data_array2->deg_bl_muxing,
+                                    fin_res->data_array2->Ndsam_lev_1,
+                                    fin_res->data_array2->Ndsam_lev_2,
+                                    g_ip->is_main_mem);
     if (data_arr_dyn_p.is_valid) {
       UCA *data_arr = new UCA(data_arr_dyn_p);
       fin_res->uca_pg_reference->data_array2 = new mem_array();
-      collect_uca_results(
-          fin_res->data_array2->Nspd, fin_res->data_array2->Ndwl,
-          fin_res->data_array2->Ndbl, fin_res->data_array2->deg_bl_muxing,
-          fin_res->data_array2->Ndsam_lev_1, fin_res->data_array2->Ndsam_lev_2,
-          data_arr, fin_res->uca_pg_reference->data_array2, g_ip->is_main_mem);
+      collect_uca_results(fin_res->data_array2->Nspd,
+                          fin_res->data_array2->Ndwl,
+                          fin_res->data_array2->Ndbl,
+                          fin_res->data_array2->deg_bl_muxing,
+                          fin_res->data_array2->Ndsam_lev_1,
+                          fin_res->data_array2->Ndsam_lev_2,
+                          data_arr,
+                          fin_res->uca_pg_reference->data_array2,
+                          g_ip->is_main_mem);
       delete data_arr;
     }
 

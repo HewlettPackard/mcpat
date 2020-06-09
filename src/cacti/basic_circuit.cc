@@ -81,8 +81,12 @@ double logtwo(double x) {
 
 /*----------------------------------------------------------------------*/
 
-double gate_C(double width, double wirelength, bool _is_dram, bool _is_cell,
-              bool _is_wl_tr, bool _is_sleep_tx) {
+double gate_C(double width,
+              double wirelength,
+              bool _is_dram,
+              bool _is_cell,
+              bool _is_wl_tr,
+              bool _is_sleep_tx) {
   const TechnologyParameter::DeviceType *dt;
 
   if (_is_dram && _is_cell) {
@@ -106,7 +110,10 @@ double gate_C(double width, double wirelength, bool _is_dram, bool _is_cell,
 double
 gate_C_pass(double width, // gate width in um (length is Lphy_periph_global)
             double wirelength, // poly wire length going to gate in lambda
-            bool _is_dram, bool _is_cell, bool _is_wl_tr, bool _is_sleep_tx) {
+            bool _is_dram,
+            bool _is_cell,
+            bool _is_wl_tr,
+            bool _is_sleep_tx) {
   // v5.0
   const TechnologyParameter::DeviceType *dt;
 
@@ -126,10 +133,15 @@ gate_C_pass(double width, // gate width in um (length is Lphy_periph_global)
          dt->l_phy * Cpolywire;
 }
 
-double drain_C_(double width, int nchannel, int stack,
+double drain_C_(double width,
+                int nchannel,
+                int stack,
                 int next_arg_thresh_folding_width_or_height_cell,
-                double fold_dimension, bool _is_dram, bool _is_cell,
-                bool _is_wl_tr, bool _is_sleep_tx) {
+                double fold_dimension,
+                bool _is_dram,
+                bool _is_cell,
+                bool _is_wl_tr,
+                bool _is_sleep_tx) {
   double w_folded_tr;
   const TechnologyParameter::DeviceType *dt;
 
@@ -206,8 +218,13 @@ double drain_C_(double width, int nchannel, int stack,
           drain_C_metal_connecting_folded_tr);
 }
 
-double tr_R_on(double width, int nchannel, int stack, bool _is_dram,
-               bool _is_cell, bool _is_wl_tr, bool _is_sleep_tx) {
+double tr_R_on(double width,
+               int nchannel,
+               int stack,
+               bool _is_dram,
+               bool _is_cell,
+               bool _is_wl_tr,
+               bool _is_sleep_tx) {
   const TechnologyParameter::DeviceType *dt;
 
   if ((_is_dram) && (_is_cell)) {
@@ -231,8 +248,12 @@ double tr_R_on(double width, int nchannel, int stack, bool _is_dram,
  * data wordline to estimate the wordline driver size. */
 
 // returns width in um
-double R_to_w(double res, int nchannel, bool _is_dram, bool _is_cell,
-              bool _is_wl_tr, bool _is_sleep_tx) {
+double R_to_w(double res,
+              int nchannel,
+              bool _is_dram,
+              bool _is_cell,
+              bool _is_wl_tr,
+              bool _is_sleep_tx) {
   const TechnologyParameter::DeviceType *dt;
 
   if ((_is_dram) && (_is_cell)) {
@@ -289,8 +310,12 @@ double horowitz(double inputramptime, // input rise time
   return (td);
 }
 
-double cmos_Ileak(double nWidth, double pWidth, bool _is_dram, bool _is_cell,
-                  bool _is_wl_tr, bool _is_sleep_tx) {
+double cmos_Ileak(double nWidth,
+                  double pWidth,
+                  bool _is_dram,
+                  bool _is_cell,
+                  bool _is_wl_tr,
+                  bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
   if ((!_is_dram) && (_is_cell)) { // SRAM cell access transistor
@@ -318,8 +343,11 @@ int combination(int n, int m) {
   return ret;
 }
 
-double simplified_nmos_Isat(double nwidth, bool _is_dram, bool _is_cell,
-                            bool _is_wl_tr, bool _is_sleep_tx) {
+double simplified_nmos_Isat(double nwidth,
+                            bool _is_dram,
+                            bool _is_cell,
+                            bool _is_wl_tr,
+                            bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
   if ((!_is_dram) && (_is_cell)) { // SRAM cell access transistor
@@ -334,8 +362,11 @@ double simplified_nmos_Isat(double nwidth, bool _is_dram, bool _is_cell,
   return nwidth * dt->I_on_n;
 }
 
-double simplified_pmos_Isat(double pwidth, bool _is_dram, bool _is_cell,
-                            bool _is_wl_tr, bool _is_sleep_tx) {
+double simplified_pmos_Isat(double pwidth,
+                            bool _is_dram,
+                            bool _is_cell,
+                            bool _is_wl_tr,
+                            bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
   if ((!_is_dram) && (_is_cell)) { // SRAM cell access transistor
@@ -350,8 +381,11 @@ double simplified_pmos_Isat(double pwidth, bool _is_dram, bool _is_cell,
   return pwidth * dt->I_on_n / dt->n_to_p_eff_curr_drv_ratio;
 }
 
-double simplified_nmos_leakage(double nwidth, bool _is_dram, bool _is_cell,
-                               bool _is_wl_tr, bool _is_sleep_tx) {
+double simplified_nmos_leakage(double nwidth,
+                               bool _is_dram,
+                               bool _is_cell,
+                               bool _is_wl_tr,
+                               bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
   if ((!_is_dram) && (_is_cell)) { // SRAM cell access transistor
@@ -366,8 +400,11 @@ double simplified_nmos_leakage(double nwidth, bool _is_dram, bool _is_cell,
   return nwidth * dt->I_off_n;
 }
 
-double simplified_pmos_leakage(double pwidth, bool _is_dram, bool _is_cell,
-                               bool _is_wl_tr, bool _is_sleep_tx) {
+double simplified_pmos_leakage(double pwidth,
+                               bool _is_dram,
+                               bool _is_cell,
+                               bool _is_wl_tr,
+                               bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
   if ((!_is_dram) && (_is_cell)) { // SRAM cell access transistor
@@ -382,7 +419,10 @@ double simplified_pmos_leakage(double pwidth, bool _is_dram, bool _is_cell,
   return pwidth * dt->I_off_p;
 }
 
-double cmos_Ig_n(double nWidth, bool _is_dram, bool _is_cell, bool _is_wl_tr,
+double cmos_Ig_n(double nWidth,
+                 bool _is_dram,
+                 bool _is_cell,
+                 bool _is_wl_tr,
                  bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
@@ -398,7 +438,10 @@ double cmos_Ig_n(double nWidth, bool _is_dram, bool _is_cell, bool _is_wl_tr,
   return nWidth * dt->I_g_on_n;
 }
 
-double cmos_Ig_p(double pWidth, bool _is_dram, bool _is_cell, bool _is_wl_tr,
+double cmos_Ig_p(double pWidth,
+                 bool _is_dram,
+                 bool _is_cell,
+                 bool _is_wl_tr,
                  bool _is_sleep_tx) {
   TechnologyParameter::DeviceType *dt;
 
@@ -414,15 +457,20 @@ double cmos_Ig_p(double pWidth, bool _is_dram, bool _is_cell, bool _is_wl_tr,
   return pWidth * dt->I_g_on_p;
 }
 
-double cmos_Isub_leakage(double nWidth, double pWidth, int fanin,
-                         enum Gate_type g_type, bool _is_dram, bool _is_cell,
-                         bool _is_wl_tr, bool _is_sleep_tx,
+double cmos_Isub_leakage(double nWidth,
+                         double pWidth,
+                         int fanin,
+                         enum Gate_type g_type,
+                         bool _is_dram,
+                         bool _is_cell,
+                         bool _is_wl_tr,
+                         bool _is_sleep_tx,
                          enum Half_net_topology topo) {
   assert(fanin >= 1);
-  double nmos_leak = simplified_nmos_leakage(nWidth, _is_dram, _is_cell,
-                                             _is_wl_tr, _is_sleep_tx);
-  double pmos_leak = simplified_pmos_leakage(pWidth, _is_dram, _is_cell,
-                                             _is_wl_tr, _is_sleep_tx);
+  double nmos_leak = simplified_nmos_leakage(
+      nWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx);
+  double pmos_leak = simplified_pmos_leakage(
+      pWidth, _is_dram, _is_cell, _is_wl_tr, _is_sleep_tx);
   double Isub = 0;
   int num_states;
   int num_off_tx;
@@ -522,9 +570,14 @@ double cmos_Isub_leakage(double nWidth, double pWidth, int fanin,
   return Isub;
 }
 
-double cmos_Ig_leakage(double nWidth, double pWidth, int fanin,
-                       enum Gate_type g_type, bool _is_dram, bool _is_cell,
-                       bool _is_wl_tr, bool _is_sleep_tx,
+double cmos_Ig_leakage(double nWidth,
+                       double pWidth,
+                       int fanin,
+                       enum Gate_type g_type,
+                       bool _is_dram,
+                       bool _is_cell,
+                       bool _is_wl_tr,
+                       bool _is_sleep_tx,
                        enum Half_net_topology topo) {
   assert(fanin >= 1);
   double nmos_leak =
@@ -637,10 +690,17 @@ double cmos_Ig_leakage(double nWidth, double pWidth, int fanin,
   return Ig_on;
 }
 
-double shortcircuit_simple(double vt, double velocity_index, double c_in,
-                           double c_out, double w_nmos, double w_pmos,
-                           double i_on_n, double i_on_p, double i_on_n_in,
-                           double i_on_p_in, double vdd) {
+double shortcircuit_simple(double vt,
+                           double velocity_index,
+                           double c_in,
+                           double c_out,
+                           double w_nmos,
+                           double w_pmos,
+                           double i_on_n,
+                           double i_on_p,
+                           double i_on_n_in,
+                           double i_on_p_in,
+                           double vdd) {
 
   double p_short_circuit, p_short_circuit_discharge, p_short_circuit_charge,
       p_short_circuit_discharge_low, p_short_circuit_discharge_high,
@@ -696,9 +756,17 @@ double shortcircuit_simple(double vt, double velocity_index, double c_in,
   return (p_short_circuit);
 }
 
-double shortcircuit(double vt, double velocity_index, double c_in, double c_out,
-                    double w_nmos, double w_pmos, double i_on_n, double i_on_p,
-                    double i_on_n_in, double i_on_p_in, double vdd) {
+double shortcircuit(double vt,
+                    double velocity_index,
+                    double c_in,
+                    double c_out,
+                    double w_nmos,
+                    double w_pmos,
+                    double i_on_n,
+                    double i_on_p,
+                    double i_on_n_in,
+                    double i_on_p_in,
+                    double vdd) {
 
   double p_short_circuit = 0,
          p_short_circuit_discharge; //, p_short_circuit_charge,

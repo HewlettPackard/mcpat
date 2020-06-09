@@ -140,34 +140,53 @@ Mat::Mat(const DynamicParameter &dyn_p)
     R_wire_sa_mux_dec_out /= 2.0;
   }
 
-  row_dec =
-      new Decoder(num_dec_signals, false, subarray.C_wl, R_wire_wl_drv_out,
-                  false /*is_fa*/, is_dram, true, camFlag ? cam_cell : cell,
-                  g_ip->power_gating ? true : false, subarray.num_rows);
+  row_dec = new Decoder(num_dec_signals,
+                        false,
+                        subarray.C_wl,
+                        R_wire_wl_drv_out,
+                        false /*is_fa*/,
+                        is_dram,
+                        true,
+                        camFlag ? cam_cell : cell,
+                        g_ip->power_gating ? true : false,
+                        subarray.num_rows);
 
   //  row_dec->nodes_DSTN = subarray.num_rows;//TODO: this is not a good way for
   //  OOO programming if (is_fa && (!dp.is_tag))
   //  {
   //    row_dec->exist = true;
   //  }
-  bit_mux_dec =
-      new Decoder(deg_bl_muxing, // This number is 1 for FA or CAM
-                  false, C_ld_bit_mux_dec_out, R_wire_bit_mux_dec_out,
-                  false /*is_fa*/, is_dram, false, camFlag ? cam_cell : cell,
-                  g_ip->power_gating ? true : false);
+  bit_mux_dec = new Decoder(deg_bl_muxing, // This number is 1 for FA or CAM
+                            false,
+                            C_ld_bit_mux_dec_out,
+                            R_wire_bit_mux_dec_out,
+                            false /*is_fa*/,
+                            is_dram,
+                            false,
+                            camFlag ? cam_cell : cell,
+                            g_ip->power_gating ? true : false);
   sa_mux_lev_1_dec =
       new Decoder(dp.deg_senseamp_muxing_non_associativity, // This number is 1
                                                             // for FA or CAM
                   dp.number_way_select_signals_mat
                       ? true
                       : false, // only sa_mux_lev_1_dec needs way select signal
-                  C_ld_sa_mux_lev_1_dec_out, R_wire_sa_mux_dec_out,
-                  false /*is_fa*/, is_dram, false, camFlag ? cam_cell : cell,
+                  C_ld_sa_mux_lev_1_dec_out,
+                  R_wire_sa_mux_dec_out,
+                  false /*is_fa*/,
+                  is_dram,
+                  false,
+                  camFlag ? cam_cell : cell,
                   g_ip->power_gating ? true : false);
   sa_mux_lev_2_dec =
       new Decoder(dp.Ndsam_lev_2, // This number is 1 for FA or CAM
-                  false, C_ld_sa_mux_lev_2_dec_out, R_wire_sa_mux_dec_out,
-                  false /*is_fa*/, is_dram, false, camFlag ? cam_cell : cell,
+                  false,
+                  C_ld_sa_mux_lev_2_dec_out,
+                  R_wire_sa_mux_dec_out,
+                  false /*is_fa*/,
+                  is_dram,
+                  false,
+                  camFlag ? cam_cell : cell,
                   g_ip->power_gating ? true : false);
 
   double C_wire_predec_blk_out;
@@ -191,22 +210,40 @@ Mat::Mat(const DynamicParameter &dyn_p)
   if (is_fa || pure_cam)
     num_dec_signals += _log2(num_subarrays_per_mat);
 
-  PredecBlk *r_predec_blk1 = new PredecBlk(
-      num_dec_signals, row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out,
-      num_subarrays_per_mat, is_dram, true);
-  PredecBlk *r_predec_blk2 = new PredecBlk(
-      num_dec_signals, row_dec, C_wire_predec_blk_out, R_wire_predec_blk_out,
-      num_subarrays_per_mat, is_dram, false);
+  PredecBlk *r_predec_blk1 = new PredecBlk(num_dec_signals,
+                                           row_dec,
+                                           C_wire_predec_blk_out,
+                                           R_wire_predec_blk_out,
+                                           num_subarrays_per_mat,
+                                           is_dram,
+                                           true);
+  PredecBlk *r_predec_blk2 = new PredecBlk(num_dec_signals,
+                                           row_dec,
+                                           C_wire_predec_blk_out,
+                                           R_wire_predec_blk_out,
+                                           num_subarrays_per_mat,
+                                           is_dram,
+                                           false);
   PredecBlk *b_mux_predec_blk1 =
       new PredecBlk(deg_bl_muxing, bit_mux_dec, 0, 0, 1, is_dram, true);
   PredecBlk *b_mux_predec_blk2 =
       new PredecBlk(deg_bl_muxing, bit_mux_dec, 0, 0, 1, is_dram, false);
   PredecBlk *sa_mux_lev_1_predec_blk1 =
       new PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity,
-                    sa_mux_lev_1_dec, 0, 0, 1, is_dram, true);
+                    sa_mux_lev_1_dec,
+                    0,
+                    0,
+                    1,
+                    is_dram,
+                    true);
   PredecBlk *sa_mux_lev_1_predec_blk2 =
       new PredecBlk(dyn_p.deg_senseamp_muxing_non_associativity,
-                    sa_mux_lev_1_dec, 0, 0, 1, is_dram, false);
+                    sa_mux_lev_1_dec,
+                    0,
+                    0,
+                    1,
+                    is_dram,
+                    false);
   PredecBlk *sa_mux_lev_2_predec_blk1 =
       new PredecBlk(dp.Ndsam_lev_2, sa_mux_lev_2_dec, 0, 0, 1, is_dram, true);
   PredecBlk *sa_mux_lev_2_predec_blk2 =
@@ -230,8 +267,8 @@ Mat::Mat(const DynamicParameter &dyn_p)
       new PredecBlkDrv(0, sa_mux_lev_2_predec_blk1, is_dram);
   PredecBlkDrv *sa_mux_lev_2_predec_blk_drv2 =
       new PredecBlkDrv(0, sa_mux_lev_2_predec_blk2, is_dram);
-  way_sel_drv1 = new PredecBlkDrv(dyn_p.number_way_select_signals_mat,
-                                  dummy_way_sel_predec_blk1, is_dram);
+  way_sel_drv1 = new PredecBlkDrv(
+      dyn_p.number_way_select_signals_mat, dummy_way_sel_predec_blk1, is_dram);
   dummy_way_sel_predec_blk_drv2 =
       new PredecBlkDrv(1, dummy_way_sel_predec_blk2, is_dram);
 
@@ -243,9 +280,12 @@ Mat::Mat(const DynamicParameter &dyn_p)
       new Predec(sa_mux_lev_2_predec_blk_drv1, sa_mux_lev_2_predec_blk_drv2);
 
   subarray_out_wire =
-      new Wire(Global, (g_ip->cl_vertical ? subarray.area.w : subarray.area.h),
-               1, 1, inside_mat); // should be subarray.area.w;  if with /2
-                                  // means average length
+      new Wire(Global,
+               (g_ip->cl_vertical ? subarray.area.w : subarray.area.h),
+               1,
+               1,
+               inside_mat); // should be subarray.area.w;  if with /2
+                            // means average length
 
   double driver_c_gate_load;
   double driver_c_wire_load;
@@ -257,41 +297,50 @@ Mat::Mat(const DynamicParameter &dyn_p)
     // precharge p size is the same
     driver_c_gate_load =
         (subarray.num_cols_fa_cam) *
-        gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram,
-               false, false);
+        gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq,
+               0,
+               is_dram,
+               false,
+               false);
     driver_c_wire_load =
         subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.C_per_um;
     driver_r_wire_load =
         subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.R_per_um;
-    cam_bl_precharge_eq_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                         driver_r_wire_load, is_dram);
+    cam_bl_precharge_eq_drv = new Driver(
+        driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
 
     if (!pure_cam) {
       // This is only used for fully asso not pure CAM
       driver_c_gate_load =
           (subarray.num_cols_fa_ram) *
-          gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram,
-                 false, false);
+          gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq,
+                 0,
+                 is_dram,
+                 false,
+                 false);
       driver_c_wire_load =
           subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.C_per_um;
       driver_r_wire_load =
           subarray.num_cols_fa_ram * cell.w * g_tp.wire_outside_mat.R_per_um;
-      bl_precharge_eq_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                       driver_r_wire_load, is_dram);
+      bl_precharge_eq_drv = new Driver(
+          driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
     }
   }
 
   else {
     driver_c_gate_load =
         subarray.num_cols *
-        gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq, 0, is_dram,
-               false, false);
+        gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq,
+               0,
+               is_dram,
+               false,
+               false);
     driver_c_wire_load =
         subarray.num_cols * cell.w * g_tp.wire_outside_mat.C_per_um;
     driver_r_wire_load =
         subarray.num_cols * cell.w * g_tp.wire_outside_mat.R_per_um;
-    bl_precharge_eq_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                     driver_r_wire_load, is_dram);
+    bl_precharge_eq_drv = new Driver(
+        driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
   }
   double area_row_decoder =
       row_dec->area.get_area() * subarray.num_rows * (RWP + ERP + EWP);
@@ -323,15 +372,16 @@ Mat::Mat(const DynamicParameter &dyn_p)
   if ((!is_fa) && (dp.is_tag)) {
     // tagbits = (4 * num_cols_subarray / (deg_bl_muxing * dp.Ndsam_lev_1 *
     // dp.Ndsam_lev_2)) / num_do_b_mat;
-    h_comparators = compute_comparators_height(dp.tagbits, dyn_p.num_do_b_mat,
-                                               subarray.area.get_w());
+    h_comparators = compute_comparators_height(
+        dp.tagbits, dyn_p.num_do_b_mat, subarray.area.get_w());
     h_comparators *= (RWP + ERP);
   }
 
   // power-gating circuit
   bool is_footer = false;
   double Isat_subarray =
-      2 * simplified_nmos_Isat(g_tp.sram.cell_nmos_w, is_dram,
+      2 * simplified_nmos_Isat(g_tp.sram.cell_nmos_w,
+                               is_dram,
                                true); // only one wordline active in a subarray
                                       // 2 means two inverters in an SRAM cell
   double detalV_array, deltaV_wl, deltaV_floatingBL;
@@ -339,19 +389,34 @@ Mat::Mat(const DynamicParameter &dyn_p)
 
   if (!(is_fa || pure_cam) &&
       g_ip->power_gating) { // for SRAM only at this moment
-    c_wakeup_array = drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram,
+    c_wakeup_array = drain_C_(g_tp.sram.cell_pmos_w,
+                              PCH,
+                              1,
+                              1,
+                              cell.h,
+                              is_dram,
                               true); // 1 inv
     c_wakeup_array +=
         2 * drain_C_(g_tp.sram.cell_pmos_w, PCH, 1, 1, cell.h, is_dram, true) +
-        drain_C_(g_tp.sram.cell_nmos_w, NCH, 1, 1, cell.h, is_dram,
+        drain_C_(g_tp.sram.cell_nmos_w,
+                 NCH,
+                 1,
+                 1,
+                 cell.h,
+                 is_dram,
                  true); // 1 inv
     c_wakeup_array *=
         subarray.num_rows; // all the SRAM cells in a bitline is connected to
                            // the sleep tx to provide Vcc_min
     detalV_array = g_tp.sram_cell.Vdd - g_tp.sram_cell.Vcc_min;
 
-    sram_sleep_tx = new Sleep_tx(g_ip->perfloss, Isat_subarray, is_footer,
-                                 c_wakeup_array, detalV_array, 1, cell);
+    sram_sleep_tx = new Sleep_tx(g_ip->perfloss,
+                                 Isat_subarray,
+                                 is_footer,
+                                 c_wakeup_array,
+                                 detalV_array,
+                                 1,
+                                 cell);
 
     subarray.area.set_h(subarray.area.h + sram_sleep_tx->area.h);
 
@@ -531,10 +596,22 @@ double Mat::compute_delays(double inrisetime) {
       bl_precharge_eq_drv->compute_delay(0);
       k = ml_to_ram_wl_drv->number_gates - 1;
       rd = tr_R_on(ml_to_ram_wl_drv->width_n[k], NCH, 1, is_dram, false, true);
-      C_intrinsic = drain_C_(ml_to_ram_wl_drv->width_n[k], PCH, 1, 1,
-                             4 * cell.h, is_dram, false, true) +
-                    drain_C_(ml_to_ram_wl_drv->width_n[k], NCH, 1, 1,
-                             4 * cell.h, is_dram, false, true);
+      C_intrinsic = drain_C_(ml_to_ram_wl_drv->width_n[k],
+                             PCH,
+                             1,
+                             1,
+                             4 * cell.h,
+                             is_dram,
+                             false,
+                             true) +
+                    drain_C_(ml_to_ram_wl_drv->width_n[k],
+                             NCH,
+                             1,
+                             1,
+                             4 * cell.h,
+                             is_dram,
+                             false,
+                             true);
       C_ld = ml_to_ram_wl_drv->c_gate_load + ml_to_ram_wl_drv->c_wire_load;
       tf = rd * (C_intrinsic + C_ld) + ml_to_ram_wl_drv->r_wire_load * C_ld / 2;
       delay_wl_reset = horowitz(0, tf, 0.5, 0.5, RISE);
@@ -584,10 +661,17 @@ double Mat::compute_delays(double inrisetime) {
       int k = row_dec->num_gates - 1;
       double rd = tr_R_on(row_dec->w_dec_n[k], NCH, 1, is_dram, false, true);
       // TODO: this 4*cell.h number must be revisited
-      double C_intrinsic = drain_C_(row_dec->w_dec_p[k], PCH, 1, 1, 4 * cell.h,
-                                    is_dram, false, true) +
-                           drain_C_(row_dec->w_dec_n[k], NCH, 1, 1, 4 * cell.h,
-                                    is_dram, false, true);
+      double C_intrinsic =
+          drain_C_(row_dec->w_dec_p[k],
+                   PCH,
+                   1,
+                   1,
+                   4 * cell.h,
+                   is_dram,
+                   false,
+                   true) +
+          drain_C_(
+              row_dec->w_dec_n[k], NCH, 1, 1, 4 * cell.h, is_dram, false, true);
       double C_ld = row_dec->C_ld_dec_out;
       double tf =
           rd * (C_intrinsic + C_ld) + row_dec->R_wire_dec_out * C_ld / 2;
@@ -675,9 +759,10 @@ double Mat::compute_bit_mux_sa_precharge_sa_mux_wr_drv_wr_mux_h() {
   }
 
   if (dp.Ndsam_lev_2 > 1) {
-    height += compute_tr_width_after_folding(
-        g_tp.w_nmos_sa_mux, cell.w * deg_bl_muxing * dp.Ndsam_lev_1 /
-                                (RWP + ERP)); // sense_amp_mux_height
+    height +=
+        compute_tr_width_after_folding(g_tp.w_nmos_sa_mux,
+                                       cell.w * deg_bl_muxing * dp.Ndsam_lev_1 /
+                                           (RWP + ERP)); // sense_amp_mux_height
     // height_senseamp_mux_decode_output_wires =  Ndsam * wire_inside_mat_pitch
     // * (RWP + ERP);
 
@@ -879,14 +964,17 @@ double Mat::compute_cam_delay(double inrisetime) {
   // horizontally
   driver_c_gate_load = subarray.num_cols_fa_cam *
                        gate_C(2 * g_tp.w_pmos_bl_precharge + g_tp.w_pmos_bl_eq,
-                              0, is_dram, false, false);
+                              0,
+                              is_dram,
+                              false,
+                              false);
   driver_c_wire_load =
       subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.C_per_um;
   driver_r_wire_load =
       subarray.num_cols_fa_cam * cam_cell.w * g_tp.wire_outside_mat.R_per_um;
 
-  sl_precharge_eq_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                   driver_r_wire_load, is_dram);
+  sl_precharge_eq_drv = new Driver(
+      driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
 
   // searchline data driver ; subarray.num_rows + 1 is because of the dummy row
   // data drv should only have gate_C not 2*gate_C since the two searchlines are
@@ -895,12 +983,16 @@ double Mat::compute_cam_delay(double inrisetime) {
       (subarray.num_rows + 1) * gate_C(Wdummyn, 0, is_dram, false, false);
   driver_c_wire_load = (subarray.num_rows + 1) * c_searchline_metal;
   driver_r_wire_load = (subarray.num_rows + 1) * r_searchline_metal;
-  sl_data_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                           driver_r_wire_load, is_dram);
+  sl_data_drv = new Driver(
+      driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
 
   sl_precharge_eq_drv->compute_delay(0);
   double R_bl_precharge =
-      tr_R_on(g_tp.w_pmos_bl_precharge, PCH, 1, is_dram, false,
+      tr_R_on(g_tp.w_pmos_bl_precharge,
+              PCH,
+              1,
+              is_dram,
+              false,
               false); // Assuming CAM and SRAM have same Pre_eq_dr
   double r_b_metal = cam_cell.h * g_tp.wire_local.R_per_um;
   double R_bl = (subarray.num_rows + 1) * r_b_metal;
@@ -927,14 +1019,18 @@ double Mat::compute_cam_delay(double inrisetime) {
   driver_c_wire_load = (subarray.num_rows + 1) * c_searchline_metal;
   driver_r_wire_load = (subarray.num_rows + 1) * r_searchline_metal;
 
-  ml_precharge_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                driver_r_wire_load, is_dram);
+  ml_precharge_drv = new Driver(
+      driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
 
   ml_precharge_drv->compute_delay(0);
 
   rd = tr_R_on(Wdummyn, NCH, 2, is_dram);
   c_intrinsic = Htagbits *
-                (2 * drain_C_(Wdummyn, NCH, 2, 1, g_tp.cell_h_def,
+                (2 * drain_C_(Wdummyn,
+                              NCH,
+                              2,
+                              1,
+                              g_tp.cell_h_def,
                               is_dram) // TODO: the cell_h_def should be revisit
                  + drain_C_(Wfaprechp, PCH, 1, 1, g_tp.cell_h_def, is_dram) /
                        Htagbits); // since each halve only has one precharge tx
@@ -1006,13 +1102,16 @@ double Mat::compute_cam_delay(double inrisetime) {
 
   // searchline data driver There are two matchline precharge driver chains per
   // subarray.
-  driver_c_gate_load = gate_C(W_hit_miss_n, 0, is_dram, false,
+  driver_c_gate_load = gate_C(W_hit_miss_n,
+                              0,
+                              is_dram,
+                              false,
                               false); // nmos of the pull down logic
   driver_c_wire_load = subarray.C_wl_ram;
   driver_r_wire_load = subarray.R_wl_ram;
 
-  ml_to_ram_wl_drv = new Driver(driver_c_gate_load, driver_c_wire_load,
-                                driver_r_wire_load, is_dram);
+  ml_to_ram_wl_drv = new Driver(
+      driver_c_gate_load, driver_c_wire_load, driver_r_wire_load, is_dram);
 
   rd = tr_R_on(Wfanorn, NCH, 1, is_dram);
   c_intrinsic = 2 * drain_C_(Wfanorn, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
@@ -1073,13 +1172,18 @@ double Mat::compute_cam_delay(double inrisetime) {
 
   // leakage in one subarray
   double Iport =
-      cmos_Isub_leakage(g_tp.cam.cell_a_w, 0, 1, nmos, false,
+      cmos_Isub_leakage(g_tp.cam.cell_a_w,
+                        0,
+                        1,
+                        nmos,
+                        false,
                         true); // TODO: how much is the idle time? just by *2?
   double Iport_erp =
       cmos_Isub_leakage(g_tp.cam.cell_a_w, 0, 2, nmos, false, true);
-  double Icell = cmos_Isub_leakage(g_tp.cam.cell_nmos_w, g_tp.cam.cell_pmos_w,
-                                   1, inv, false, true) *
-                 2;
+  double Icell =
+      cmos_Isub_leakage(
+          g_tp.cam.cell_nmos_w, g_tp.cam.cell_pmos_w, 1, inv, false, true) *
+      2;
   double Icell_comparator =
       cmos_Isub_leakage(Wdummyn, Wdummyn, 1, inv, false, true) *
       2; // approx XOR with Inv
@@ -1120,9 +1224,10 @@ double Mat::compute_cam_delay(double inrisetime) {
   // ports
   double Ig_port_erp =
       cmos_Ig_leakage(g_tp.cam.cell_a_w, 0, 1, nmos, false, true);
-  double Ig_cell = cmos_Ig_leakage(g_tp.cam.cell_nmos_w, g_tp.cam.cell_pmos_w,
-                                   1, inv, false, true) *
-                   2;
+  double Ig_cell =
+      cmos_Ig_leakage(
+          g_tp.cam.cell_nmos_w, g_tp.cam.cell_pmos_w, 1, inv, false, true) *
+      2;
   double Ig_cell_comparator =
       cmos_Ig_leakage(Wdummyn, Wdummyn, 1, inv, false, true) *
       2; // cmos_Ig_leakage(Wdummyn, 0, 2, nmos)*2;
@@ -1174,7 +1279,8 @@ double Mat::width_write_driver_or_write_mux() {
   return width_write_driver_nmos;
 }
 
-double Mat::compute_comparators_height(int tagbits, int number_ways_in_mat,
+double Mat::compute_comparators_height(int tagbits,
+                                       int number_ways_in_mat,
                                        double subarray_mem_cell_area_width) {
   double nand2_area =
       compute_gate_area(NAND, 2, 0, g_tp.w_comp_n, g_tp.cell_h_def);
@@ -1226,13 +1332,17 @@ double Mat::compute_bitline_delay(double inrisetime) {
 
     // Leakage current of an SRAM cell
     double Iport =
-        cmos_Isub_leakage(g_tp.sram.cell_a_w, 0, 1, nmos, false,
+        cmos_Isub_leakage(g_tp.sram.cell_a_w,
+                          0,
+                          1,
+                          nmos,
+                          false,
                           true); // TODO: how much is the idle time? just by *2?
     double Iport_erp =
         cmos_Isub_leakage(g_tp.sram.cell_a_w, 0, 2, nmos, false, true);
     double Icell =
-        cmos_Isub_leakage(g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, inv,
-                          false, true) *
+        cmos_Isub_leakage(
+            g_tp.sram.cell_nmos_w, g_tp.sram.cell_pmos_w, 1, inv, false, true) *
         2; // two invs per cell
 
     leak_power_cc_inverters_sram_cell = Icell * g_tp.sram_cell.Vdd;
@@ -1271,27 +1381,43 @@ double Mat::compute_bitline_delay(double inrisetime) {
     gate_leak_power_RD_port_sram_cell = Ig_port_erp * g_tp.sram_cell.Vdd;
   }
 
-  double C_drain_bit_mux = drain_C_(
-      g_tp.w_nmos_b_mux, NCH, 1, 0,
-      camFlag ? cam_cell.w : cell.w / (2 * (RWP + ERP + SCHP)), is_dram);
+  double C_drain_bit_mux =
+      drain_C_(g_tp.w_nmos_b_mux,
+               NCH,
+               1,
+               0,
+               camFlag ? cam_cell.w : cell.w / (2 * (RWP + ERP + SCHP)),
+               is_dram);
   double R_bit_mux = tr_R_on(g_tp.w_nmos_b_mux, NCH, 1, is_dram);
   double C_drain_sense_amp_iso = drain_C_(
-      g_tp.w_iso, PCH, 1, 0,
+      g_tp.w_iso,
+      PCH,
+      1,
+      0,
       camFlag ? cam_cell.w : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
       is_dram);
   double R_sense_amp_iso = tr_R_on(g_tp.w_iso, PCH, 1, is_dram);
   double C_sense_amp_latch =
       gate_C(g_tp.w_sense_p + g_tp.w_sense_n, 0, is_dram) +
-      drain_C_(g_tp.w_sense_n, NCH, 1, 0,
+      drain_C_(g_tp.w_sense_n,
+               NCH,
+               1,
+               0,
                camFlag ? cam_cell.w
                        : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                is_dram) +
-      drain_C_(g_tp.w_sense_p, PCH, 1, 0,
+      drain_C_(g_tp.w_sense_p,
+               PCH,
+               1,
+               0,
                camFlag ? cam_cell.w
                        : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                is_dram);
   double C_drain_sense_amp_mux = drain_C_(
-      g_tp.w_nmos_sa_mux, NCH, 1, 0,
+      g_tp.w_nmos_sa_mux,
+      NCH,
+      1,
+      0,
       camFlag ? cam_cell.w : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
       is_dram);
 
@@ -1479,19 +1605,31 @@ double Mat::compute_sa_delay(double inrisetime) {
   // sensitive to both the output time
   // constant as well as the magnitude of input differential voltage.
   double C_ld = gate_C(g_tp.w_sense_p + g_tp.w_sense_n, 0, is_dram) +
-                drain_C_(g_tp.w_sense_n, NCH, 1, 0,
+                drain_C_(g_tp.w_sense_n,
+                         NCH,
+                         1,
+                         0,
                          camFlag ? cam_cell.w
                                  : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                          is_dram) +
-                drain_C_(g_tp.w_sense_p, PCH, 1, 0,
+                drain_C_(g_tp.w_sense_p,
+                         PCH,
+                         1,
+                         0,
                          camFlag ? cam_cell.w
                                  : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                          is_dram) +
-                drain_C_(g_tp.w_iso, PCH, 1, 0,
+                drain_C_(g_tp.w_iso,
+                         PCH,
+                         1,
+                         0,
                          camFlag ? cam_cell.w
                                  : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                          is_dram) +
-                drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0,
+                drain_C_(g_tp.w_nmos_sa_mux,
+                         NCH,
+                         1,
+                         0,
                          camFlag ? cam_cell.w
                                  : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                          is_dram);
@@ -1524,7 +1662,10 @@ double Mat::compute_subarray_out_drv(double inrisetime) {
   rd = tr_R_on(g_tp.w_nmos_sa_mux, NCH, 1, is_dram);
   C_ld =
       dp.Ndsam_lev_1 *
-          drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0,
+          drain_C_(g_tp.w_nmos_sa_mux,
+                   NCH,
+                   1,
+                   0,
                    camFlag ? cam_cell.w
                            : cell.w * deg_bl_muxing / (RWP + ERP + SCHP),
                    is_dram) +
@@ -1545,8 +1686,8 @@ double Mat::compute_subarray_out_drv(double inrisetime) {
   rd = tr_R_on(g_tp.min_w_nmos_, NCH, 1, is_dram);
   C_ld =
       drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
-      drain_C_(p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def,
-               is_dram) +
+      drain_C_(
+          p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def, is_dram) +
       gate_C(g_tp.min_w_nmos_ + p_to_n_sz_r * g_tp.min_w_nmos_, 0.0, is_dram);
   tf = rd * C_ld;
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
@@ -1555,28 +1696,32 @@ double Mat::compute_subarray_out_drv(double inrisetime) {
   power_subarray_out_drv.readOp.dynamic +=
       C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
   power_subarray_out_drv.readOp.leakage +=
-      cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                        inv, is_dram) *
+      cmos_Isub_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv, is_dram) *
       g_tp.peri_global.Vdd;
   power_subarray_out_drv.readOp.power_gated_leakage +=
-      cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                        inv, is_dram) *
+      cmos_Isub_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv, is_dram) *
       g_tp.peri_global.Vcc_min;
   power_subarray_out_drv.readOp.gate_leakage +=
-      cmos_Ig_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                      inv) *
+      cmos_Ig_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv) *
       g_tp.peri_global.Vdd;
 
   // inverter driving drain of pass transistor of second level of sense-amp mux.
   rd = tr_R_on(g_tp.min_w_nmos_, NCH, 1, is_dram);
-  C_ld = drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
-         drain_C_(p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def,
-                  is_dram) +
-         drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0,
-                  camFlag ? cam_cell.w
-                          : cell.w * deg_bl_muxing * dp.Ndsam_lev_1 /
-                                (RWP + ERP + SCHP),
-                  is_dram);
+  C_ld =
+      drain_C_(g_tp.min_w_nmos_, NCH, 1, 1, g_tp.cell_h_def, is_dram) +
+      drain_C_(
+          p_to_n_sz_r * g_tp.min_w_nmos_, PCH, 1, 1, g_tp.cell_h_def, is_dram) +
+      drain_C_(g_tp.w_nmos_sa_mux,
+               NCH,
+               1,
+               0,
+               camFlag ? cam_cell.w
+                       : cell.w * deg_bl_muxing * dp.Ndsam_lev_1 /
+                             (RWP + ERP + SCHP),
+               is_dram);
   tf = rd * C_ld;
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
   delay_subarray_out_drv += this_delay;
@@ -1584,22 +1729,25 @@ double Mat::compute_subarray_out_drv(double inrisetime) {
   power_subarray_out_drv.readOp.dynamic +=
       C_ld * 0.5 * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd;
   power_subarray_out_drv.readOp.leakage +=
-      cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                        inv) *
+      cmos_Isub_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv) *
       g_tp.peri_global.Vdd;
   power_subarray_out_drv.readOp.power_gated_leakage +=
-      cmos_Isub_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                        inv, is_dram) *
+      cmos_Isub_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv, is_dram) *
       g_tp.peri_global.Vcc_min;
   power_subarray_out_drv.readOp.gate_leakage +=
-      cmos_Ig_leakage(g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1,
-                      inv) *
+      cmos_Ig_leakage(
+          g_tp.min_w_nmos_, p_to_n_sz_r * g_tp.min_w_nmos_, 1, inv) *
       g_tp.peri_global.Vdd;
 
   // delay of signal through pass-transistor to input of subarray output driver.
   rd = tr_R_on(g_tp.w_nmos_sa_mux, NCH, 1, is_dram);
   C_ld = dp.Ndsam_lev_2 *
-             drain_C_(g_tp.w_nmos_sa_mux, NCH, 1, 0,
+             drain_C_(g_tp.w_nmos_sa_mux,
+                      NCH,
+                      1,
+                      0,
                       camFlag ? cam_cell.w
                               : cell.w * deg_bl_muxing * dp.Ndsam_lev_1 /
                                     (RWP + ERP + SCHP),
@@ -1610,7 +1758,8 @@ double Mat::compute_subarray_out_drv(double inrisetime) {
                     (subarray_out_wire->wire_length /
                      subarray_out_wire->repeater_spacing) *
                     g_tp.min_w_nmos_ * (1 + p_to_n_sz_r),
-                0.0, is_dram);
+                0.0,
+                is_dram);
   tf = rd * C_ld;
   this_delay = horowitz(inrisetime, tf, 0.5, 0.5, RISE);
   delay_subarray_out_drv += this_delay;
@@ -1648,9 +1797,10 @@ double Mat::compute_comparator_delay(double inrisetime) {
 
   // For each degree of associativity
   // there are 4 such quarter comparators
-  double lkgCurrent = cmos_Isub_leakage(g_tp.w_comp_inv_n1, g_tp.w_comp_inv_p1,
-                                        1, inv, is_dram) *
-                      4 * A;
+  double lkgCurrent =
+      cmos_Isub_leakage(
+          g_tp.w_comp_inv_n1, g_tp.w_comp_inv_p1, 1, inv, is_dram) *
+      4 * A;
   double gatelkgCurrent =
       cmos_Ig_leakage(g_tp.w_comp_inv_n1, g_tp.w_comp_inv_p1, 1, inv, is_dram) *
       4 * A;
@@ -1664,8 +1814,8 @@ double Mat::compute_comparator_delay(double inrisetime) {
   nextinputtime = st2del / (1.0 - VTHCOMPINV);
   power_comparator.readOp.dynamic +=
       0.5 * Ceq * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A;
-  lkgCurrent += cmos_Isub_leakage(g_tp.w_comp_inv_n2, g_tp.w_comp_inv_p2, 1,
-                                  inv, is_dram) *
+  lkgCurrent += cmos_Isub_leakage(
+                    g_tp.w_comp_inv_n2, g_tp.w_comp_inv_p2, 1, inv, is_dram) *
                 4 * A;
   gatelkgCurrent +=
       cmos_Ig_leakage(g_tp.w_comp_inv_n2, g_tp.w_comp_inv_p2, 1, inv, is_dram) *
@@ -1681,8 +1831,8 @@ double Mat::compute_comparator_delay(double inrisetime) {
   nextinputtime = st3del / (VTHEVALINV);
   power_comparator.readOp.dynamic +=
       0.5 * Ceq * g_tp.peri_global.Vdd * g_tp.peri_global.Vdd * 4 * A;
-  lkgCurrent += cmos_Isub_leakage(g_tp.w_comp_inv_n3, g_tp.w_comp_inv_p3, 1,
-                                  inv, is_dram) *
+  lkgCurrent += cmos_Isub_leakage(
+                    g_tp.w_comp_inv_n3, g_tp.w_comp_inv_p3, 1, inv, is_dram) *
                 4 * A;
   gatelkgCurrent +=
       cmos_Ig_leakage(g_tp.w_comp_inv_n3, g_tp.w_comp_inv_p3, 1, inv, is_dram) *

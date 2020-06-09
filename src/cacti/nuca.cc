@@ -66,8 +66,17 @@ void Nuca::init_cont() {
               cont_stats[i /*l2 or l3*/][j /*core*/]
                         [k /*64 or 128 or 256 link bw*/][l /* no banks*/];
           assert(fscanf(cont, "%[^\n]\n", line) != EOF);
-          sscanf(line, "%[^:]: %d %d %d %d %d %d %d %d", jk, &temp[0], &temp[1],
-                 &temp[2], &temp[3], &temp[4], &temp[5], &temp[6], &temp[7]);
+          sscanf(line,
+                 "%[^:]: %d %d %d %d %d %d %d %d",
+                 jk,
+                 &temp[0],
+                 &temp[1],
+                 &temp[2],
+                 &temp[3],
+                 &temp[4],
+                 &temp[5],
+                 &temp[6],
+                 &temp[7]);
         }
       }
     }
@@ -429,7 +438,8 @@ void Nuca::print_nuca(nuca_org_t *fr) {
   printf("Optimal number of banks - %d\n", fr->bank_count);
   printf("Grid organization rows x columns - %d x %d\n", fr->rows, fr->columns);
   printf("Network frequency - %g GHz\n", (1 / fr->nuca_pda.cycle_time) * 1e3);
-  printf("Cache dimension (mm x mm) - %g x %g\n", fr->nuca_pda.area.h * 1e-3,
+  printf("Cache dimension (mm x mm) - %g x %g\n",
+         fr->nuca_pda.area.h * 1e-3,
          fr->nuca_pda.area.w * 1e-3);
 
   fr->router->print_router();
@@ -487,13 +497,16 @@ nuca_org_t *Nuca::find_optimal_nuca(list<nuca_org_t *> *n,
   list<nuca_org_t *>::iterator niter;
 
   for (niter = n->begin(); niter != n->end(); niter++) {
-    fprintf(stderr, "\n-----------------------------"
-                    "---------------\n");
+    fprintf(stderr,
+            "\n-----------------------------"
+            "---------------\n");
 
     printf("NUCA___stats %d \tbankcount: lat = %g \tdynP = %g \twt = %d\t "
            "bank_dpower = %g \tleak = %g \tcycle = %g\n",
-           (*niter)->bank_count, (*niter)->nuca_pda.delay,
-           (*niter)->nuca_pda.power.readOp.dynamic, (*niter)->h_wire->wt,
+           (*niter)->bank_count,
+           (*niter)->nuca_pda.delay,
+           (*niter)->nuca_pda.power.readOp.dynamic,
+           (*niter)->h_wire->wt,
            (*niter)->bank_pda.power.readOp.dynamic,
            (*niter)->nuca_pda.power.readOp.leakage,
            (*niter)->nuca_pda.cycle_time);

@@ -606,7 +606,7 @@ typedef struct {
 
 class ParseXML {
 public:
-  void parse(char *filepath);
+  void parse(std::string filepath);
   void initialize();
 
 public:

@@ -73,7 +73,8 @@
  *
  */
 
-MCBackend::MCBackend(InputParameter *interface_ip_, const MCParam &mcp_,
+MCBackend::MCBackend(InputParameter *interface_ip_,
+                     const MCParam &mcp_,
                      enum MemoryCtrl_type mc_type_)
     : l_ip(*interface_ip_), mc_type(mc_type_), mcp(mcp_) {
 
@@ -115,12 +116,16 @@ void MCBackend::compute() {
       power_t.readOp.leakage =
           area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
           cmos_Isub_leakage(g_tp.min_w_nmos_,
-                            g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                            g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                            1,
+                            inv) *
           g_tp.peri_global.Vdd; // unit W
       power_t.readOp.gate_leakage =
           area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(g_tp.min_w_nmos_,
-                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
+                          inv) *
           g_tp.peri_global.Vdd; // unit W
 
     } else {
@@ -158,12 +163,16 @@ void MCBackend::compute() {
     power_t.readOp.leakage =
         area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
         cmos_Isub_leakage(g_tp.min_w_nmos_,
-                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
+                          inv) *
         g_tp.peri_global.Vdd; // unit W
     power_t.readOp.gate_leakage =
         area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
         cmos_Ig_leakage(g_tp.min_w_nmos_,
-                        g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                        g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                        1,
+                        inv) *
         g_tp.peri_global.Vdd; // unit W
     power_t.readOp.dynamic *= 1.2;
     power_t.readOp.leakage *= 1.2;
@@ -213,7 +222,8 @@ void MCBackend::computeEnergy(bool is_tdp) {
   }
 }
 
-MCPHY::MCPHY(InputParameter *interface_ip_, const MCParam &mcp_,
+MCPHY::MCPHY(InputParameter *interface_ip_,
+             const MCParam &mcp_,
              enum MemoryCtrl_type mc_type_)
     : l_ip(*interface_ip_), mc_type(mc_type_), mcp(mcp_) {
 
@@ -252,12 +262,16 @@ void MCPHY::compute() {
       power_t.readOp.leakage =
           area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
           cmos_Isub_leakage(g_tp.min_w_nmos_,
-                            g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                            g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                            1,
+                            inv) *
           g_tp.peri_global.Vdd; // unit W
       power_t.readOp.gate_leakage =
           area.get_area() / 2 * (g_tp.scaling_factor.core_tx_density) *
           cmos_Ig_leakage(g_tp.min_w_nmos_,
-                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r, 1, inv) *
+                          g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
+                          1,
+                          inv) *
           g_tp.peri_global.Vdd; // unit W
 
     } else {
@@ -350,8 +364,10 @@ void MCPHY::computeEnergy(bool is_tdp) {
   }
 }
 
-MCFrontEnd::MCFrontEnd(ParseXML *XML_interface, InputParameter *interface_ip_,
-                       const MCParam &mcp_, enum MemoryCtrl_type mc_type_)
+MCFrontEnd::MCFrontEnd(ParseXML *XML_interface,
+                       InputParameter *interface_ip_,
+                       const MCParam &mcp_,
+                       enum MemoryCtrl_type mc_type_)
     : XML(XML_interface), interface_ip(*interface_ip_), mc_type(mc_type_),
       mcp(mcp_), MC_arb(0), frontendBuffer(0), readBuffer(0), writeBuffer(0) {
   /* All computations are for a single MC
@@ -404,9 +420,11 @@ MCFrontEnd::MCFrontEnd(ParseXML *XML_interface, InputParameter *interface_ip_,
   // selection and arbitration logic
   interface_ip.assoc =
       1; // reset to prevent unnecessary warning messages when init_interface
-  MC_arb =
-      new selection_logic(is_default, XML->sys.mc.req_window_size_per_channel,
-                          1, &interface_ip, Uncore_device);
+  MC_arb = new selection_logic(is_default,
+                               XML->sys.mc.req_window_size_per_channel,
+                               1,
+                               &interface_ip,
+                               Uncore_device);
 
   // read buffers.
   data = (int)ceil(mcp.dataBusWidth / 8.0); // Support key words first operation

@@ -37,13 +37,21 @@
 #include <assert.h>
 #include <iostream>
 
-interconnect::interconnect(string name_, enum Device_ty device_ty_,
-                           double base_w, double base_h, int data_w, double len,
+interconnect::interconnect(string name_,
+                           enum Device_ty device_ty_,
+                           double base_w,
+                           double base_h,
+                           int data_w,
+                           double len,
                            const InputParameter *configure_interface,
-                           int start_wiring_level_, bool pipelinable_,
-                           double route_over_perc_, bool opt_local_,
-                           enum Core_type core_ty_, enum Wire_type wire_model,
-                           double width_s, double space_s,
+                           int start_wiring_level_,
+                           bool pipelinable_,
+                           double route_over_perc_,
+                           bool opt_local_,
+                           enum Core_type core_ty_,
+                           enum Wire_type wire_model,
+                           double width_s,
+                           double space_s,
                            TechnologyParameter::DeviceType *dt)
     : name(name_), device_ty(device_ty_), in_rise_time(0), out_rise_time(0),
       base_width(base_w), base_height(base_h), data_width(data_w),
