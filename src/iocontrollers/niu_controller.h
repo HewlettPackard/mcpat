@@ -27,63 +27,39 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
+ * Author:
+ *    Andrew Smith
  ***************************************************************************/
-#ifndef IOCONTROLLERS_H_
-#define IOCONTROLLERS_H_
-
-#endif /* IOCONTROLLERS_H_ */
+#ifndef __NIU_CONTROLLER_H__
+#define __NIU_CONTROLLER_H__
 
 #include "XML_Parse.h"
-#include "parameter.h"
-//#include "io.h"
 #include "array.h"
-//#include "Undifferentiated_Core_Area.h"
 #include "basic_components.h"
+#include "parameter.h"
 
 #include <vector>
 
 class NIUController : public Component {
 public:
-  ParseXML *XML;
-  InputParameter interface_ip;
+  InputParameter ip;
   NIUParam niup;
   powerDef power_t;
   uca_org_t local_result;
-  NIUController(ParseXML *XML_interface, InputParameter *interface_ip_);
-  void set_niu_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~NIUController(){};
+
+  NIUController();
+  void set_params(const ParseXML *XML, InputParameter *interface_ip);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
 };
 
-#if 0
-class PCIeController : public Component {
-public:
-  ParseXML *XML;
-  InputParameter interface_ip;
-  PCIeParam pciep;
-  powerDef power_t;
-  uca_org_t local_result;
-  PCIeController(ParseXML *XML_interface, InputParameter *interface_ip_);
-  void set_pcie_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~PCIeController(){};
-};
-#endif
-
-#if 0
-class FlashController : public Component {
-public:
-  ParseXML *XML;
-  InputParameter interface_ip;
-  MCParam fcp;
-  powerDef power_t;
-  uca_org_t local_result;
-  FlashController(ParseXML *XML_interface, InputParameter *interface_ip_);
-  void set_fc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~FlashController(){};
-};
-#endif
+#endif // __NIU_CONTROLLER_H__

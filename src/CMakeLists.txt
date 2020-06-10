@@ -12,8 +12,6 @@ add_library(top
   globalvar.h
   interconnect.h
   interconnect.cc
-  iocontrollers.h
-  iocontrollers.cc
   logic.h
   logic.cc
   noc.h

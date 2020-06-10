@@ -39,8 +39,8 @@
 #include "core.h"
 #include "decoder.h"
 #include "flash_controller.h"
-#include "iocontrollers.h"
 #include "memoryctrl.h"
+#include "niu_controller.h"
 #include "noc.h"
 #include "parameter.h"
 #include "pcie_controller.h"
@@ -59,7 +59,7 @@ public:
   vector<SharedCache *> l2dirarray;
   vector<NoC *> nocs;
   MemoryController *mc;
-  NIUController *niu;
+  NIUController niu;
   PCIeController pcie;
   FlashController flashcontroller;
   InputParameter interface_ip;

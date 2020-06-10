@@ -47,7 +47,7 @@
 
 Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface), // TODO: using one global copy may have problems.
-      mc(nullptr), niu(nullptr) {
+      mc(nullptr) {
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
@@ -359,26 +359,28 @@ Processor::Processor(ParseXML *XML_interface)
   }
 
   if (XML->sys.niu.number_units > 0) {
-    niu = new NIUController(XML, &interface_ip);
-    niu->computeEnergy();
-    niu->computeEnergy(false);
+    niu.set_params(XML, &interface_ip);
+    niu.computeArea();
+    niu.computeStaticPower();
     nius.area.set_area(nius.area.get_area() +
-                       niu->area.get_area() * XML->sys.niu.number_units);
+                       niu.area.get_area() * XML->sys.niu.number_units);
     area.set_area(area.get_area() +
-                  niu->area.get_area() * XML->sys.niu.number_units);
+                  niu.area.get_area() * XML->sys.niu.number_units);
     set_pppm(pppm_t,
-             XML->sys.niu.number_units * niu->niup.clockRate,
+             XML->sys.niu.number_units * niu.niup.clockRate,
              XML->sys.niu.number_units,
              XML->sys.niu.number_units,
              XML->sys.niu.number_units);
-    nius.power = niu->power * pppm_t;
+    niu.set_stats(XML);
+    niu.computeDynamicPower();
+    nius.power = niu.power * pppm_t;
     power = power + nius.power;
     set_pppm(pppm_t,
-             XML->sys.niu.number_units * niu->niup.clockRate,
+             XML->sys.niu.number_units * niu.niup.clockRate,
              XML->sys.niu.number_units,
              XML->sys.niu.number_units,
              XML->sys.niu.number_units);
-    nius.rt_power = niu->rt_power * pppm_t;
+    nius.rt_power = niu.rt_power * pppm_t;
     rt_power = rt_power + nius.rt_power;
   }
 
@@ -834,7 +836,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       cout << endl;
     }
     if (XML->sys.niu.number_units > 0) {
-      cout << indent_str << "Total NIUs: " << niu->niup.num_units
+      cout << indent_str << "Total NIUs: " << niu.niup.num_units
            << " Network Interface Units " << endl;
       displayDeviceType(XML->sys.device_type, indent);
       cout << indent_str_next << "Area = " << nius.area.get_area() * 1e-6
@@ -936,7 +938,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << endl;
       }
       if (XML->sys.niu.number_units > 0) {
-        niu->displayEnergy(indent + 4, is_tdp);
+        niu.display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -1112,9 +1114,5 @@ Processor::~Processor() {
   if (mc) {
     delete mc;
     mc = nullptr;
-  }
-  if (niu) {
-    delete niu;
-    niu = nullptr;
   }
 };
