@@ -437,6 +437,7 @@ void PCIeController::set_pcie_param() {
   // XML->sys.total_cycles/(XML->sys.target_core_clockrate*1e6);
 }
 
+#if 0
 FlashController::FlashController(ParseXML *XML_interface,
                                  InputParameter *interface_ip_)
     : XML(XML_interface), interface_ip(*interface_ip_) {
@@ -578,3 +579,4 @@ void FlashController::set_fc_param() {
     interface_ip.user_defined_vcc_min = XML->sys.flashc.power_gating_vcc;
   }
 }
+#endif

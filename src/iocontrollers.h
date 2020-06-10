@@ -70,6 +70,7 @@ public:
   ~PCIeController(){};
 };
 
+#if 0
 class FlashController : public Component {
 public:
   ParseXML *XML;
@@ -83,3 +84,4 @@ public:
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~FlashController(){};
 };
+#endif

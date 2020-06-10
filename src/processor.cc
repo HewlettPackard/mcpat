@@ -47,7 +47,7 @@
 
 Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface), // TODO: using one global copy may have problems.
-      mc(nullptr), niu(nullptr), pcie(nullptr), flashcontroller(nullptr) {
+      mc(nullptr), niu(nullptr), pcie(nullptr) {
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
@@ -340,19 +340,21 @@ Processor::Processor(ParseXML *XML_interface)
 
   if (XML->sys.flashc.number_mcs > 0) // flash controller
   {
-    flashcontroller = new FlashController(XML, &interface_ip);
-    flashcontroller->computeEnergy();
-    flashcontroller->computeEnergy(false);
-    double number_fcs = flashcontroller->fcp.num_mcs;
+    flashcontroller.set_params(XML, &interface_ip);
+    flashcontroller.set_stats(XML);
+    flashcontroller.computeArea();
+    flashcontroller.computeStaticPower();
+    flashcontroller.computeDynamicPower();
+    double number_fcs = flashcontroller.fcp.num_mcs;
     flashcontrollers.area.set_area(flashcontrollers.area.get_area() +
-                                   flashcontroller->area.get_area() *
+                                   flashcontroller.area.get_area() *
                                        number_fcs);
     area.set_area(area.get_area() + flashcontrollers.area.get_area());
     set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
-    flashcontrollers.power = flashcontroller->power * pppm_t;
+    flashcontrollers.power = flashcontroller.power * pppm_t;
     power = power + flashcontrollers.power;
     set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
-    flashcontrollers.rt_power = flashcontroller->rt_power * pppm_t;
+    flashcontrollers.rt_power = flashcontroller.rt_power * pppm_t;
     rt_power = rt_power + flashcontrollers.rt_power;
   }
 
@@ -799,7 +801,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     }
     if (XML->sys.flashc.number_mcs > 0) {
       cout << indent_str
-           << "Total Flash/SSD Controllers: " << flashcontroller->fcp.num_mcs
+           << "Total Flash/SSD Controllers: " << flashcontroller.fcp.num_mcs
            << " Flash/SSD Controllers " << endl;
       displayDeviceType(XML->sys.device_type, indent);
       cout << indent_str_next
@@ -925,7 +927,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
       if (XML->sys.flashc.number_mcs > 0 &&
           XML->sys.flashc.memory_channels_per_mc > 0) {
-        flashcontroller->displayEnergy(indent + 4, is_tdp);
+        flashcontroller.display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -1115,9 +1117,5 @@ Processor::~Processor() {
   if (pcie) {
     delete pcie;
     pcie = nullptr;
-  }
-  if (flashcontroller) {
-    delete flashcontroller;
-    flashcontroller = nullptr;
   }
 };
