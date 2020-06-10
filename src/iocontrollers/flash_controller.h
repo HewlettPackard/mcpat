@@ -30,8 +30,8 @@
  * Author:
  *    Andrew Smith
  ***************************************************************************/
-#ifndef __FLASHCONTROLLER_H__
-#define __FLASHCONTROLLER_H__
+#ifndef __FLASH_CONTROLLER_H__
+#define __FLASH_CONTROLLER_H__
 
 #include "XML_Parse.h"
 #include "array.h"
@@ -48,7 +48,7 @@ public:
   uca_org_t local_result;
 
   FlashController();
-  void set_params(const ParseXML *XML, InputParameter *ip);
+  void set_params(const ParseXML *XML, InputParameter *interface_ip);
   void set_stats(const ParseXML *XML);
   void computeArea();
   void computeStaticPower();

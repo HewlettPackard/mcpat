@@ -31,7 +31,7 @@
  *    Andrew Smith
  ***************************************************************************/
 
-#include "flashcontroller.h"
+#include "flash_controller.h"
 
 #include "XML_Parse.h"
 #include "basic_circuit.h"

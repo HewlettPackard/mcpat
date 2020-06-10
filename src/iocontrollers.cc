@@ -260,6 +260,7 @@ void NIUController::set_niu_param() {
   // XML->sys.total_cycles/(XML->sys.target_core_clockrate*1e6);
 }
 
+#if 0
 PCIeController::PCIeController(ParseXML *XML_interface,
                                InputParameter *interface_ip_)
     : XML(XML_interface), interface_ip(*interface_ip_) {
@@ -436,6 +437,7 @@ void PCIeController::set_pcie_param() {
   //	  pciep.executionTime   =
   // XML->sys.total_cycles/(XML->sys.target_core_clockrate*1e6);
 }
+#endif
 
 #if 0
 FlashController::FlashController(ParseXML *XML_interface,

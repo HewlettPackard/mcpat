@@ -47,7 +47,7 @@
 
 Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface), // TODO: using one global copy may have problems.
-      mc(nullptr), niu(nullptr), pcie(nullptr) {
+      mc(nullptr), niu(nullptr) {
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
@@ -383,26 +383,29 @@ Processor::Processor(ParseXML *XML_interface)
   }
 
   if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-    pcie = new PCIeController(XML, &interface_ip);
-    pcie->computeEnergy();
-    pcie->computeEnergy(false);
+    pcie.set_params(XML, &interface_ip);
+    pcie.computeArea();
     pcies.area.set_area(pcies.area.get_area() +
-                        pcie->area.get_area() * XML->sys.pcie.number_units);
+                        pcie.area.get_area() * XML->sys.pcie.number_units);
     area.set_area(area.get_area() +
-                  pcie->area.get_area() * XML->sys.pcie.number_units);
+                  pcie.area.get_area() * XML->sys.pcie.number_units);
     set_pppm(pppm_t,
-             XML->sys.pcie.number_units * pcie->pciep.clockRate,
+             XML->sys.pcie.number_units * pcie.pciep.clockRate,
              XML->sys.pcie.number_units,
              XML->sys.pcie.number_units,
              XML->sys.pcie.number_units);
-    pcies.power = pcie->power * pppm_t;
+
+    pcie.set_stats(XML);
+    pcie.computeStaticPower();
+    pcie.computeDynamicPower();
+    pcies.power = pcie.power * pppm_t;
     power = power + pcies.power;
     set_pppm(pppm_t,
-             XML->sys.pcie.number_units * pcie->pciep.clockRate,
+             XML->sys.pcie.number_units * pcie.pciep.clockRate,
              XML->sys.pcie.number_units,
              XML->sys.pcie.number_units,
              XML->sys.pcie.number_units);
-    pcies.rt_power = pcie->rt_power * pppm_t;
+    pcies.rt_power = pcie.rt_power * pppm_t;
     rt_power = rt_power + pcies.rt_power;
   }
 
@@ -857,7 +860,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       cout << endl;
     }
     if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-      cout << indent_str << "Total PCIes: " << pcie->pciep.num_units
+      cout << indent_str << "Total PCIes: " << pcie.pciep.num_units
            << " PCIe Controllers " << endl;
       displayDeviceType(XML->sys.device_type, indent);
       cout << indent_str_next << "Area = " << pcies.area.get_area() * 1e-6
@@ -939,7 +942,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << endl;
       }
       if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-        pcie->displayEnergy(indent + 4, is_tdp);
+        pcie.display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -1113,9 +1116,5 @@ Processor::~Processor() {
   if (niu) {
     delete niu;
     niu = nullptr;
-  }
-  if (pcie) {
-    delete pcie;
-    pcie = nullptr;
   }
 };

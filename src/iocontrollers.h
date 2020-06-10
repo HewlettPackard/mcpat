@@ -56,6 +56,7 @@ public:
   ~NIUController(){};
 };
 
+#if 0
 class PCIeController : public Component {
 public:
   ParseXML *XML;
@@ -69,6 +70,7 @@ public:
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~PCIeController(){};
 };
+#endif
 
 #if 0
 class FlashController : public Component {
