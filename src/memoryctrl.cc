@@ -73,6 +73,7 @@
  *
  */
 
+#if 0
 MCBackend::MCBackend(InputParameter *interface_ip_,
                      const MCParam &mcp_,
                      enum MemoryCtrl_type mc_type_)
@@ -221,6 +222,7 @@ void MCBackend::computeEnergy(bool is_tdp) {
     // refreshing and scrubbing
   }
 }
+#endif
 
 MCPHY::MCPHY(InputParameter *interface_ip_,
              const MCParam &mcp_,
@@ -701,7 +703,7 @@ MemoryController::MemoryController(ParseXML *XML_interface,
                                    InputParameter *interface_ip_,
                                    enum MemoryCtrl_type mc_type_)
     : XML(XML_interface), interface_ip(*interface_ip_), mc_type(mc_type_),
-      frontend(0), transecEngine(0), PHY(0), pipeLogic(0) {
+      frontend(0), PHY(0), pipeLogic(0) {
   /* All computations are for a single MC
    *
    */
@@ -709,84 +711,43 @@ MemoryController::MemoryController(ParseXML *XML_interface,
   interface_ip.wire_os_mat_type = 2;
   interface_ip.wt = Global;
   set_mc_param();
+  transecEngine.set_params(XML, mcp, &interface_ip, mc_type);
+  transecEngine.set_stats(mcp);
+  transecEngine.computeArea();
+  transecEngine.computeStaticPower();
   frontend = new MCFrontEnd(XML, &interface_ip, mcp, mc_type);
   area.set_area(area.get_area() + frontend->area.get_area());
-  transecEngine = new MCBackend(&interface_ip, mcp, mc_type);
-  area.set_area(area.get_area() + transecEngine->area.get_area());
+  area.set_area(area.get_area() + transecEngine.area.get_area());
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
     PHY = new MCPHY(&interface_ip, mcp, mc_type);
     area.set_area(area.get_area() + PHY->area.get_area());
   }
-  //+++++++++Transaction engine +++++++++++++++++ ////TODO needs better numbers,
-  // Run the RTL code from OpenSparc.
-  //  transecEngine.initialize(&interface_ip);
-  //  transecEngine.peakDataTransferRate = XML->sys.mem.peak_transfer_rate;
-  //  transecEngine.memDataWidth = dataBusWidth;
-  //  transecEngine.memRank = XML->sys.mem.number_ranks;
-  //  //transecEngine.memAccesses=XML->sys.mc.memory_accesses;
-  //  //transecEngine.llcBlocksize=llcBlockSize;
-  //  transecEngine.compute();
-  //  transecEngine.area.set_area(XML->sys.mc.memory_channels_per_mc*transecEngine.area.get_area())
-  //  ; area.set_area(area.get_area()+ transecEngine.area.get_area());
-  //  ///cout<<"area="<<area<<endl;
-  ////
-  //  //++++++++++++++PHY ++++++++++++++++++++++++++ //TODO needs better numbers
-  //  PHY.initialize(&interface_ip);
-  //  PHY.peakDataTransferRate = XML->sys.mem.peak_transfer_rate;
-  //  PHY.memDataWidth = dataBusWidth;
-  //  //PHY.memAccesses=PHY.peakDataTransferRate;//this is the max power
-  //  //PHY.llcBlocksize=llcBlockSize;
-  //  PHY.compute();
-  //  PHY.area.set_area(XML->sys.mc.memory_channels_per_mc*PHY.area.get_area())
-  //  ; area.set_area(area.get_area()+ PHY.area.get_area());
-  /// cout<<"area="<<area<<endl;
-  //
-  //  interface_ip.pipeline_stages = 5;//normal memory controller has five
-  //  stages in the pipeline. interface_ip.per_stage_vector = addressBusWidth +
-  //  XML->sys.core[0].opcode_width + dataBusWidth; pipeLogic = new
-  //  pipeline(is_default, &interface_ip);
-  //  //pipeLogic.init_pipeline(is_default, &interface_ip);
-  //  pipeLogic->compute_pipeline();
-  //  area.set_area(area.get_area()+ pipeLogic->area.get_area()*1e-6);
-  //  area.set_area((area.get_area()+mc_area*1e-6)*1.1);//placement and routing
-  //  overhead
-  //
-  //
-  ////  //clock
-  ////  clockNetwork.init_wire_external(is_default, &interface_ip);
-  ////  clockNetwork.clk_area           =area*1.1;//10% of placement overhead.
-  /// rule of thumb /  clockNetwork.end_wiring_level   =5;//toplevel metal /
-  /// clockNetwork.start_wiring_level =5;//toplevel metal /
-  /// clockNetwork.num_regs = pipeLogic.tot_stage_vector; /
-  /// clockNetwork.optimize_wire();
 }
 void MemoryController::computeEnergy(bool is_tdp) {
-
   frontend->computeEnergy(is_tdp);
-  transecEngine->computeEnergy(is_tdp);
+  transecEngine.computeDynamicPower();
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
     PHY->computeEnergy(is_tdp);
   }
   if (is_tdp) {
-    power = power + frontend->power + transecEngine->power;
+    power = power + frontend->power + transecEngine.power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
       power = power + PHY->power;
     }
   } else {
-    rt_power = rt_power + frontend->rt_power + transecEngine->rt_power;
+    rt_power = rt_power + frontend->rt_power + transecEngine.rt_power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
       rt_power = rt_power + PHY->rt_power;
     }
   }
 }
 
-void MemoryController::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
+void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
   string indent_str(indent, ' ');
   string indent_str_next(indent + 2, ' ');
   bool long_channel = XML->sys.longer_channel_device;
   bool power_gating = XML->sys.power_gating;
-
-  if (is_tdp) {
+  if (enable) {
     cout << "Memory Controller:" << endl;
     cout << indent_str << "Area = " << area.get_area() * 1e-6 << " mm^2"
          << endl;
@@ -808,6 +769,7 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << "Runtime Dynamic = " << rt_power.readOp.dynamic / mcp.executionTime
          << " W" << endl;
     cout << endl;
+
     cout << indent_str << "Front End Engine:" << endl;
     cout << indent_str_next << "Area = " << frontend->area.get_area() * 1e-6
          << " mm^2" << endl;
@@ -832,33 +794,9 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << frontend->rt_power.readOp.dynamic / mcp.executionTime << " W"
          << endl;
     cout << endl;
-    if (plevel > 2) {
-      frontend->displayEnergy(indent + 4, is_tdp);
-    }
-    cout << indent_str << "Transaction Engine:" << endl;
-    cout << indent_str_next
-         << "Area = " << transecEngine->area.get_area() * 1e-6 << " mm^2"
-         << endl;
-    cout << indent_str_next << "Peak Dynamic = "
-         << transecEngine->power.readOp.dynamic * mcp.clockRate << " W" << endl;
-    cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? transecEngine->power.readOp.longer_channel_leakage
-                          : transecEngine->power.readOp.leakage)
-         << " W" << endl;
-    if (power_gating)
-      cout << indent_str_next << "Subthreshold Leakage with power gating = "
-           << (long_channel ? transecEngine->power.readOp
-                                  .power_gated_with_long_channel_leakage
-                            : transecEngine->power.readOp.power_gated_leakage)
-           << " W" << endl;
-    cout << indent_str_next
-         << "Gate Leakage = " << transecEngine->power.readOp.gate_leakage
-         << " W" << endl;
-    cout << indent_str_next << "Runtime Dynamic = "
-         << transecEngine->rt_power.readOp.dynamic / mcp.executionTime << " W"
-         << endl;
-    cout << endl;
+    transecEngine.display(indent, true);
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+      // PHY.display(indent, true);
       cout << indent_str << "PHY:" << endl;
       cout << indent_str_next << "Area = " << PHY->area.get_area() * 1e-6
            << " mm^2" << endl;
@@ -882,18 +820,6 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << PHY->rt_power.readOp.dynamic / mcp.executionTime << " W" << endl;
       cout << endl;
     }
-  } else {
-    cout << "Memory Controller:" << endl;
-    cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-         << endl;
-    cout << indent_str_next
-         << "Peak Dynamic = " << power.readOp.dynamic * mcp.clockRate << " W"
-         << endl;
-    cout << indent_str_next << "Subthreshold Leakage = " << power.readOp.leakage
-         << " W" << endl;
-    cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-         << " W" << endl;
-    cout << endl;
   }
 }
 
@@ -1006,10 +932,6 @@ MemoryController ::~MemoryController() {
   if (frontend) {
     delete frontend;
     frontend = 0;
-  }
-  if (transecEngine) {
-    delete transecEngine;
-    transecEngine = 0;
   }
   if (PHY) {
     delete PHY;

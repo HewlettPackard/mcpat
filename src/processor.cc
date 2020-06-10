@@ -925,7 +925,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
       if (XML->sys.mc.number_mcs > 0 &&
           XML->sys.mc.memory_channels_per_mc > 0) {
-        mc->displayEnergy(indent + 4, is_tdp);
+        mc->displayEnergy(indent + 4);
         cout << "**************************************************************"
                 "***************************"
              << endl;
