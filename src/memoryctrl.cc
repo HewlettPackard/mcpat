@@ -224,6 +224,7 @@ void MCBackend::computeEnergy(bool is_tdp) {
 }
 #endif
 
+#if 0
 MCPHY::MCPHY(InputParameter *interface_ip_,
              const MCParam &mcp_,
              enum MemoryCtrl_type mc_type_)
@@ -365,6 +366,7 @@ void MCPHY::computeEnergy(bool is_tdp) {
                                       mcp.num_mcs * mcp.executionTime;
   }
 }
+#endif
 
 MCFrontEnd::MCFrontEnd(ParseXML *XML_interface,
                        InputParameter *interface_ip_,
@@ -703,7 +705,7 @@ MemoryController::MemoryController(ParseXML *XML_interface,
                                    InputParameter *interface_ip_,
                                    enum MemoryCtrl_type mc_type_)
     : XML(XML_interface), interface_ip(*interface_ip_), mc_type(mc_type_),
-      frontend(0), PHY(0), pipeLogic(0) {
+      frontend(0), pipeLogic(0) {
   /* All computations are for a single MC
    *
    */
@@ -719,25 +721,29 @@ MemoryController::MemoryController(ParseXML *XML_interface,
   area.set_area(area.get_area() + frontend->area.get_area());
   area.set_area(area.get_area() + transecEngine.area.get_area());
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-    PHY = new MCPHY(&interface_ip, mcp, mc_type);
-    area.set_area(area.get_area() + PHY->area.get_area());
+    PHY.set_params(XML, mcp, &interface_ip, mc_type);
+    PHY.set_stats(mcp);
+    PHY.computeArea();
+    PHY.computeStaticPower();
+    area.set_area(area.get_area() + PHY.area.get_area());
   }
 }
+
 void MemoryController::computeEnergy(bool is_tdp) {
   frontend->computeEnergy(is_tdp);
   transecEngine.computeDynamicPower();
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-    PHY->computeEnergy(is_tdp);
+    PHY.computeDynamicPower();
   }
   if (is_tdp) {
     power = power + frontend->power + transecEngine.power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-      power = power + PHY->power;
+      power = power + PHY.power;
     }
   } else {
     rt_power = rt_power + frontend->rt_power + transecEngine.rt_power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-      rt_power = rt_power + PHY->rt_power;
+      rt_power = rt_power + PHY.rt_power;
     }
   }
 }
@@ -796,35 +802,12 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
     cout << endl;
     transecEngine.display(indent, true);
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-      // PHY.display(indent, true);
-      cout << indent_str << "PHY:" << endl;
-      cout << indent_str_next << "Area = " << PHY->area.get_area() * 1e-6
-           << " mm^2" << endl;
-      cout << indent_str_next
-           << "Peak Dynamic = " << PHY->power.readOp.dynamic * mcp.clockRate
-           << " W" << endl;
-      cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? PHY->power.readOp.longer_channel_leakage
-                            : PHY->power.readOp.leakage)
-           << " W" << endl;
-      if (power_gating)
-        cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? PHY->power.readOp.power_gated_with_long_channel_leakage
-                     : PHY->power.readOp.power_gated_leakage)
-             << " W" << endl;
-      cout << indent_str_next
-           << "Gate Leakage = " << PHY->power.readOp.gate_leakage << " W"
-           << endl;
-      cout << indent_str_next << "Runtime Dynamic = "
-           << PHY->rt_power.readOp.dynamic / mcp.executionTime << " W" << endl;
-      cout << endl;
+      PHY.display(indent, true);
     }
   }
 }
 
 void MemoryController::set_mc_param() {
-
   if (mc_type == MC) {
     mcp.clockRate = XML->sys.mc.mc_clock * 2; // DDR double pumped
     mcp.clockRate *= 1e6;
@@ -928,14 +911,9 @@ MCFrontEnd ::~MCFrontEnd() {
 }
 
 MemoryController ::~MemoryController() {
-
   if (frontend) {
     delete frontend;
     frontend = 0;
-  }
-  if (PHY) {
-    delete PHY;
-    PHY = 0;
   }
   if (pipeLogic) {
     delete pipeLogic;
