@@ -29,25 +29,44 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __LOAD_STORE_U_H__
+#define __LOAD_STORE_U_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "datacache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class LoadStoreU : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  CoreDynParam coredynp;
+  enum Cache_policy cache_p;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  double lsq_height;
+  DataCache dcache;
+  ArrayST *LSQ; // it is actually the store queue but for inorder processors it
+                // serves as both loadQ and StoreQ
+  ArrayST *LoadQ;
+  bool exist;
+
+  LoadStoreU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
+             bool exist_ = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~LoadStoreU();
 };
 
-#endif // __DATACACHE_H__
+#endif // __LOAD_STORE_U_H__

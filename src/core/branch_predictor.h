@@ -29,25 +29,43 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __BRANCH_PREDICTOR_H__
+#define __BRANCH_PREDICTOR_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class BranchPredictor : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  CoreDynParam coredynp;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  ArrayST *globalBPT;
+  ArrayST *localBPT;
+  ArrayST *L1_localBPT;
+  ArrayST *L2_localBPT;
+  ArrayST *chooser;
+  ArrayST *RAS;
+  bool exist;
+
+  BranchPredictor(ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exsit = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~BranchPredictor();
 };
 
-#endif // __DATACACHE_H__
+#endif // __BRANCH_PREDICTOR__

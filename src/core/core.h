@@ -29,25 +29,46 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef CORE_H_
+#define CORE_H_
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "branch_predictor.h"
+#include "exec_unit.h"
+#include "instfetch.h"
+#include "interconnect.h"
+#include "loadstore.h"
+#include "logic.h"
+#include "mmu.h"
 #include "parameter.h"
+#include "renaming_unit.h"
+#include "sharedcache.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class Core : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  double clockRate, executionTime;
+  double scktRatio, chip_PR_overhead, macro_PR_overhead;
+  InstFetchU *ifu;
+  LoadStoreU *lsu;
+  MemManU *mmu;
+  EXECU *exu;
+  RENAMINGU *rnu;
+  Pipeline *corepipe;
+  UndiffCore *undiffCore;
+  SharedCache *l2cache;
+  CoreDynParam coredynp;
+  // full_decoder 	inst_decoder;
+  // clock_network	clockNetwork;
+  Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_);
+  void set_core_param();
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~Core();
 };
 
-#endif // __DATACACHE_H__
+#endif /* CORE_H_ */

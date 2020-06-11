@@ -29,25 +29,47 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __INST_FETCH_U_H__
+#define __INST_FETCH_U_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
+#include "branch_predictor.h"
 #include "instcache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class InstFetchU : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  CoreDynParam coredynp;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  enum Cache_policy cache_p;
+  InstCache icache;
+  ArrayST *IB;
+  ArrayST *BTB;
+  BranchPredictor *BPT;
+  inst_decoder *ID_inst;
+  inst_decoder *ID_operand;
+  inst_decoder *ID_misc;
+  bool exist;
+
+  InstFetchU(ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
+             bool exsit = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~InstFetchU();
 };
 
-#endif // __DATACACHE_H__
+#endif // __INST_FETCH_U_H__

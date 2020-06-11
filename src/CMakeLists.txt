@@ -1,5 +1,6 @@
 add_subdirectory(cacti)
 add_subdirectory(cache)
+add_subdirectory(core)
 add_subdirectory(iocontrollers)
 add_subdirectory(memoryctrl)
 
@@ -9,8 +10,6 @@ add_library(top
   array.cc
   basic_components.h
   basic_components.cc
-  core.h
-  core.cc
   globalvar.h
   interconnect.h
   interconnect.cc
@@ -29,7 +28,13 @@ add_library(top
   XML_Parse.cc
 )
 target_include_directories(top PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(top LINK_PUBLIC cacti iocontrollers memoryctrl cache)
+target_link_libraries(top
+                      LINK_PUBLIC
+                      cache
+                      cacti
+                      core
+                      iocontrollers
+                      memoryctrl)
 
 add_executable(mcpat main.cc)
 

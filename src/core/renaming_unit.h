@@ -29,25 +29,43 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __RENAMING_U_H__
+#define __RENAMING_U_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class RENAMINGU : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  double clockRate;
+  double executionTime;
+  CoreDynParam coredynp;
+  ArrayST *iFRAT;
+  ArrayST *fFRAT;
+  ArrayST *iRRAT;
+  ArrayST *fRRAT;
+  ArrayST *ifreeL;
+  ArrayST *ffreeL;
+  dep_resource_conflict_check *idcl;
+  dep_resource_conflict_check *fdcl;
+  ArrayST *RAHT; // register alias history table Used to store GC
+  bool exist;
+
+  RENAMINGU(ParseXML *XML_interface,
+            int ithCore_,
+            InputParameter *interface_ip_,
+            const CoreDynParam &dyn_p_,
+            bool exist_ = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~RENAMINGU();
 };
 
-#endif // __DATACACHE_H__
+#endif // __RENAMING_U_H__

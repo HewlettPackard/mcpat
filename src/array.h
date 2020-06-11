@@ -81,5 +81,4 @@ protected:
   void leakage_feedback(double temperature);
 };
 
-
 #endif /* __ARRAY_H__ */

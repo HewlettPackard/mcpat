@@ -29,25 +29,54 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __EXEC_U_H__
+#define __EXEC_U_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
+#include "regfile.h"
+#include "scheduler.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class EXECU : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  double lsq_height;
+  CoreDynParam coredynp;
+  RegFU *rfu;
+  SchedulerU *scheu;
+  FunctionalUnit *fp_u;
+  FunctionalUnit *exeu;
+  FunctionalUnit *mul;
+  interconnect *int_bypass;
+  interconnect *intTagBypass;
+  interconnect *int_mul_bypass;
+  interconnect *intTag_mul_Bypass;
+  interconnect *fp_bypass;
+  interconnect *fpTagBypass;
+
+  Component bypass;
+  bool exist;
+
+  EXECU(ParseXML *XML_interface,
+        int ithCore_,
+        InputParameter *interface_ip_,
+        double lsq_height_,
+        const CoreDynParam &dyn_p_,
+        bool exist_ = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~EXECU();
 };
 
-#endif // __DATACACHE_H__
+#endif // __EXEC_U_H__

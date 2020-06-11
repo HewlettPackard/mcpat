@@ -29,25 +29,39 @@
  *
  ***************************************************************************/
 
-#ifndef __DATACACHE_H__
-#define __DATACACHE_H__
+#ifndef __MEMORY_MANAGEMENT_U_H__
+#define __MEMORY_MANAGEMENT_U_H__
 
+#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
-#include "instcache.h"
+#include "interconnect.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
-
-class DataCache : public InstCache {
+class MemManU : public Component {
 public:
-  ArrayST *wbb;
-  DataCache();
-  ~DataCache();
+  ParseXML *XML;
+  int ithCore;
+  InputParameter interface_ip;
+  CoreDynParam coredynp;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  ArrayST *itlb;
+  ArrayST *dtlb;
+  bool exist;
+
+  MemManU(ParseXML *XML_interface,
+          int ithCore_,
+          InputParameter *interface_ip_,
+          const CoreDynParam &dyn_p_,
+          bool exist_ = true);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~MemManU();
 };
 
-#endif // __DATACACHE_H__
+#endif // __MEMORY_MANAGEMENT_U_H__
