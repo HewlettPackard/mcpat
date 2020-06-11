@@ -29,63 +29,49 @@
  *
  ***************************************************************************/
 
-#ifndef __SHAREDCACHE_H__
-#define __SHAREDCACHE_H__
+#ifndef __CACHE_PARAM_H__
+#define __CACHE_PARAM_H__
 
-#include "XML_Parse.h"
-#include "area.h"
-#include "array.h"
-#include "cache_param.h"
 #include "basic_components.h"
-#include "datacache.h"
-#include "logic.h"
+#include "XML_Parse.h"
 #include "parameter.h"
 
 #include <vector>
 
-class SharedCache : public Component {
-public:
-  InputParameter interface_ip;
-  DataCache unicache; // Shared cache
-  CacheDynParam cachep;
-  statsDef homenode_tdp_stats;
-  statsDef homenode_rtp_stats;
-  statsDef homenode_stats_t;
-
-  SharedCache();
-  void set_params(const ParseXML *XML,
-                  const int ithCache_,
-                  InputParameter *interface_ip_,
-                  const enum cache_level cacheL_ = L2);
-  void set_stats(const ParseXML *XML);
-  void computeArea();
-  void computeStaticPower(bool is_tdp = false);
-  void computeDynamicPower();
-  void display(uint32_t indent = 0, bool enable = true);
-  ~SharedCache(){};
-private:
-  const ParseXML *XML;
-  int ithCache;
-  enum cache_level cacheL;
-  double dir_overhead;
-  double scktRatio;
-  double executionTime;
-
-  bool long_channel;
-  bool power_gating;
-  bool init_params;
-  bool init_stats;
-  bool set_area;
-  bool debug;
-  bool is_default;
-
-  double size;
-  double line;
-  double assoc;
-  double banks;
-
-  enum Device_ty device_t;
-  enum Core_type core_t;
+enum cache_level { 
+  L2,
+  L3,
+  L1Directory,
+  L2Directory
 };
 
-#endif /* SHAREDCACHE_H_ */
+class CacheDynParam {
+public:
+  string name;
+  enum Dir_type dir_ty;
+  double clockRate;
+  double executionTime;
+  double capacity;
+  double blockW;
+  double assoc;
+  double nbanks;
+  double throughput;
+  double latency;
+  double duty_cycle;
+  double dir_duty_cycle;
+  // double duty_cycle;
+  int missb_size;
+  int fu_size;
+  int prefetchb_size;
+  int wbb_size;
+  double vdd;
+  double power_gating_vcc;
+  CacheDynParam(){};
+  ~CacheDynParam(){};
+  void set_params_l2_cache(const ParseXML* XML, const int ithCache);
+  void set_params_l3_cache(const ParseXML* XML, const int ithCache);
+  void set_params_l1_directory(const ParseXML* XML, const int ithCache);
+  void set_params_l2_directory(const ParseXML* XML, const int ithCache);
+};
+
+#endif

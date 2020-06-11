@@ -1,4 +1,6 @@
 add_library(cache
+  cache_param.h
+  cache_param.cc
   datacache.h
   datacache.cc
   instcache.h

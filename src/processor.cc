@@ -142,9 +142,12 @@ Processor::Processor(ParseXML *XML_interface)
   if (!XML->sys.Private_L2) {
     if (numL2 > 0) {
       for (i = 0; i < numL2; i++) {
-        l2array.push_back(new SharedCache(XML, i, &interface_ip));
-        l2array[i]->computeEnergy();
-        l2array[i]->computeEnergy(false);
+        l2array.push_back(new SharedCache());
+        l2array[i]->set_params(XML, i, &interface_ip);
+        l2array[i]->set_stats(XML);
+        l2array[i]->computeArea();
+        l2array[i]->computeStaticPower(true);
+        l2array[i]->computeStaticPower();
         if (procdynp.homoL2) {
           l2.area.set_area(l2.area.get_area() +
                            l2array[i]->area.get_area() * procdynp.numL2);
@@ -190,9 +193,12 @@ Processor::Processor(ParseXML *XML_interface)
 
   if (numL3 > 0) {
     for (i = 0; i < numL3; i++) {
-      l3array.push_back(new SharedCache(XML, i, &interface_ip, L3));
-      l3array[i]->computeEnergy();
-      l3array[i]->computeEnergy(false);
+      l3array.push_back(new SharedCache());
+      l3array[i]->set_params(XML, i, &interface_ip, L3);
+      l3array[i]->set_stats(XML);
+      l3array[i]->computeArea();
+      l3array[i]->computeStaticPower(true);
+      l3array[i]->computeStaticPower();
       if (procdynp.homoL3) {
         l3.area.set_area(l3.area.get_area() +
                          l3array[i]->area.get_area() * procdynp.numL3);
@@ -233,9 +239,12 @@ Processor::Processor(ParseXML *XML_interface)
   }
   if (numL1Dir > 0) {
     for (i = 0; i < numL1Dir; i++) {
-      l1dirarray.push_back(new SharedCache(XML, i, &interface_ip, L1Directory));
-      l1dirarray[i]->computeEnergy();
-      l1dirarray[i]->computeEnergy(false);
+      l1dirarray.push_back(new SharedCache());
+      l1dirarray[i]->set_params(XML, i, &interface_ip, L1Directory);
+      l1dirarray[i]->set_stats(XML);
+      l1dirarray[i]->computeArea();
+      l1dirarray[i]->computeStaticPower(true);
+      l1dirarray[i]->computeStaticPower();
       if (procdynp.homoL1Dir) {
         l1dir.area.set_area(l1dir.area.get_area() +
                             l1dirarray[i]->area.get_area() * procdynp.numL1Dir);
@@ -274,9 +283,12 @@ Processor::Processor(ParseXML *XML_interface)
   }
   if (numL2Dir > 0)
     for (i = 0; i < numL2Dir; i++) {
-      l2dirarray.push_back(new SharedCache(XML, i, &interface_ip, L2Directory));
-      l2dirarray[i]->computeEnergy();
-      l2dirarray[i]->computeEnergy(false);
+      l2dirarray.push_back(new SharedCache());
+      l2dirarray[i]->set_params(XML, i, &interface_ip, L2Directory);
+      l2dirarray[i]->set_stats(XML);
+      l2dirarray[i]->computeArea();
+      l2dirarray[i]->computeStaticPower(true);
+      l2dirarray[i]->computeStaticPower();
       if (procdynp.homoL2Dir) {
         l2dir.area.set_area(l2dir.area.get_area() +
                             l2dirarray[i]->area.get_area() * procdynp.numL2Dir);
@@ -901,26 +913,26 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
       if (!XML->sys.Private_L2) {
         for (i = 0; i < numL2; i++) {
-          l2array[i]->displayEnergy(indent + 4, is_tdp);
+          l2array[i]->display(indent + 4, is_tdp);
           cout << "************************************************************"
                   "*****************************"
                << endl;
         }
       }
       for (i = 0; i < numL3; i++) {
-        l3array[i]->displayEnergy(indent + 4, is_tdp);
+        l3array[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
       }
       for (i = 0; i < numL1Dir; i++) {
-        l1dirarray[i]->displayEnergy(indent + 4, is_tdp);
+        l1dirarray[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
       }
       for (i = 0; i < numL2Dir; i++) {
-        l2dirarray[i]->displayEnergy(indent + 4, is_tdp);
+        l2dirarray[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;

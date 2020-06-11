@@ -46,24 +46,166 @@
 #include <iostream>
 #include <string.h>
 
-SharedCache::SharedCache(ParseXML *XML_interface,
-                         int ithCache_,
-                         InputParameter *interface_ip_,
-                         enum cache_level cacheL_)
-    : XML(XML_interface), ithCache(ithCache_), interface_ip(*interface_ip_),
-      cacheL(cacheL_), dir_overhead(0) {
-  int idx;
-  int tag, data;
-  bool is_default, debug;
-  enum Device_ty device_t;
-  enum Core_type core_t;
-  double size, line, assoc, banks;
+SharedCache::SharedCache() {
+  XML = nullptr;
+  long_channel = false;
+  power_gating = false;
+  init_params = false;
+  init_stats = false;
+  set_area = false;
+  cacheL = L2;
+  ithCache = 0;
+  dir_overhead = 0.0;
+  scktRatio = 0.0;
+  executionTime = 0.0;
+  
+  device_t = Core_device;
+  core_t = OOO;
+
+  debug = false;
+  is_default = false;
+
+  size = 0.0;
+  line = 0.0;
+  assoc = 0.0;
+  banks = 0.0;
+}
+
+void SharedCache::set_params(const ParseXML* XML,
+                             const int ithCache,
+                             InputParameter* interface_ip_,
+                             const enum cache_level cacheL_) {
+  int idx = 0;
+  int tag = 0; 
+  int data = 0;
+  this->cacheL = cacheL_;
+  this->interface_ip = *interface_ip_;
+  this->ithCache = ithCache;
+
   if (cacheL == L2 && XML->sys.Private_L2) {
     device_t = Core_device;
     core_t = (enum Core_type)XML->sys.core[ithCache].machine_type;
   } else {
     device_t = LLC_device;
     core_t = Inorder;
+  }
+
+  switch(cacheL) {
+    case L2 : {
+      cachep.set_params_l2_cache(XML, ithCache);
+      interface_ip.data_arr_ram_cell_tech_type =
+          XML->sys.L2[ithCache].device_type; // long channel device LSTP
+      interface_ip.data_arr_peri_global_tech_type =
+          XML->sys.L2[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L2[ithCache].device_type;
+      interface_ip.tag_arr_peri_global_tech_type =
+      XML->sys.L2[ithCache].device_type;
+      if (XML->sys.Private_L2 && XML->sys.core[ithCache].vdd > 0) {
+        interface_ip.specific_hp_vdd = true;
+        interface_ip.specific_lop_vdd = true;
+        interface_ip.specific_lstp_vdd = true;
+        interface_ip.hp_Vdd = XML->sys.core[ithCache].vdd;
+        interface_ip.lop_Vdd = XML->sys.core[ithCache].vdd;
+        interface_ip.lstp_Vdd = XML->sys.core[ithCache].vdd;
+      }
+      if (XML->sys.Private_L2 && XML->sys.core[ithCache].power_gating_vcc > -1) {
+        interface_ip.specific_vcc_min = true;
+        interface_ip.user_defined_vcc_min =
+            XML->sys.core[ithCache].power_gating_vcc;
+      }
+      if (!XML->sys.Private_L2 && XML->sys.L2[ithCache].vdd > 0) {
+        interface_ip.specific_hp_vdd = true;
+        interface_ip.specific_lop_vdd = true;
+        interface_ip.specific_lstp_vdd = true;
+        interface_ip.hp_Vdd = XML->sys.L2[ithCache].vdd;
+        interface_ip.lop_Vdd = XML->sys.L2[ithCache].vdd;
+        interface_ip.lstp_Vdd = XML->sys.L2[ithCache].vdd;
+      }
+      if (!XML->sys.Private_L2 && XML->sys.L2[ithCache].power_gating_vcc > -1) {
+        interface_ip.specific_vcc_min = true;
+        interface_ip.user_defined_vcc_min =
+            XML->sys.L2[ithCache].power_gating_vcc;
+      }
+      break;
+    }
+    case L3 : {
+      cachep.set_params_l3_cache(XML, ithCache);
+      interface_ip.data_arr_ram_cell_tech_type =
+          XML->sys.L3[ithCache].device_type; // long channel device LSTP
+      interface_ip.data_arr_peri_global_tech_type =
+          XML->sys.L3[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L3[ithCache].device_type;
+      interface_ip.tag_arr_peri_global_tech_type =
+          XML->sys.L3[ithCache].device_type;
+      if (XML->sys.L3[ithCache].vdd > 0) {
+        interface_ip.specific_hp_vdd = true;
+        interface_ip.specific_lop_vdd = true;
+        interface_ip.specific_lstp_vdd = true;
+        interface_ip.hp_Vdd = XML->sys.L3[ithCache].vdd;
+        interface_ip.lop_Vdd = XML->sys.L3[ithCache].vdd;
+        interface_ip.lstp_Vdd = XML->sys.L3[ithCache].vdd;
+      }
+      if (XML->sys.L3[ithCache].power_gating_vcc > -1) {
+        interface_ip.specific_vcc_min = true;
+        interface_ip.user_defined_vcc_min =
+            XML->sys.L3[ithCache].power_gating_vcc;
+      }
+      break;
+    }
+    case L1Directory : {
+      cachep.set_params_l1_directory(XML, ithCache);
+      interface_ip.data_arr_ram_cell_tech_type =
+          XML->sys.L1Directory[ithCache].device_type; // long channel device LSTP
+      interface_ip.data_arr_peri_global_tech_type =
+          XML->sys.L1Directory[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type =
+          XML->sys.L1Directory[ithCache].device_type;
+      interface_ip.tag_arr_peri_global_tech_type =
+          XML->sys.L1Directory[ithCache].device_type;
+      if (XML->sys.L1Directory[ithCache].vdd > 0) {
+        interface_ip.specific_hp_vdd = true;
+        interface_ip.specific_lop_vdd = true;
+        interface_ip.specific_lstp_vdd = true;
+        interface_ip.hp_Vdd = XML->sys.L1Directory[ithCache].vdd;
+        interface_ip.lop_Vdd = XML->sys.L1Directory[ithCache].vdd;
+        interface_ip.lstp_Vdd = XML->sys.L1Directory[ithCache].vdd;
+      }
+      if (XML->sys.L1Directory[ithCache].power_gating_vcc > -1) {
+        interface_ip.specific_vcc_min = true;
+        interface_ip.user_defined_vcc_min =
+            XML->sys.L1Directory[ithCache].power_gating_vcc;
+      }
+      break;
+    }
+    case L2Directory : {
+      cachep.set_params_l2_directory(XML, ithCache);
+      interface_ip.data_arr_ram_cell_tech_type =
+          XML->sys.L2Directory[ithCache].device_type; // long channel device LSTP
+      interface_ip.data_arr_peri_global_tech_type =
+          XML->sys.L2Directory[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type =
+          XML->sys.L2Directory[ithCache].device_type;
+      interface_ip.tag_arr_peri_global_tech_type =
+          XML->sys.L2Directory[ithCache].device_type;
+      if (XML->sys.L2Directory[ithCache].vdd > 0) {
+        interface_ip.specific_hp_vdd = true;
+        interface_ip.specific_lop_vdd = true;
+        interface_ip.specific_lstp_vdd = true;
+        interface_ip.hp_Vdd = XML->sys.L2Directory[ithCache].vdd;
+        interface_ip.lop_Vdd = XML->sys.L2Directory[ithCache].vdd;
+        interface_ip.lstp_Vdd = XML->sys.L2Directory[ithCache].vdd;
+      }
+      if (XML->sys.L2Directory[ithCache].power_gating_vcc > -1) {
+        interface_ip.specific_vcc_min = true;
+        interface_ip.user_defined_vcc_min =
+            XML->sys.L2Directory[ithCache].power_gating_vcc;
+      }
+      break;
+    }
+    default : {
+      std::cerr << "[ SharedCache ] Error: Not a valid Cache Type" << std::endl;
+      exit(1);
+    }
   }
 
   debug = false;
@@ -77,13 +219,13 @@ SharedCache::SharedCache(ParseXML *XML_interface,
     interface_ip.wire_is_mat_type = 2;
     interface_ip.wire_os_mat_type = 2;
   }
-  set_cache_param();
 
   // All lower level cache are physically indexed and tagged.
   size = cachep.capacity;
   line = cachep.blockW;
   assoc = cachep.assoc;
   banks = cachep.nbanks;
+
   if ((cachep.dir_ty == ST && cacheL == L1Directory) ||
       (cachep.dir_ty == ST && cacheL == L2Directory)) {
     assoc = 0;
@@ -254,356 +396,35 @@ SharedCache::SharedCache(ParseXML *XML_interface,
                            unicache.wbb->local_result.area);
     area.set_area(area.get_area() + unicache.wbb->local_result.area);
   }
-  //  //pipeline
-  //  interface_ip.pipeline_stages =
-  //  int(ceil(llCache.caches.local_result.access_time/llCache.caches.local_result.cycle_time));
-  //  interface_ip.per_stage_vector = llCache.caches.l_ip.out_w +
-  //  llCache.caches.l_ip.tag_w ; pipeLogicCache.init_pipeline(is_default,
-  //  &interface_ip); pipeLogicCache.compute_pipeline();
-
-  /*
-  if (!((XML->sys.number_of_dir_levels==1 && XML->sys.first_level_dir ==1)
-                  ||(XML->sys.number_of_dir_levels==1 &&
-  XML->sys.first_level_dir ==2)))//not single level IC and DIC
-  {
-  //directory Now assuming one directory per bank, TODO:should change it later
-  size                             = XML->sys.L2directory.L2Dir_config[0];
-  line                             = XML->sys.L2directory.L2Dir_config[1];
-  assoc                            = XML->sys.L2directory.L2Dir_config[2];
-  banks                            = XML->sys.L2directory.L2Dir_config[3];
-  tag							   =
-  debug?51:XML->sys.physical_address_width + EXTRA_TAG_BITS;//TODO: a little bit
-  over estimate interface_ip.specific_tag        = 0; interface_ip.tag_w = tag;
-  interface_ip.cache_sz            = XML->sys.L2directory.L2Dir_config[0];
-  interface_ip.line_sz             = XML->sys.L2directory.L2Dir_config[1];
-  interface_ip.assoc               = XML->sys.L2directory.L2Dir_config[2];
-  interface_ip.nbanks              = XML->sys.L2directory.L2Dir_config[3];
-  interface_ip.out_w               = interface_ip.line_sz*8;
-  interface_ip.access_mode         =
-  0;//debug?0:XML->sys.core[ithCore].icache.icache_config[5];
-  interface_ip.throughput          =
-  XML->sys.L2directory.L2Dir_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2directory.L2Dir_config[5]/clockRate; interface_ip.is_cache
-  = true; interface_ip.obj_func_dyn_energy = 0; interface_ip.obj_func_dyn_power
-  = 0; interface_ip.obj_func_leak_power = 0; interface_ip.obj_func_cycle_t    =
-  1; interface_ip.num_rw_ports    = 1;//lower level cache usually has one port.
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-
-  strcpy(directory.caches.name,"L2 Directory");
-  directory.caches.init_cache(&interface_ip);
-  directory.caches.optimize_array();
-  directory.area += directory.caches.local_result.area;
-  //output_data_csv(directory.caches.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //miss buffer Each MSHR contains enough state to handle one or more accesses
-  of any type to a single memory line.
-  //Due to the generality of the MSHR mechanism, the amount of state involved is
-  non-trivial,
-  //including the address, pointers to the cache entry and destination register,
-  written data, and various other pieces of state. tag
-  = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-  data							   =
-  (XML->sys.physical_address_width) + int(ceil(log2(size/line))) +
-  directory.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             =
-  int(ceil(data/8.0));//int(ceil(pow(2.0,ceil(log2(data)))/8.0));
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[0]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate;//means cycle time
-  interface_ip.latency             =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate;//means access time
-  interface_ip.obj_func_dyn_energy = 0;
-  interface_ip.obj_func_dyn_power  = 0;
-  interface_ip.obj_func_leak_power = 0;
-  interface_ip.obj_func_cycle_t    = 1;
-  interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory.missb.name,"directoryMissB");
-  directory.missb.init_cache(&interface_ip);
-  directory.missb.optimize_array();
-  directory.area += directory.missb.local_result.area;
-  //output_data_csv(directory.missb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //fill buffer
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS; data
-  = directory.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             = data;//int(pow(2.0,ceil(log2(data))));
-  interface_ip.cache_sz            = data*XML->sys.L2[ithCache].buffer_sizes[1];
-  interface_ip.assoc               = 0;
-  interface_ip.nbanks              = 1;
-  interface_ip.out_w               = interface_ip.line_sz*8;
-  interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory.ifb.name,"directoryFillB");
-  directory.ifb.init_cache(&interface_ip);
-  directory.ifb.optimize_array();
-  directory.area += directory.ifb.local_result.area;
-  //output_data_csv(directory.ifb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //prefetch buffer
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS;//check with previous entries
-  to decide wthether to merge.
-  data							   =
-  directory.caches.l_ip.line_sz;//separate queue to prevent from cache polution.
-  interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             = data;//int(pow(2.0,ceil(log2(data))));
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[2]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory.prefetchb.name,"directoryPrefetchB");
-  directory.prefetchb.init_cache(&interface_ip);
-  directory.prefetchb.optimize_array();
-  directory.area += directory.prefetchb.local_result.area;
-  //output_data_csv(directory.prefetchb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //WBB
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS; data
-  = directory.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             = data;
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[3]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory.wbb.name,"directoryWBB");
-  directory.wbb.init_cache(&interface_ip);
-  directory.wbb.optimize_array();
-  directory.area += directory.wbb.local_result.area;
-  }
-
-  if (XML->sys.number_of_dir_levels ==2 && XML->sys.first_level_dir==0)
-  {
-  //first level directory
-  size                             =
-  XML->sys.L2directory.L2Dir_config[0]*XML->sys.domain_size/128; line =
-  int(ceil(XML->sys.domain_size/8.0)); assoc                            =
-  XML->sys.L2directory.L2Dir_config[2]; banks                            =
-  XML->sys.L2directory.L2Dir_config[3]; tag
-  = debug?51:XML->sys.physical_address_width + EXTRA_TAG_BITS;//TODO: a little
-  bit over estimate interface_ip.specific_tag        = 1; interface_ip.tag_w =
-  tag; interface_ip.cache_sz            = XML->sys.L2directory.L2Dir_config[0];
-  interface_ip.line_sz             = XML->sys.L2directory.L2Dir_config[1];
-  interface_ip.assoc               = XML->sys.L2directory.L2Dir_config[2];
-  interface_ip.nbanks              = XML->sys.L2directory.L2Dir_config[3];
-  interface_ip.out_w               = interface_ip.line_sz*8;
-  interface_ip.access_mode         =
-  0;//debug?0:XML->sys.core[ithCore].icache.icache_config[5];
-  interface_ip.throughput          =
-  XML->sys.L2directory.L2Dir_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2directory.L2Dir_config[5]/clockRate; interface_ip.is_cache
-  = true; interface_ip.obj_func_dyn_energy = 0; interface_ip.obj_func_dyn_power
-  = 0; interface_ip.obj_func_leak_power = 0; interface_ip.obj_func_cycle_t    =
-  1; interface_ip.num_rw_ports    = 1;//lower level cache usually has one port.
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-
-  strcpy(directory1.caches.name,"first level Directory");
-  directory1.caches.init_cache(&interface_ip);
-  directory1.caches.optimize_array();
-  directory1.area += directory1.caches.local_result.area;
-  //output_data_csv(directory.caches.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //miss buffer Each MSHR contains enough state to handle one or more accesses
-  of any type to a single memory line.
-  //Due to the generality of the MSHR mechanism, the amount of state involved is
-  non-trivial,
-  //including the address, pointers to the cache entry and destination register,
-  written data, and various other pieces of state. tag
-  = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-  data							   =
-  (XML->sys.physical_address_width) + int(ceil(log2(size/line))) +
-  directory1.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             =
-  int(ceil(data/8.0));//int(ceil(pow(2.0,ceil(log2(data)))/8.0));
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[0]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate;//means cycle time
-  interface_ip.latency             =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate;//means access time
-  interface_ip.obj_func_dyn_energy = 0;
-  interface_ip.obj_func_dyn_power  = 0;
-  interface_ip.obj_func_leak_power = 0;
-  interface_ip.obj_func_cycle_t    = 1;
-  interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory1.missb.name,"directory1MissB");
-  directory1.missb.init_cache(&interface_ip);
-  directory1.missb.optimize_array();
-  directory1.area += directory1.missb.local_result.area;
-  //output_data_csv(directory.missb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //fill buffer
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS; data
-  = directory1.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             = data;//int(pow(2.0,ceil(log2(data))));
-  interface_ip.cache_sz            = data*XML->sys.L2[ithCache].buffer_sizes[1];
-  interface_ip.assoc               = 0;
-  interface_ip.nbanks              = 1;
-  interface_ip.out_w               = interface_ip.line_sz*8;
-  interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory1.ifb.name,"directory1FillB");
-  directory1.ifb.init_cache(&interface_ip);
-  directory1.ifb.optimize_array();
-  directory1.area += directory1.ifb.local_result.area;
-  //output_data_csv(directory.ifb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //prefetch buffer
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS;//check with previous entries
-  to decide wthether to merge.
-  data							   =
-  directory1.caches.l_ip.line_sz;//separate queue to prevent from cache
-  polution. interface_ip.specific_tag        = 1; interface_ip.tag_w = tag;
-  interface_ip.line_sz             = data;//int(pow(2.0,ceil(log2(data))));
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[2]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory1.prefetchb.name,"directory1PrefetchB");
-  directory1.prefetchb.init_cache(&interface_ip);
-  directory1.prefetchb.optimize_array();
-  directory1.area += directory1.prefetchb.local_result.area;
-  //output_data_csv(directory.prefetchb.local_result);
-  ///cout<<"area="<<area<<endl;
-
-  //WBB
-  tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS; data
-  = directory1.caches.l_ip.line_sz; interface_ip.specific_tag        = 1;
-  interface_ip.tag_w               = tag;
-  interface_ip.line_sz             = data;
-  interface_ip.cache_sz            =
-  XML->sys.L2[ithCache].buffer_sizes[3]*interface_ip.line_sz; interface_ip.assoc
-  = 0; interface_ip.nbanks              = 1; interface_ip.out_w               =
-  interface_ip.line_sz*8; interface_ip.access_mode         = 0;
-  interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-  interface_ip.num_rd_ports    = 0;
-  interface_ip.num_wr_ports    = 0;
-  interface_ip.num_se_rd_ports = 0;
-  strcpy(directory1.wbb.name,"directoryWBB");
-  directory1.wbb.init_cache(&interface_ip);
-  directory1.wbb.optimize_array();
-  directory1.area += directory1.wbb.local_result.area;
-  }
-
-  if (XML->sys.first_level_dir==1)//IC
-  {
-          tag							   =
-  XML->sys.physical_address_width + EXTRA_TAG_BITS; data
-  = int(ceil(XML->sys.domain_size/8.0)); interface_ip.specific_tag        = 1;
-          interface_ip.tag_w               = tag;
-          interface_ip.line_sz             = data;
-          interface_ip.cache_sz            =
-  XML->sys.domain_size*data*XML->sys.L2[ithCache].L2_config[0]/XML->sys.L2[ithCache].L2_config[1];
-          interface_ip.assoc               = 0;
-          interface_ip.nbanks              = 1024;
-          interface_ip.out_w               = interface_ip.line_sz*8;
-          interface_ip.access_mode         = 0;
-          interface_ip.throughput          =
-  XML->sys.L2[ithCache].L2_config[4]/clockRate; interface_ip.latency =
-  XML->sys.L2[ithCache].L2_config[5]/clockRate; interface_ip.obj_func_dyn_energy
-  = 0; interface_ip.obj_func_dyn_power  = 0; interface_ip.obj_func_leak_power =
-  0; interface_ip.obj_func_cycle_t    = 1; interface_ip.num_rw_ports    = 1;
-          interface_ip.num_rd_ports    = 0;
-          interface_ip.num_wr_ports    = 0;
-          interface_ip.num_se_rd_ports = 0;
-          strcpy(inv_dir.caches.name,"inv_dir");
-          inv_dir.caches.init_cache(&interface_ip);
-          inv_dir.caches.optimize_array();
-          inv_dir.area = inv_dir.caches.local_result.area;
-
-  }
-*/
-  //  //pipeline
-  //  interface_ip.pipeline_stages =
-  //  int(ceil(directory.caches.local_result.access_time/directory.caches.local_result.cycle_time));
-  //  interface_ip.per_stage_vector = directory.caches.l_ip.out_w +
-  //  directory.caches.l_ip.tag_w ; pipeLogicDirectory.init_pipeline(is_default,
-  //  &interface_ip); pipeLogicDirectory.compute_pipeline();
-  //
-  //  //clock power
-  //  clockNetwork.init_wire_external(is_default, &interface_ip);
-  //  clockNetwork.clk_area           =area*1.1;//10% of placement overhead.
-  //  rule of thumb clockNetwork.end_wiring_level   =5;//toplevel metal
-  //  clockNetwork.start_wiring_level =5;//toplevel metal
-  //  clockNetwork.num_regs           = pipeLogicCache.tot_stage_vector +
-  //  pipeLogicDirectory.tot_stage_vector; clockNetwork.optimize_wire();
+  init_params = true;
 }
 
-void SharedCache::computeEnergy(bool is_tdp) {
+void SharedCache::set_stats(const ParseXML* XML) {
+  this->XML = XML;
+  init_stats = true;
+}
+
+
+void SharedCache::computeArea() {
+  if (!init_params) {
+    std::cerr << "[ SharedCache ] Error: must set params before calling "
+                 "computeArea()\n";
+    exit(1);
+  }
+  set_area = true;
+}
+
+void SharedCache::computeStaticPower(bool is_tdp) {
+  if (!init_params) {
+    std::cerr << "[ SharedCache ] Error: must set params before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
+  if (!set_area) {
+    std::cerr << "[ SharedCache ] Error: must ComputeArea before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
   double homenode_data_access = (cachep.dir_ty == SBT) ? 0.9 : 1.0;
   if (is_tdp) {
     if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
@@ -927,7 +748,7 @@ void SharedCache::computeEnergy(bool is_tdp) {
   }
 }
 
-void SharedCache::displayEnergy(uint32_t indent, bool is_tdp) {
+void SharedCache::display(uint32_t indent, bool is_tdp) {
   string indent_str(indent, ' ');
   string indent_str_next(indent + 2, ' ');
   bool long_channel = XML->sys.longer_channel_device;
@@ -1215,197 +1036,3 @@ void SharedCache::displayEnergy(uint32_t indent, bool is_tdp) {
 //
 //}
 
-void SharedCache::set_cache_param() {
-  if (cacheL == L2) {
-    cachep.name = "L2";
-    cachep.clockRate = XML->sys.L2[ithCache].clockrate;
-    cachep.clockRate *= 1e6;
-    cachep.executionTime =
-        XML->sys.total_cycles / (XML->sys.target_core_clockrate * 1e6);
-    interface_ip.data_arr_ram_cell_tech_type =
-        XML->sys.L2[ithCache].device_type; // long channel device LSTP
-    interface_ip.data_arr_peri_global_tech_type =
-        XML->sys.L2[ithCache].device_type;
-    interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L2[ithCache].device_type;
-    interface_ip.tag_arr_peri_global_tech_type =
-        XML->sys.L2[ithCache].device_type;
-    cachep.capacity = XML->sys.L2[ithCache].L2_config[0];
-    cachep.blockW = XML->sys.L2[ithCache].L2_config[1];
-    cachep.assoc = XML->sys.L2[ithCache].L2_config[2];
-    cachep.nbanks = XML->sys.L2[ithCache].L2_config[3];
-    cachep.throughput = XML->sys.L2[ithCache].L2_config[4] / cachep.clockRate;
-    cachep.latency = XML->sys.L2[ithCache].L2_config[5] / cachep.clockRate;
-    cachep.missb_size = XML->sys.L2[ithCache].buffer_sizes[0];
-    cachep.fu_size = XML->sys.L2[ithCache].buffer_sizes[1];
-    cachep.prefetchb_size = XML->sys.L2[ithCache].buffer_sizes[2];
-    cachep.wbb_size = XML->sys.L2[ithCache].buffer_sizes[3];
-    cachep.duty_cycle = XML->sys.L2[ithCache].duty_cycle;
-    if (!XML->sys.L2[ithCache].merged_dir) {
-      cachep.dir_ty = NonDir;
-    } else {
-      cachep.dir_ty = SBT;
-      cachep.dir_duty_cycle = XML->sys.L2[ithCache].dir_duty_cycle;
-    }
-
-    if (XML->sys.Private_L2 && XML->sys.core[ithCache].vdd > 0) {
-      interface_ip.specific_hp_vdd = true;
-      interface_ip.specific_lop_vdd = true;
-      interface_ip.specific_lstp_vdd = true;
-      interface_ip.hp_Vdd = XML->sys.core[ithCache].vdd;
-      interface_ip.lop_Vdd = XML->sys.core[ithCache].vdd;
-      interface_ip.lstp_Vdd = XML->sys.core[ithCache].vdd;
-    }
-
-    if (XML->sys.Private_L2 && XML->sys.core[ithCache].power_gating_vcc > -1) {
-      interface_ip.specific_vcc_min = true;
-      interface_ip.user_defined_vcc_min =
-          XML->sys.core[ithCache].power_gating_vcc;
-    }
-    if (!XML->sys.Private_L2 && XML->sys.L2[ithCache].vdd > 0) {
-      interface_ip.specific_hp_vdd = true;
-      interface_ip.specific_lop_vdd = true;
-      interface_ip.specific_lstp_vdd = true;
-      interface_ip.hp_Vdd = XML->sys.L2[ithCache].vdd;
-      interface_ip.lop_Vdd = XML->sys.L2[ithCache].vdd;
-      interface_ip.lstp_Vdd = XML->sys.L2[ithCache].vdd;
-    }
-    if (!XML->sys.Private_L2 && XML->sys.L2[ithCache].power_gating_vcc > -1) {
-      interface_ip.specific_vcc_min = true;
-      interface_ip.user_defined_vcc_min =
-          XML->sys.L2[ithCache].power_gating_vcc;
-    }
-  } else if (cacheL == L3) {
-    cachep.name = "L3";
-    cachep.clockRate = XML->sys.L3[ithCache].clockrate;
-    cachep.clockRate *= 1e6;
-    cachep.executionTime =
-        XML->sys.total_cycles / (XML->sys.target_core_clockrate * 1e6);
-    interface_ip.data_arr_ram_cell_tech_type =
-        XML->sys.L3[ithCache].device_type; // long channel device LSTP
-    interface_ip.data_arr_peri_global_tech_type =
-        XML->sys.L3[ithCache].device_type;
-    interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L3[ithCache].device_type;
-    interface_ip.tag_arr_peri_global_tech_type =
-        XML->sys.L3[ithCache].device_type;
-    cachep.capacity = XML->sys.L3[ithCache].L3_config[0];
-    cachep.blockW = XML->sys.L3[ithCache].L3_config[1];
-    cachep.assoc = XML->sys.L3[ithCache].L3_config[2];
-    cachep.nbanks = XML->sys.L3[ithCache].L3_config[3];
-    cachep.throughput = XML->sys.L3[ithCache].L3_config[4] / cachep.clockRate;
-    cachep.latency = XML->sys.L3[ithCache].L3_config[5] / cachep.clockRate;
-    cachep.missb_size = XML->sys.L3[ithCache].buffer_sizes[0];
-    cachep.fu_size = XML->sys.L3[ithCache].buffer_sizes[1];
-    cachep.prefetchb_size = XML->sys.L3[ithCache].buffer_sizes[2];
-    cachep.wbb_size = XML->sys.L3[ithCache].buffer_sizes[3];
-    cachep.duty_cycle = XML->sys.L3[ithCache].duty_cycle;
-    if (!XML->sys.L2[ithCache].merged_dir) {
-      cachep.dir_ty = NonDir;
-    } else {
-      cachep.dir_ty = SBT;
-      cachep.dir_duty_cycle = XML->sys.L2[ithCache].dir_duty_cycle;
-    }
-    if (XML->sys.L3[ithCache].vdd > 0) {
-      interface_ip.specific_hp_vdd = true;
-      interface_ip.specific_lop_vdd = true;
-      interface_ip.specific_lstp_vdd = true;
-      interface_ip.hp_Vdd = XML->sys.L3[ithCache].vdd;
-      interface_ip.lop_Vdd = XML->sys.L3[ithCache].vdd;
-      interface_ip.lstp_Vdd = XML->sys.L3[ithCache].vdd;
-    }
-
-    if (XML->sys.L3[ithCache].power_gating_vcc > -1) {
-      interface_ip.specific_vcc_min = true;
-      interface_ip.user_defined_vcc_min =
-          XML->sys.L3[ithCache].power_gating_vcc;
-    }
-  } else if (cacheL == L1Directory) {
-    cachep.name = "First Level Directory";
-    cachep.dir_ty =
-        (enum Dir_type)XML->sys.L1Directory[ithCache].Directory_type;
-    cachep.clockRate = XML->sys.L1Directory[ithCache].clockrate;
-    cachep.clockRate *= 1e6;
-    cachep.executionTime =
-        XML->sys.total_cycles / (XML->sys.target_core_clockrate * 1e6);
-    interface_ip.data_arr_ram_cell_tech_type =
-        XML->sys.L1Directory[ithCache].device_type; // long channel device LSTP
-    interface_ip.data_arr_peri_global_tech_type =
-        XML->sys.L1Directory[ithCache].device_type;
-    interface_ip.tag_arr_ram_cell_tech_type =
-        XML->sys.L1Directory[ithCache].device_type;
-    interface_ip.tag_arr_peri_global_tech_type =
-        XML->sys.L1Directory[ithCache].device_type;
-    cachep.capacity = XML->sys.L1Directory[ithCache].Dir_config[0];
-    cachep.blockW = XML->sys.L1Directory[ithCache].Dir_config[1];
-    cachep.assoc = XML->sys.L1Directory[ithCache].Dir_config[2];
-    cachep.nbanks = XML->sys.L1Directory[ithCache].Dir_config[3];
-    cachep.throughput =
-        XML->sys.L1Directory[ithCache].Dir_config[4] / cachep.clockRate;
-    cachep.latency =
-        XML->sys.L1Directory[ithCache].Dir_config[5] / cachep.clockRate;
-    cachep.missb_size = XML->sys.L1Directory[ithCache].buffer_sizes[0];
-    cachep.fu_size = XML->sys.L1Directory[ithCache].buffer_sizes[1];
-    cachep.prefetchb_size = XML->sys.L1Directory[ithCache].buffer_sizes[2];
-    cachep.wbb_size = XML->sys.L1Directory[ithCache].buffer_sizes[3];
-    cachep.duty_cycle = XML->sys.L1Directory[ithCache].duty_cycle;
-
-    if (XML->sys.L1Directory[ithCache].vdd > 0) {
-      interface_ip.specific_hp_vdd = true;
-      interface_ip.specific_lop_vdd = true;
-      interface_ip.specific_lstp_vdd = true;
-      interface_ip.hp_Vdd = XML->sys.L1Directory[ithCache].vdd;
-      interface_ip.lop_Vdd = XML->sys.L1Directory[ithCache].vdd;
-      interface_ip.lstp_Vdd = XML->sys.L1Directory[ithCache].vdd;
-    }
-
-    if (XML->sys.L1Directory[ithCache].power_gating_vcc > -1) {
-      interface_ip.specific_vcc_min = true;
-      interface_ip.user_defined_vcc_min =
-          XML->sys.L1Directory[ithCache].power_gating_vcc;
-    }
-  } else if (cacheL == L2Directory) {
-    cachep.name = "Second Level Directory";
-    cachep.dir_ty =
-        (enum Dir_type)XML->sys.L2Directory[ithCache].Directory_type;
-    cachep.clockRate = XML->sys.L2Directory[ithCache].clockrate;
-    cachep.clockRate *= 1e6;
-    cachep.executionTime =
-        XML->sys.total_cycles / (XML->sys.target_core_clockrate * 1e6);
-    interface_ip.data_arr_ram_cell_tech_type =
-        XML->sys.L2Directory[ithCache].device_type; // long channel device LSTP
-    interface_ip.data_arr_peri_global_tech_type =
-        XML->sys.L2Directory[ithCache].device_type;
-    interface_ip.tag_arr_ram_cell_tech_type =
-        XML->sys.L2Directory[ithCache].device_type;
-    interface_ip.tag_arr_peri_global_tech_type =
-        XML->sys.L2Directory[ithCache].device_type;
-    cachep.capacity = XML->sys.L2Directory[ithCache].Dir_config[0];
-    cachep.blockW = XML->sys.L2Directory[ithCache].Dir_config[1];
-    cachep.assoc = XML->sys.L2Directory[ithCache].Dir_config[2];
-    cachep.nbanks = XML->sys.L2Directory[ithCache].Dir_config[3];
-    cachep.throughput =
-        XML->sys.L2Directory[ithCache].Dir_config[4] / cachep.clockRate;
-    cachep.latency =
-        XML->sys.L2Directory[ithCache].Dir_config[5] / cachep.clockRate;
-    cachep.missb_size = XML->sys.L2Directory[ithCache].buffer_sizes[0];
-    cachep.fu_size = XML->sys.L2Directory[ithCache].buffer_sizes[1];
-    cachep.prefetchb_size = XML->sys.L2Directory[ithCache].buffer_sizes[2];
-    cachep.wbb_size = XML->sys.L2Directory[ithCache].buffer_sizes[3];
-    cachep.duty_cycle = XML->sys.L2Directory[ithCache].duty_cycle;
-
-    if (XML->sys.L2Directory[ithCache].vdd > 0) {
-      interface_ip.specific_hp_vdd = true;
-      interface_ip.specific_lop_vdd = true;
-      interface_ip.specific_lstp_vdd = true;
-      interface_ip.hp_Vdd = XML->sys.L2Directory[ithCache].vdd;
-      interface_ip.lop_Vdd = XML->sys.L2Directory[ithCache].vdd;
-      interface_ip.lstp_Vdd = XML->sys.L2Directory[ithCache].vdd;
-    }
-
-    if (XML->sys.L2Directory[ithCache].power_gating_vcc > -1) {
-      interface_ip.specific_vcc_min = true;
-      interface_ip.user_defined_vcc_min =
-          XML->sys.L2Directory[ithCache].power_gating_vcc;
-    }
-  }
-  // cachep.cache_duty_cycle=cachep.dir_duty_cycle = 0.35;
-}

@@ -61,7 +61,10 @@ Core::Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_)
   set_core_param();
 
   if (XML->sys.Private_L2) {
-    l2cache = new SharedCache(XML, ithCore, &interface_ip);
+    l2cache = new SharedCache();
+    l2cache->set_params(XML, ithCore, &interface_ip);
+    l2cache->set_stats(XML);
+    l2cache->computeArea();
   }
 
   clockRate = coredynp.clockRate;
@@ -224,7 +227,7 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (XML->sys.Private_L2) {
 
-      l2cache->computeEnergy(is_tdp);
+      l2cache->computeStaticPower(true);
       set_pppm(pppm_t, l2cache->cachep.clockRate / clockRate, 1, 1, 1);
       // l2cache->power = l2cache->power*pppm_t;
       power = power + l2cache->power * pppm_t;
@@ -334,8 +337,7 @@ void Core::computeEnergy(bool is_tdp) {
     //		cout << "EXE = " << exu->power.readOp.dynamic*clockRate  << " W"
     //<< endl;
     if (XML->sys.Private_L2) {
-
-      l2cache->computeEnergy(is_tdp);
+      l2cache->computeStaticPower();
       // set_pppm(pppm_t,1/l2cache->cachep.executionTime, 1,1,1);
       // l2cache->rt_power = l2cache->rt_power*pppm_t;
       rt_power = rt_power + l2cache->rt_power;
@@ -528,7 +530,7 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     //		}
     if (XML->sys.Private_L2) {
 
-      l2cache->displayEnergy(4, is_tdp);
+      l2cache->display(4, true);
     }
 
   } else {
