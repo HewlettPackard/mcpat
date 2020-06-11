@@ -58,7 +58,7 @@ public:
   vector<SharedCache *> l1dirarray;
   vector<SharedCache *> l2dirarray;
   vector<NoC *> nocs;
-  MemoryController *mc;
+  MemoryController mc;
   NIUController niu;
   PCIeController pcie;
   FlashController flashcontroller;

@@ -250,7 +250,7 @@ void MCPHY::computeDynamicPower() {
  *            const MCParam&,
  *            InputParameter,
  *            const enum MemoryCtrl_type)
- *    Sets the parts of the flash controller params that contribute to area and
+ *    Sets the parts of the MCPHY params that contribute to area and
  *    static power. Must be called before computing area or static power.
  *    Side Effects:
  *      sets the interface_ip struct, and sets the params struct to the
@@ -277,7 +277,7 @@ void MCPHY::set_params(const ParseXML *XML,
 
 /*
  * set_stats(const MCParam&)
- *    Sets the parts of the flash controller params that contribute to dynamic
+ *    Sets the parts of the MCPHY params that contribute to dynamic
  *    power.
  *    Side Effects:
  *      Store duty cycle and and percentage load into fc params, sets

@@ -73,84 +73,132 @@
  *
  */
 
-MemoryController::MemoryController(ParseXML *XML_interface,
-                                   InputParameter *interface_ip_,
-                                   enum MemoryCtrl_type mc_type_)
-    : XML(XML_interface), interface_ip(*interface_ip_), mc_type(mc_type_),
-      pipeLogic(0) {
-  /* All computations are for a single MC
-   *
-   */
+MemoryController::MemoryController() {
+  long_channel = false;
+  power_gating = false;
+  init_params = false;
+  init_stats = false;
+  set_area = false;
+  mc_type = MC;
+}
+
+void MemoryController::set_params(const ParseXML *XML,
+                                  InputParameter *interface_ip_,
+                                  enum MemoryCtrl_type mc_type_) {
+  long_channel = XML->sys.longer_channel_device;
+  power_gating = XML->sys.power_gating;
+  interface_ip = *interface_ip_;
+  mc_type = mc_type_;
+
   interface_ip.wire_is_mat_type = 2;
   interface_ip.wire_os_mat_type = 2;
   interface_ip.wt = Global;
-  set_mc_param();
+
+  set_mc_param(XML);
+
   transecEngine.set_params(XML, mcp, &interface_ip, mc_type);
-  transecEngine.set_stats(mcp);
-  transecEngine.computeArea();
-  transecEngine.computeStaticPower();
   frontend.set_params(XML, &interface_ip, mcp, mc_type);
+  if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+    PHY.set_params(XML, mcp, &interface_ip, mc_type);
+  }
+  init_params = true;
+}
+
+void MemoryController::set_stats(const ParseXML *XML) {
+  set_mc_param(XML);
+  transecEngine.set_stats(mcp);
   frontend.set_stats(XML, mcp);
+  if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+    PHY.set_stats(mcp);
+  }
+  init_stats = true;
+}
+
+void MemoryController::computeArea() {
+  if (!init_params) {
+    std::cerr << "[ MemoryController ] Error: must set params before calling "
+                 "computeArea()\n";
+    exit(1);
+  }
+  transecEngine.computeArea();
   frontend.computeArea();
-  frontend.computeStaticPower();
   area.set_area(area.get_area() + frontend.area.get_area());
   area.set_area(area.get_area() + transecEngine.area.get_area());
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-    PHY.set_params(XML, mcp, &interface_ip, mc_type);
-    PHY.set_stats(mcp);
     PHY.computeArea();
-    PHY.computeStaticPower();
     area.set_area(area.get_area() + PHY.area.get_area());
+  }
+  set_area = true;
+}
+
+void MemoryController::computeStaticPower() {
+  if (!init_params) {
+    std::cerr << "[ MemoryController ] Error: must set params before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
+  if (!set_area) {
+    std::cerr << "[ MemoryController ] Error: must computeArea before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
+  transecEngine.computeStaticPower();
+  frontend.computeStaticPower();
+  if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+    PHY.computeStaticPower();
   }
 }
 
-void MemoryController::computeEnergy(bool is_tdp) {
+void MemoryController::computeDynamicPower() {
+  if (!init_stats) {
+    std::cerr << "[ MemoryController ] Error: must set stats before calling "
+                 "computeDynamicPower()\n";
+    exit(1);
+  }
   frontend.computeDynamicPower();
   transecEngine.computeDynamicPower();
+
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
     PHY.computeDynamicPower();
   }
-  if (is_tdp) {
-    power = power + frontend.power + transecEngine.power;
-    if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-      power = power + PHY.power;
-    }
-  } else {
-    rt_power = rt_power + frontend.rt_power + transecEngine.rt_power;
-    if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
-      rt_power = rt_power + PHY.rt_power;
-    }
+
+  power = frontend.power + transecEngine.power;
+  if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+    power = power + PHY.power;
+  }
+  rt_power = frontend.rt_power + transecEngine.rt_power;
+  if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
+    rt_power = rt_power + PHY.rt_power;
   }
 }
 
-void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
+void MemoryController::display(uint32_t indent, bool enable) {
   string indent_str(indent, ' ');
   string indent_str_next(indent + 2, ' ');
-  bool long_channel = XML->sys.longer_channel_device;
-  bool power_gating = XML->sys.power_gating;
   if (enable) {
-    cout << "Memory Controller:" << endl;
-    cout << indent_str << "Area = " << area.get_area() * 1e-6 << " mm^2"
-         << endl;
-    cout << indent_str
-         << "Peak Dynamic = " << power.readOp.dynamic * mcp.clockRate << " W"
-         << endl;
-    cout << indent_str << "Subthreshold Leakage = "
-         << (long_channel ? power.readOp.longer_channel_leakage
-                          : power.readOp.leakage)
-         << " W" << endl;
+    std::cout << "Memory Controller:" << std::endl;
+    std::cout << indent_str << "Area = " << area.get_area() * 1e-6 << " mm^2"
+              << std::endl;
+    std::cout << indent_str
+              << "Peak Dynamic = " << power.readOp.dynamic * mcp.clockRate
+              << " W" << std::endl;
+    std::cout << indent_str << "Subthreshold Leakage = "
+              << (long_channel ? power.readOp.longer_channel_leakage
+                               : power.readOp.leakage)
+              << " W" << std::endl;
     if (power_gating) {
-      cout << indent_str << "Subthreshold Leakage with power gating = "
-           << (long_channel ? power.readOp.power_gated_with_long_channel_leakage
-                            : power.readOp.power_gated_leakage)
-           << " W" << endl;
+      std::cout << indent_str << "Subthreshold Leakage with power gating = "
+                << (long_channel
+                        ? power.readOp.power_gated_with_long_channel_leakage
+                        : power.readOp.power_gated_leakage)
+                << " W" << std::endl;
     }
-    cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage << " W"
-         << endl;
-    cout << indent_str
-         << "Runtime Dynamic = " << rt_power.readOp.dynamic / mcp.executionTime
-         << " W" << endl;
-    cout << endl;
+    std::cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage
+              << " W" << std::endl;
+    std::cout << indent_str << "Runtime Dynamic = "
+              << rt_power.readOp.dynamic / mcp.executionTime << " W"
+              << std::endl;
+    std::cout << std::endl;
 
     frontend.display(indent, true);
     transecEngine.display(indent, true);
@@ -160,7 +208,7 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
   }
 }
 
-void MemoryController::set_mc_param() {
+void MemoryController::set_mc_param(const ParseXML *XML) {
   if (mc_type == MC) {
     mcp.clockRate = XML->sys.mc.mc_clock * 2; // DDR double pumped
     mcp.clockRate *= 1e6;
@@ -236,16 +284,14 @@ void MemoryController::set_mc_param() {
   // XML->sys.flashc.LVDS; 		mcp.type = XML->sys.flashc.type;
   //	}
   else {
-    cout << "Unknown memory controller type: neither DRAM controller nor Flash "
-            "controller"
-         << endl;
-    exit(0);
+    std::cerr << "[ MemoryController ] Unknown memory controller type: neither "
+                 "DRAM controller nor Flash "
+                 "controller"
+              << std::endl;
+    exit(1);
   }
 }
 
 MemoryController ::~MemoryController() {
-  if (pipeLogic) {
-    delete pipeLogic;
-    pipeLogic = 0;
-  }
+  // Do Nothing
 }

@@ -45,22 +45,32 @@
 
 class MemoryController : public Component {
 public:
-  ParseXML *XML;
   InputParameter interface_ip;
   enum MemoryCtrl_type mc_type;
   MCParam mcp;
   MCFrontEnd frontend;
   MCBackend transecEngine;
   MCPHY PHY;
-  Pipeline *pipeLogic;
 
   // clock_network clockNetwork;
-  MemoryController(ParseXML *XML_interface,
-                   InputParameter *interface_ip_,
-                   enum MemoryCtrl_type mc_type_);
-  void set_mc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool enable = true);
+  MemoryController();
+  void set_params(const ParseXML *XML,
+                  InputParameter *interface_ip_,
+                  enum MemoryCtrl_type mc_type_);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
   ~MemoryController();
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
+  bool set_area;
+
+  void set_mc_param(const ParseXML *XML);
 };
 #endif /* __MEMORYCTRL_H__ */

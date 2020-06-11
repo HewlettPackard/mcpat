@@ -46,8 +46,7 @@
 #include <iostream>
 
 Processor::Processor(ParseXML *XML_interface)
-    : XML(XML_interface), // TODO: using one global copy may have problems.
-      mc(nullptr) {
+    : XML(XML_interface) { // TODO: using one global copy may have problems.
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
@@ -315,26 +314,29 @@ Processor::Processor(ParseXML *XML_interface)
     }
 
   if (XML->sys.mc.number_mcs > 0 && XML->sys.mc.memory_channels_per_mc > 0) {
-    mc = new MemoryController(XML, &interface_ip, MC);
-    mc->computeEnergy();
-    mc->computeEnergy(false);
+    mc.set_params(XML, &interface_ip, MC);
+    mc.computeArea();
     mcs.area.set_area(mcs.area.get_area() +
-                      mc->area.get_area() * XML->sys.mc.number_mcs);
+                      mc.area.get_area() * XML->sys.mc.number_mcs);
     area.set_area(area.get_area() +
-                  mc->area.get_area() * XML->sys.mc.number_mcs);
+                  mc.area.get_area() * XML->sys.mc.number_mcs);
+
+    mc.computeStaticPower();
+    mc.set_stats(XML);
+    mc.computeDynamicPower();
     set_pppm(pppm_t,
-             XML->sys.mc.number_mcs * mc->mcp.clockRate,
+             XML->sys.mc.number_mcs * mc.mcp.clockRate,
              XML->sys.mc.number_mcs,
              XML->sys.mc.number_mcs,
              XML->sys.mc.number_mcs);
-    mcs.power = mc->power * pppm_t;
+    mcs.power = mc.power * pppm_t;
     power = power + mcs.power;
     set_pppm(pppm_t,
-             1 / mc->mcp.executionTime,
+             1 / mc.mcp.executionTime,
              XML->sys.mc.number_mcs,
              XML->sys.mc.number_mcs,
              XML->sys.mc.number_mcs);
-    mcs.rt_power = mc->rt_power * pppm_t;
+    mcs.rt_power = mc.rt_power * pppm_t;
     rt_power = rt_power + mcs.rt_power;
   }
 
@@ -925,7 +927,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
       if (XML->sys.mc.number_mcs > 0 &&
           XML->sys.mc.memory_channels_per_mc > 0) {
-        mc->displayEnergy(indent + 4);
+        mc.display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -1110,9 +1112,5 @@ Processor::~Processor() {
   while (!l2dirarray.empty()) {
     delete l2dirarray.back();
     l2dirarray.pop_back();
-  }
-  if (mc) {
-    delete mc;
-    mc = nullptr;
   }
 };
