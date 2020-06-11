@@ -77,7 +77,7 @@ MemoryController::MemoryController(ParseXML *XML_interface,
                                    InputParameter *interface_ip_,
                                    enum MemoryCtrl_type mc_type_)
     : XML(XML_interface), interface_ip(*interface_ip_), mc_type(mc_type_),
-      frontend(0), pipeLogic(0) {
+      pipeLogic(0) {
   /* All computations are for a single MC
    *
    */
@@ -89,8 +89,11 @@ MemoryController::MemoryController(ParseXML *XML_interface,
   transecEngine.set_stats(mcp);
   transecEngine.computeArea();
   transecEngine.computeStaticPower();
-  frontend = new MCFrontEnd(XML, &interface_ip, mcp, mc_type);
-  area.set_area(area.get_area() + frontend->area.get_area());
+  frontend.set_params(XML, &interface_ip, mcp, mc_type);
+  frontend.set_stats(XML, mcp);
+  frontend.computeArea();
+  frontend.computeStaticPower();
+  area.set_area(area.get_area() + frontend.area.get_area());
   area.set_area(area.get_area() + transecEngine.area.get_area());
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
     PHY.set_params(XML, mcp, &interface_ip, mc_type);
@@ -102,18 +105,18 @@ MemoryController::MemoryController(ParseXML *XML_interface,
 }
 
 void MemoryController::computeEnergy(bool is_tdp) {
-  frontend->computeEnergy(is_tdp);
+  frontend.computeDynamicPower();
   transecEngine.computeDynamicPower();
   if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
     PHY.computeDynamicPower();
   }
   if (is_tdp) {
-    power = power + frontend->power + transecEngine.power;
+    power = power + frontend.power + transecEngine.power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
       power = power + PHY.power;
     }
   } else {
-    rt_power = rt_power + frontend->rt_power + transecEngine.rt_power;
+    rt_power = rt_power + frontend.rt_power + transecEngine.rt_power;
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
       rt_power = rt_power + PHY.rt_power;
     }
@@ -136,11 +139,12 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
          << (long_channel ? power.readOp.longer_channel_leakage
                           : power.readOp.leakage)
          << " W" << endl;
-    if (power_gating)
+    if (power_gating) {
       cout << indent_str << "Subthreshold Leakage with power gating = "
            << (long_channel ? power.readOp.power_gated_with_long_channel_leakage
                             : power.readOp.power_gated_leakage)
            << " W" << endl;
+    }
     cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage << " W"
          << endl;
     cout << indent_str
@@ -148,30 +152,7 @@ void MemoryController::displayEnergy(uint32_t indent, int plevel, bool enable) {
          << " W" << endl;
     cout << endl;
 
-    cout << indent_str << "Front End Engine:" << endl;
-    cout << indent_str_next << "Area = " << frontend->area.get_area() * 1e-6
-         << " mm^2" << endl;
-    cout << indent_str_next
-         << "Peak Dynamic = " << frontend->power.readOp.dynamic * mcp.clockRate
-         << " W" << endl;
-    cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? frontend->power.readOp.longer_channel_leakage
-                          : frontend->power.readOp.leakage)
-         << " W" << endl;
-    if (power_gating)
-      cout
-          << indent_str_next << "Subthreshold Leakage with power gating = "
-          << (long_channel
-                  ? frontend->power.readOp.power_gated_with_long_channel_leakage
-                  : frontend->power.readOp.power_gated_leakage)
-          << " W" << endl;
-    cout << indent_str_next
-         << "Gate Leakage = " << frontend->power.readOp.gate_leakage << " W"
-         << endl;
-    cout << indent_str_next << "Runtime Dynamic = "
-         << frontend->rt_power.readOp.dynamic / mcp.executionTime << " W"
-         << endl;
-    cout << endl;
+    frontend.display(indent, true);
     transecEngine.display(indent, true);
     if (mcp.type == 0 || (mcp.type == 1 && mcp.withPHY)) {
       PHY.display(indent, true);
@@ -263,10 +244,6 @@ void MemoryController::set_mc_param() {
 }
 
 MemoryController ::~MemoryController() {
-  if (frontend) {
-    delete frontend;
-    frontend = 0;
-  }
   if (pipeLogic) {
     delete pipeLogic;
     pipeLogic = 0;

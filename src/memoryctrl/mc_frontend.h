@@ -42,22 +42,47 @@
 
 class MCFrontEnd : public Component {
 public:
-  ParseXML *XML;
-  InputParameter interface_ip;
+  InputParameter sl_ip;
+  InputParameter fe_ip;
+  InputParameter rb_ip;
+  InputParameter wb_ip;
   enum MemoryCtrl_type mc_type;
   MCParam mcp;
   selection_logic *MC_arb;
-  ArrayST *frontendBuffer;
-  ArrayST *readBuffer;
-  ArrayST *writeBuffer;
+  ArrayST frontendBuffer;
+  ArrayST readBuffer;
+  ArrayST writeBuffer;
 
-  MCFrontEnd(ParseXML *XML_interface,
-             InputParameter *interface_ip_,
-             const MCParam &mcp_,
-             enum MemoryCtrl_type mc_type_);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  MCFrontEnd();
+  void set_params(const ParseXML *XML,
+                  InputParameter *interface_ip_,
+                  const MCParam &mcp_,
+                  enum MemoryCtrl_type mc_type_);
+  void set_stats(const ParseXML *XML, const MCParam &mcp_);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true, bool detailed = false);
   ~MCFrontEnd();
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
+  int memory_channels_per_mc;
+  int physical_address_width;
+  int req_window_size_per_channel;
+  int IO_buffer_size_per_channel;
+  int memory_reads;
+  int memory_writes;
+
+  void computeFrontEndRTP();
+  void computeReadBufferRTP();
+  void computeWriteBufferRTP();
+  void computeFrontEndTDP();
+  void computeReadBufferTDP();
+  void computeWriteBufferTDP();
 };
 
 #endif // __MC_FRONTEND_H__

@@ -49,7 +49,7 @@ public:
   InputParameter interface_ip;
   enum MemoryCtrl_type mc_type;
   MCParam mcp;
-  MCFrontEnd *frontend;
+  MCFrontEnd frontend;
   MCBackend transecEngine;
   MCPHY PHY;
   Pipeline *pipeLogic;
