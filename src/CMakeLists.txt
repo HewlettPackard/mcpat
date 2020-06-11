@@ -1,5 +1,6 @@
 add_subdirectory(cacti)
 add_subdirectory(iocontrollers)
+add_subdirectory(memoryctrl)
 
 add_library(top
   arch_const.h
@@ -16,8 +17,6 @@ add_library(top
   logic.cc
   noc.h
   noc.cc
-  memoryctrl.h
-  memoryctrl.cc
   options.h
   options.cc
   processor.h
@@ -31,19 +30,17 @@ add_library(top
   XML_Parse.cc
 )
 target_include_directories(top PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(top LINK_PUBLIC cacti iocontrollers)
+target_link_libraries(top LINK_PUBLIC cacti iocontrollers memoryctrl)
 
 add_executable(mcpat main.cc)
 
 target_link_libraries(mcpat
                       LINK_PUBLIC
-                      cacti
                       top
-                      iocontrollers
                       Threads::Threads
                       Boost::program_options)
 
 add_custom_command(TARGET mcpat POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mcpat> ${PROJECT_BINARY_DIR}/mcpat
   COMMENT "Copying executable ${PROJECT_BINARY_DIR}/mcpat"
-  )
+)

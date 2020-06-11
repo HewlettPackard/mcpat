@@ -1326,6 +1326,7 @@ void inst_decoder::inst_decoder_delay_power() {
            squencer_passes * num_decoder_segments);
   power = power + final_dec->power * pppm_t;
 }
+
 void inst_decoder::leakage_feedback(double temperature) {
   l_ip.temp = (unsigned int)round(temperature / 10.0) * 10;
   uca_org_t init_result = init_interface(&l_ip); // init_result is dummy

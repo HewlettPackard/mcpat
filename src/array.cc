@@ -78,6 +78,60 @@ void ArrayST::compute_base_power() {
   //    }
 }
 
+/*
+ * set_params(const InputParameter,
+ *            string _name,
+ *            enum Device_ty,
+ *            bool opt_local_,
+ *            enum Core_type core_ty,
+ *            bool _is_default)
+ *    Set the member variables so that optimization can be clalled in
+ *    computeArea()
+ *    Side Effects:
+ *      Sets all the same member variables as the constructor
+ *    Inputs:
+ *      configure_interface - InputParameter
+ *      _name - device name
+ *      device_ty_ - device type
+ *      opt_local - Optimization flag
+ *    Outputs:
+ *      None
+ */
+void ArrayST::set_params(const InputParameter *configure_interface,
+                         string _name,
+                         enum Device_ty device_ty_,
+                         bool opt_local_,
+                         enum Core_type core_ty_,
+                         bool _is_default) {
+  l_ip = *configure_interface;
+  name = _name;
+  device_ty = device_ty_;
+  opt_local = opt_local_;
+  core_ty = core_ty_;
+  is_default = _is_default;
+
+  if (l_ip.cache_sz < 64)
+    l_ip.cache_sz = 64;
+  if (l_ip.power_gating && (l_ip.assoc == 0)) {
+    l_ip.power_gating = false;
+  }
+
+  l_ip.error_checking(); // not only do the error checking but also fill some
+                         // missing parameters
+}
+
+/*
+ * computeArea()
+ *    wrapper around optimize array
+ *    SideEffects:
+ *      Optimizes the array area and power
+ *    Inputs:
+ *      None
+ *    Output:
+ *      None
+ */
+void ArrayST::computeArea() { optimize_array(); }
+
 void ArrayST::optimize_array() {
   list<uca_org_t> candidate_solutions(0);
   list<uca_org_t>::iterator candidate_iter, min_dynamic_energy_iter;

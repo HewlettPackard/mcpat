@@ -29,95 +29,48 @@
  *
  ***************************************************************************/
 
-#ifndef MEMORYCTRL_H_
-#define MEMORYCTRL_H_
+#ifndef __MEMORYCTRL_H__
+#define __MEMORYCTRL_H__
 
 #include "XML_Parse.h"
-#include "logic.h"
-#include "parameter.h"
-//#include "io.h"
 #include "array.h"
-//#include "Undifferentiated_Core_Area.h"
 #include "basic_components.h"
+#include "logic.h"
+#include "mc_backend.h"
+#include "mc_frontend.h"
+#include "mc_phy.h"
+#include "parameter.h"
 
 #include <vector>
 
-class MCBackend : public Component {
-public:
-  InputParameter l_ip;
-  uca_org_t local_result;
-  enum MemoryCtrl_type mc_type;
-  MCParam mcp;
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-  MCBackend(InputParameter *interface_ip_,
-            const MCParam &mcp_,
-            enum MemoryCtrl_type mc_type_);
-  void compute();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~MCBackend(){};
-};
-
-class MCPHY : public Component {
-public:
-  InputParameter l_ip;
-  uca_org_t local_result;
-  enum MemoryCtrl_type mc_type;
-  MCParam mcp;
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-  MCPHY(InputParameter *interface_ip_,
-        const MCParam &mcp_,
-        enum MemoryCtrl_type mc_type_);
-  void compute();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~MCPHY(){};
-};
-
-class MCFrontEnd : public Component {
-public:
-  ParseXML *XML;
-  InputParameter interface_ip;
-  enum MemoryCtrl_type mc_type;
-  MCParam mcp;
-  selection_logic *MC_arb;
-  ArrayST *frontendBuffer;
-  ArrayST *readBuffer;
-  ArrayST *writeBuffer;
-
-  MCFrontEnd(ParseXML *XML_interface,
-             InputParameter *interface_ip_,
-             const MCParam &mcp_,
-             enum MemoryCtrl_type mc_type_);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~MCFrontEnd();
-};
-
 class MemoryController : public Component {
 public:
-  ParseXML *XML;
   InputParameter interface_ip;
   enum MemoryCtrl_type mc_type;
   MCParam mcp;
-  MCFrontEnd *frontend;
-  MCBackend *transecEngine;
-  MCPHY *PHY;
-  Pipeline *pipeLogic;
+  MCFrontEnd frontend;
+  MCBackend transecEngine;
+  MCPHY PHY;
 
   // clock_network clockNetwork;
-  MemoryController(ParseXML *XML_interface,
-                   InputParameter *interface_ip_,
-                   enum MemoryCtrl_type mc_type_);
-  void set_mc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  MemoryController();
+  void set_params(const ParseXML *XML,
+                  InputParameter *interface_ip_,
+                  enum MemoryCtrl_type mc_type_);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
   ~MemoryController();
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
+  bool set_area;
+
+  void set_mc_param(const ParseXML *XML);
 };
-#endif /* MEMORYCTRL_H_ */
+#endif /* __MEMORYCTRL_H__ */

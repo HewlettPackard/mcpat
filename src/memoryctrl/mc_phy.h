@@ -28,54 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-#ifndef PROCESSOR_H_
-#define PROCESSOR_H_
+
+#ifndef __MC_PHY_H__
+#define __MC_PHY_H__
 
 #include "XML_Parse.h"
-#include "arbiter.h"
-#include "area.h"
 #include "array.h"
 #include "basic_components.h"
-#include "core.h"
-#include "decoder.h"
-#include "flash_controller.h"
-#include "memoryctrl.h"
-#include "niu_controller.h"
-#include "noc.h"
+#include "logic.h"
 #include "parameter.h"
-#include "pcie_controller.h"
-#include "router.h"
-#include "sharedcache.h"
 
 #include <vector>
 
-class Processor : public Component {
+class MCPHY : public Component {
 public:
-  ParseXML *XML;
-  vector<Core *> cores;
-  vector<SharedCache *> l2array;
-  vector<SharedCache *> l3array;
-  vector<SharedCache *> l1dirarray;
-  vector<SharedCache *> l2dirarray;
-  vector<NoC *> nocs;
-  MemoryController mc;
-  NIUController niu;
-  PCIeController pcie;
-  FlashController flashcontroller;
-  InputParameter interface_ip;
-  ProcParam procdynp;
-  // wire	globalInterconnect;
-  // clock_network globalClock;
-  Component core, l2, l3, l1dir, l2dir, noc, mcs, cc, nius, pcies,
-      flashcontrollers;
-  int numCore, numL2, numL3, numNOC, numL1Dir, numL2Dir;
-  Processor(ParseXML *XML_interface);
-  void compute();
-  void set_proc_param();
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  void displayDeviceType(int device_type_, uint32_t indent = 0);
-  void displayInterconnectType(int interconnect_type_, uint32_t indent = 0);
-  ~Processor();
+  InputParameter ip;
+  uca_org_t local_result;
+  enum MemoryCtrl_type mc_type;
+  MCParam mcp;
+  statsDef tdp_stats;
+  statsDef rtp_stats;
+  statsDef stats_t;
+  powerDef power_t;
+  MCPHY();
+  void set_params(const ParseXML *XML,
+                  const MCParam &mcp_,
+                  InputParameter *interface_ip,
+                  const enum MemoryCtrl_type mc_type_);
+  void set_stats(const MCParam &mcp_);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
+  ~MCPHY(){};
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
 };
 
-#endif /* PROCESSOR_H_ */
+#endif // __MC_PHY_H__
