@@ -29,8 +29,8 @@
  *
  ***************************************************************************/
 
-#ifndef ARRAY_H_
-#define ARRAY_H_
+#ifndef __ARRAY_H__
+#define __ARRAY_H__
 
 #include "basic_components.h"
 #include "cacti_interface.h"
@@ -66,10 +66,18 @@ public:
   statsDef stats_t;
   powerDef power_t;
 
-  virtual void optimize_array();
-  virtual void compute_base_power();
+  virtual void set_params(const InputParameter *configure_interface,
+                          string _name,
+                          enum Device_ty device_ty_,
+                          bool opt_local_ = true,
+                          enum Core_type core_ty_ = Inorder,
+                          bool _is_default = true);
+  virtual void computeArea();
   virtual ~ArrayST();
 
+protected:
+  virtual void optimize_array();
+  virtual void compute_base_power();
   void leakage_feedback(double temperature);
 };
 
@@ -118,4 +126,4 @@ public:
   };
 };
 
-#endif /* TLB_H_ */
+#endif /* __ARRAY_H__ */

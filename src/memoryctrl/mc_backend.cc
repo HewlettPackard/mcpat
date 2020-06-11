@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
 #include "mc_backend.h"
 
 #include "XML_Parse.h"
@@ -46,7 +45,7 @@
 #include <string>
 
 /*
- * MCBackend()
+ * MCPHY()
  *    Constructor, Initializes the member variables that are shared across
  *    methods.
  */

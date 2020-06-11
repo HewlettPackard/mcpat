@@ -17,8 +17,6 @@ add_library(top
   logic.cc
   noc.h
   noc.cc
-  memoryctrl.h
-  memoryctrl.cc
   options.h
   options.cc
   processor.h
