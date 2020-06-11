@@ -29,9 +29,11 @@
  *
  ***************************************************************************/
 
-#ifndef __ARRAY_H__
-#define __ARRAY_H__
+#ifndef __DATACACHE_H__
+#define __DATACACHE_H__
 
+#include "array.h"
+#include "instcache.h"
 #include "basic_components.h"
 #include "cacti_interface.h"
 #include "component.h"
@@ -41,45 +43,12 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
-class ArrayST : public Component {
+class DataCache : public InstCache {
 public:
-  ArrayST(){};
-  ArrayST(const InputParameter *configure_interface,
-          string _name,
-          enum Device_ty device_ty_,
-          bool opt_local_ = true,
-          enum Core_type core_ty_ = Inorder,
-          bool _is_default = true);
-
-  InputParameter l_ip;
-  string name;
-  enum Device_ty device_ty;
-  bool opt_local;
-  enum Core_type core_ty;
-  bool is_default;
-  uca_org_t local_result;
-
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-
-  virtual void set_params(const InputParameter *configure_interface,
-                          string _name,
-                          enum Device_ty device_ty_,
-                          bool opt_local_ = true,
-                          enum Core_type core_ty_ = Inorder,
-                          bool _is_default = true);
-  virtual void computeArea();
-  virtual ~ArrayST();
-
-protected:
-  virtual void optimize_array();
-  virtual void compute_base_power();
-  void leakage_feedback(double temperature);
+  ArrayST *wbb;
+  DataCache();
+  ~DataCache();
 };
 
+#endif // __DATACACHE_H__
 
-#endif /* __ARRAY_H__ */

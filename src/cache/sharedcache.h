@@ -29,57 +29,66 @@
  *
  ***************************************************************************/
 
-#ifndef __ARRAY_H__
-#define __ARRAY_H__
+#ifndef __SHAREDCACHE_H__
+#define __SHAREDCACHE_H__
 
+#include "XML_Parse.h"
+#include "area.h"
+#include "array.h"
 #include "basic_components.h"
-#include "cacti_interface.h"
-#include "component.h"
-#include "const.h"
+#include "datacache.h"
+#include "logic.h"
 #include "parameter.h"
 
-#include <iostream>
-#include <string>
+#include <vector>
 
-using namespace std;
-
-class ArrayST : public Component {
+class SharedCache : public Component {
 public:
-  ArrayST(){};
-  ArrayST(const InputParameter *configure_interface,
-          string _name,
-          enum Device_ty device_ty_,
-          bool opt_local_ = true,
-          enum Core_type core_ty_ = Inorder,
-          bool _is_default = true);
+  ParseXML *XML;
+  int ithCache;
+  InputParameter interface_ip;
+  enum cache_level cacheL;
+  DataCache unicache; // Shared cache
+  CacheDynParam cachep;
+  statsDef homenode_tdp_stats;
+  statsDef homenode_rtp_stats;
+  statsDef homenode_stats_t;
+  double dir_overhead;
+  //	cache_processor llCache,directory, directory1, inv_dir;
 
-  InputParameter l_ip;
-  string name;
-  enum Device_ty device_ty;
-  bool opt_local;
-  enum Core_type core_ty;
-  bool is_default;
-  uca_org_t local_result;
+  // pipeline pipeLogicCache, pipeLogicDirectory;
+  // clock_network				clockNetwork;
+  double scktRatio, executionTime;
+  //   Component L2Tot, cc, cc1, ccTot;
 
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-
-  virtual void set_params(const InputParameter *configure_interface,
-                          string _name,
-                          enum Device_ty device_ty_,
-                          bool opt_local_ = true,
-                          enum Core_type core_ty_ = Inorder,
-                          bool _is_default = true);
-  virtual void computeArea();
-  virtual ~ArrayST();
-
-protected:
-  virtual void optimize_array();
-  virtual void compute_base_power();
-  void leakage_feedback(double temperature);
+  SharedCache(ParseXML *XML_interface,
+              int ithCache_,
+              InputParameter *interface_ip_,
+              enum cache_level cacheL_ = L2);
+  void set_cache_param();
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
+  ~SharedCache(){};
 };
 
+class CCdir : public Component {
+public:
+  ParseXML *XML;
+  int ithCache;
+  InputParameter interface_ip;
+  DataCache dc; // Shared cache
+  ArrayST *shadow_dir;
+  //	cache_processor llCache,directory, directory1, inv_dir;
 
-#endif /* __ARRAY_H__ */
+  // pipeline pipeLogicCache, pipeLogicDirectory;
+  // clock_network				clockNetwork;
+  double scktRatio, clockRate, executionTime;
+  Component L2Tot, cc, cc1, ccTot;
+
+  CCdir(ParseXML *XML_interface, int ithCache_, InputParameter *interface_ip_);
+  void computeEnergy(bool is_tdp = true);
+  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
+  ~CCdir();
+};
+
+#endif /* SHAREDCACHE_H_ */

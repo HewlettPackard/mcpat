@@ -29,64 +29,28 @@
  *
  ***************************************************************************/
 
-#ifndef SHAREDCACHE_H_
-#define SHAREDCACHE_H_
-#include "XML_Parse.h"
-#include "area.h"
+#ifndef __INSTCACHE_H__
+#define __INSTCACHE_H__
+
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
 #include "parameter.h"
 
-#include <vector>
+#include <iostream>
+#include <string>
 
-class SharedCache : public Component {
+class InstCache : public Component {
 public:
-  ParseXML *XML;
-  int ithCache;
-  InputParameter interface_ip;
-  enum cache_level cacheL;
-  DataCache unicache; // Shared cache
-  CacheDynParam cachep;
-  statsDef homenode_tdp_stats;
-  statsDef homenode_rtp_stats;
-  statsDef homenode_stats_t;
-  double dir_overhead;
-  //	cache_processor llCache,directory, directory1, inv_dir;
-
-  // pipeline pipeLogicCache, pipeLogicDirectory;
-  // clock_network				clockNetwork;
-  double scktRatio, executionTime;
-  //   Component L2Tot, cc, cc1, ccTot;
-
-  SharedCache(ParseXML *XML_interface,
-              int ithCache_,
-              InputParameter *interface_ip_,
-              enum cache_level cacheL_ = L2);
-  void set_cache_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
-  ~SharedCache(){};
+  ArrayST *caches;
+  ArrayST *missb;
+  ArrayST *ifb;
+  ArrayST *prefetchb;
+  powerDef power_t; // temp value holder for both (max) power and runtime power
+  InstCache();
+  ~InstCache();
 };
 
-class CCdir : public Component {
-public:
-  ParseXML *XML;
-  int ithCache;
-  InputParameter interface_ip;
-  DataCache dc; // Shared cache
-  ArrayST *shadow_dir;
-  //	cache_processor llCache,directory, directory1, inv_dir;
-
-  // pipeline pipeLogicCache, pipeLogicDirectory;
-  // clock_network				clockNetwork;
-  double scktRatio, clockRate, executionTime;
-  Component L2Tot, cc, cc1, ccTot;
-
-  CCdir(ParseXML *XML_interface, int ithCache_, InputParameter *interface_ip_);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
-  ~CCdir();
-};
-
-#endif /* SHAREDCACHE_H_ */
+#endif // __INSTCACHE_H__
