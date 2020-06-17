@@ -361,7 +361,9 @@ InstFetchU::InstFetchU(ParseXML *XML_interface,
     area.set_area(area.get_area() + BTB->local_result.area);
     /// cout<<"area="<<area<<endl;
 
-    BPT = new BranchPredictor(XML, ithCore, &interface_ip, coredynp);
+    BPT = new BranchPredictor();
+    BPT->set_params(XML, ithCore, &interface_ip, coredynp);
+    BPT->computeArea();
     area.set_area(area.get_area() + BPT->area.get_area());
   }
 
@@ -538,7 +540,7 @@ void InstFetchU::computeEnergy(bool is_tdp) {
         BTB->local_result.power.readOp.dynamic * BTB->stats_t.readAc.access +
         BTB->stats_t.writeAc.access * BTB->local_result.power.writeOp.dynamic;
 
-    BPT->computeEnergy(is_tdp);
+    BPT->computeDynamicPower(is_tdp);
   }
 
   if (is_tdp) {
