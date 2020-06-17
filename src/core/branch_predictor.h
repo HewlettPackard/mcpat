@@ -41,8 +41,8 @@
 
 class BranchPredictor : public Component {
 public:
-  ParseXML *XML;
   int ithCore;
+  ParseXML *XML;
   InputParameter interface_ip;
   CoreDynParam coredynp;
   double clockRate;
@@ -50,22 +50,37 @@ public:
   double scktRatio;
   double chip_PR_overhead;
   double macro_PR_overhead;
-  ArrayST *globalBPT;
-  ArrayST *localBPT;
-  ArrayST *L1_localBPT;
-  ArrayST *L2_localBPT;
-  ArrayST *chooser;
-  ArrayST *RAS;
+  ArrayST globalBPT;
+  ArrayST localBPT;
+  ArrayST L1_localBPT;
+  ArrayST L2_localBPT;
+  ArrayST chooser;
+  ArrayST RAS;
   bool exist;
 
-  BranchPredictor(ParseXML *XML_interface,
+  BranchPredictor();
+  void set_params(ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
-                  bool exsit = true);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~BranchPredictor();
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML, const MCParam &mcp_);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
+    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+   ~BranchPredictor();
+
+private:
+
+  bool init_params;
+  bool init_stats;
+  
+  bool long_channel;
+  bool power_gating;
+
+
+
 };
 
 #endif // __BRANCH_PREDICTOR__
