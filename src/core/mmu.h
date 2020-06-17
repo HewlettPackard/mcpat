@@ -50,18 +50,26 @@ public:
   double scktRatio;
   double chip_PR_overhead;
   double macro_PR_overhead;
-  ArrayST *itlb;
-  ArrayST *dtlb;
+  ArrayST itlb;
+  ArrayST dtlb;
   bool exist;
 
-  MemManU(ParseXML *XML_interface,
-          int ithCore_,
-          InputParameter *interface_ip_,
-          const CoreDynParam &dyn_p_,
-          bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
+  MemManU();
+  void set_params(ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~MemManU();
+
+  private:
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __MEMORY_MANAGEMENT_U_H__
