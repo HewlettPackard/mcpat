@@ -60,8 +60,8 @@ EXECU::EXECU(ParseXML *XML_interface,
   executionTime = coredynp.executionTime;
   rfu = new RegFU();
   rfu->set_params(XML, ithCore, &interface_ip, coredynp);
-  rfu->set_stats(XML);
   rfu->computeArea();
+  rfu->set_stats(XML);
   scheu = new SchedulerU(XML, ithCore, &interface_ip, coredynp);
   exeu = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, ALU);
   area.set_area(area.get_area() + exeu->area.get_area() + rfu->area.get_area() +
@@ -409,6 +409,7 @@ EXECU::EXECU(ParseXML *XML_interface,
     }
   }
   area.set_area(area.get_area() + bypass.area.get_area());
+
 }
 
 void EXECU::computeEnergy(bool is_tdp) {

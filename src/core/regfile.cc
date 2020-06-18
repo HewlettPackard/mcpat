@@ -133,16 +133,7 @@ void RegFU::set_params(ParseXML *XML_interface,
                     coredynp.core_ty);
   // area.set_area(area.get_area()*cdb_overhead);
   // output_data_csv(FRF.RF.local_result);
-  int_regfile_height = IRF.local_result.cache_ht *
-                       ((coredynp.scheu_ty == ReservationStation)
-                            ? XML->sys.core[ithCore].number_hardware_threads
-                            : 1) *
-                       sqrt(cdb_overhead);
-  fp_regfile_height = FRF.local_result.cache_ht *
-                      ((coredynp.scheu_ty == ReservationStation)
-                           ? XML->sys.core[ithCore].number_hardware_threads
-                           : 1) *
-                      sqrt(cdb_overhead);
+                
   // since a EXU is associated with each pipeline, the cdb should not have
   // longer length.
   if (coredynp.regWindowing) {
@@ -192,6 +183,17 @@ void RegFU::computeStaticPower() {
 
 void RegFU::set_stats(const ParseXML *XML){
   init_stats = true;
+
+  int_regfile_height = IRF.local_result.cache_ht *
+                       ((coredynp.scheu_ty == ReservationStation)
+                            ? XML->sys.core[ithCore].number_hardware_threads
+                            : 1) *
+                       sqrt(cdb_overhead);
+  fp_regfile_height = FRF.local_result.cache_ht *
+                      ((coredynp.scheu_ty == ReservationStation)
+                           ? XML->sys.core[ithCore].number_hardware_threads
+                           : 1) *
+                      sqrt(cdb_overhead);
 }
 
 void RegFU::computeArea(){
