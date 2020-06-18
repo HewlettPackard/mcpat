@@ -52,19 +52,29 @@ public:
   double macro_PR_overhead;
   double int_regfile_height;
   double fp_regfile_height;
-  ArrayST *IRF;
-  ArrayST *FRF;
-  ArrayST *RFWIN;
+  ArrayST IRF;
+  ArrayST FRF;
+  ArrayST RFWIN;
   bool exist;
 
-  RegFU(ParseXML *XML_interface,
-        int ithCore_,
-        InputParameter *interface_ip_,
-        const CoreDynParam &dyn_p_,
-        bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~RegFU();
+  RegFU();
+  void set_params(ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
+    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+   ~RegFU();
+
+
+  private:
+
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __REGFILE_U_H__

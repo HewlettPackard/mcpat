@@ -59,7 +59,12 @@ EXECU::EXECU(ParseXML *XML_interface,
   double fu_height = 0.0;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
-  rfu = new RegFU(XML, ithCore, &interface_ip, coredynp);
+  rfu = new RegFU();
+  rfu->set_params(XML, ithCore, &interface_ip, coredynp);
+  rfu->computeArea();
+  rfu->set_stats(XML);
+  rfu->computeStaticPower();
+
   scheu = new SchedulerU(XML, ithCore, &interface_ip, coredynp);
   exeu = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, ALU);
   area.set_area(area.get_area() + exeu->area.get_area() + rfu->area.get_area() +
@@ -413,14 +418,14 @@ void EXECU::computeEnergy(bool is_tdp) {
   if (!exist)
     return;
   double pppm_t[4] = {1, 1, 1, 1};
-  //	rfu->power.reset();
-  //	rfu->rt_power.reset();
+  //rfu->power.reset();
+  //rfu->rt_power.reset();
   //	scheu->power.reset();
   //	scheu->rt_power.reset();
   //	exeu->power.reset();
   //	exeu->rt_power.reset();
 
-  rfu->computeEnergy(is_tdp);
+  rfu->computeDynamicPower(is_tdp);
   scheu->computeEnergy(is_tdp);
   exeu->computeEnergy(is_tdp);
   if (coredynp.num_fpus > 0) {
