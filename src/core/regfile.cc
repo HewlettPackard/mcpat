@@ -246,6 +246,12 @@ void RegFU::computeDynamicPower(bool is_tdp) {
    */
   if (!exist)
     return;
+    if (!init_stats) {
+    std::cerr << "[ RegFU ] Error: must set stats before calling "
+                 "computeDynamicPower()\n";
+                
+    exit(1);
+  }
   if (is_tdp) {
     // init stats for Peak
     IRF.stats_t.readAc.access =

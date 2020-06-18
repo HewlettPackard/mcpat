@@ -76,7 +76,11 @@ Core::Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_)
       XML, ithCore, &interface_ip, lsu->lsq_height, coredynp, exit_flag);
   undiffCore = new UndiffCore(XML, ithCore, &interface_ip, coredynp, exit_flag);
   if (coredynp.core_ty == OOO) {
-    rnu = new RENAMINGU(XML, ithCore, &interface_ip, coredynp);
+    rnu = new RENAMINGU();
+    rnu->set_params(XML, ithCore, &interface_ip, coredynp);
+    rnu->computeArea();
+    rnu->set_stats(XML);
+    rnu->computeStaticPower();
   }
   corepipe = new Pipeline(&interface_ip, coredynp);
 
@@ -151,7 +155,7 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeEnergy(is_tdp);
+      rnu->computeDynamicPower(is_tdp);
       set_pppm(
           pppm_t,
           coredynp.num_pipelines / num_units,
@@ -241,7 +245,7 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeEnergy(is_tdp);
+      rnu->computeDynamicPower(is_tdp);
       if (XML->sys.homogeneous_cores == 1) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            XML->sys.total_cycles * XML->sys.number_of_cores;

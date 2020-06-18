@@ -53,20 +53,29 @@ public:
   double Iw_height;
   double fp_Iw_height;
   double ROB_height;
-  ArrayST *int_inst_window;
-  ArrayST *fp_inst_window;
-  ArrayST *ROB;
+  ArrayST int_inst_window;
+  ArrayST fp_inst_window;
+  ArrayST ROB;
   selection_logic *instruction_selection;
   bool exist;
 
-  SchedulerU(ParseXML *XML_interface,
-             int ithCore_,
-             InputParameter *interface_ip_,
-             const CoreDynParam &dyn_p_,
-             bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~SchedulerU();
+  SchedulerU();
+  void set_params(ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
+    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+   ~SchedulerU();
+  
+  private:
+
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __SCHEDULER_H__
