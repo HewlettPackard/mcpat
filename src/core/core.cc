@@ -71,7 +71,10 @@ Core::Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_)
   executionTime = coredynp.executionTime;
   ifu = new InstFetchU(XML, ithCore, &interface_ip, coredynp, exit_flag);
   lsu = new LoadStoreU(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  mmu = new MemManU(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  mmu = new MemManU();
+  mmu->set_params(XML, ithCore, &interface_ip, coredynp);
+  mmu->computeArea();
+  mmu->set_stats(XML);
   exu = new EXECU(
       XML, ithCore, &interface_ip, lsu->lsq_height, coredynp, exit_flag);
   undiffCore = new UndiffCore(XML, ithCore, &interface_ip, coredynp, exit_flag);
@@ -146,7 +149,7 @@ void Core::computeEnergy(bool is_tdp) {
   if (is_tdp) {
     ifu->computeEnergy(is_tdp);
     lsu->computeEnergy(is_tdp);
-    mmu->computeEnergy(is_tdp);
+    mmu->computeDynamicPower(is_tdp);
     exu->computeEnergy(is_tdp);
 
     if (coredynp.core_ty == OOO) {
@@ -236,7 +239,7 @@ void Core::computeEnergy(bool is_tdp) {
   } else {
     ifu->computeEnergy(is_tdp);
     lsu->computeEnergy(is_tdp);
-    mmu->computeEnergy(is_tdp);
+    mmu->computeDynamicPower(is_tdp);
     exu->computeEnergy(is_tdp);
 
     if (coredynp.core_ty == OOO) {

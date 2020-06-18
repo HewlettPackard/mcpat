@@ -364,6 +364,7 @@ InstFetchU::InstFetchU(ParseXML *XML_interface,
     BPT = new BranchPredictor();
     BPT->set_params(XML, ithCore, &interface_ip, coredynp);
     BPT->computeArea();
+    BPT->set_stats(XML);
     area.set_area(area.get_area() + BPT->area.get_area());
   }
 

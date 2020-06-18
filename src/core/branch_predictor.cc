@@ -49,8 +49,6 @@
 BranchPredictor::BranchPredictor(){
   init_params = false;
   init_stats = false;
-  long_channel = false;
-  power_gating = false;
 }
 
 void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_, const CoreDynParam &dyn_p_, bool exist_){
@@ -249,13 +247,18 @@ void BranchPredictor::computeStaticPower() {
   // along with the array area.
 }
 
-void BranchPredictor::set_stats(const ParseXML *XML, const MCParam &mcp_){
+void BranchPredictor::set_stats(const ParseXML *XML){
   init_stats = true;
 }
 
 void BranchPredictor::computeDynamicPower(bool is_tdp){
   if (!exist)
     return;
+  if (!init_stats) {
+    std::cerr << "[ BranchPredictor ] Error: must set params before calling "
+                 "computeDynamicPower()\n";
+    exit(1);
+  }
   double r_access;
   double w_access; 
   if (is_tdp) {

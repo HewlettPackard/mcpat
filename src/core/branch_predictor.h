@@ -64,7 +64,7 @@ public:
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
                   bool exist_ = true);
-  void set_stats(const ParseXML *XML, const MCParam &mcp_);
+  void set_stats(const ParseXML *XML);
   void computeArea();
   void computeStaticPower();
   void computeDynamicPower(bool is_tdp);
@@ -75,9 +75,6 @@ private:
 
   bool init_params;
   bool init_stats;
-  
-  bool long_channel;
-  bool power_gating;
 
 
 
