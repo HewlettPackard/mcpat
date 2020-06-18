@@ -14,7 +14,6 @@
  * neither the name of the copyright holders nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
-
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -59,8 +58,14 @@ EXECU::EXECU(ParseXML *XML_interface,
   double fu_height = 0.0;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
-  rfu = new RegFU(XML, ithCore, &interface_ip, coredynp);
-  scheu = new SchedulerU(XML, ithCore, &interface_ip, coredynp);
+  rfu = new RegFU();
+  rfu->set_params(XML, ithCore, &interface_ip, coredynp);
+  rfu->computeArea();
+  rfu->set_stats(XML);
+  scheu = new SchedulerU();
+  scheu->set_params(XML, ithCore, &interface_ip, coredynp);
+  scheu->computeArea();
+  scheu->set_stats(XML);
   exeu = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, ALU);
   area.set_area(area.get_area() + exeu->area.get_area() + rfu->area.get_area() +
                 scheu->area.get_area());
@@ -407,6 +412,7 @@ EXECU::EXECU(ParseXML *XML_interface,
     }
   }
   area.set_area(area.get_area() + bypass.area.get_area());
+
 }
 
 void EXECU::computeEnergy(bool is_tdp) {
@@ -420,8 +426,8 @@ void EXECU::computeEnergy(bool is_tdp) {
   //	exeu->power.reset();
   //	exeu->rt_power.reset();
 
-  rfu->computeEnergy(is_tdp);
-  scheu->computeEnergy(is_tdp);
+  rfu->computeDynamicPower(is_tdp);
+  scheu->computeDynamicPower(is_tdp);
   exeu->computeEnergy(is_tdp);
   if (coredynp.num_fpus > 0) {
     fp_u->computeEnergy(is_tdp);
