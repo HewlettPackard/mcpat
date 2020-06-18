@@ -14,7 +14,6 @@
  * neither the name of the copyright holders nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
-
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -61,10 +60,8 @@ EXECU::EXECU(ParseXML *XML_interface,
   executionTime = coredynp.executionTime;
   rfu = new RegFU();
   rfu->set_params(XML, ithCore, &interface_ip, coredynp);
-  rfu->computeArea();
   rfu->set_stats(XML);
-  rfu->computeStaticPower();
-
+  rfu->computeArea();
   scheu = new SchedulerU(XML, ithCore, &interface_ip, coredynp);
   exeu = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, ALU);
   area.set_area(area.get_area() + exeu->area.get_area() + rfu->area.get_area() +
@@ -418,8 +415,8 @@ void EXECU::computeEnergy(bool is_tdp) {
   if (!exist)
     return;
   double pppm_t[4] = {1, 1, 1, 1};
-  //rfu->power.reset();
-  //rfu->rt_power.reset();
+  //	rfu->power.reset();
+  //	rfu->rt_power.reset();
   //	scheu->power.reset();
   //	scheu->rt_power.reset();
   //	exeu->power.reset();
