@@ -2,6 +2,7 @@ add_subdirectory(cacti)
 add_subdirectory(cache)
 add_subdirectory(core)
 add_subdirectory(iocontrollers)
+add_subdirectory(logic)
 add_subdirectory(memoryctrl)
 
 add_library(top
@@ -13,8 +14,6 @@ add_library(top
   globalvar.h
   interconnect.h
   interconnect.cc
-  logic.h
-  logic.cc
   noc.h
   noc.cc
   options.h
@@ -33,6 +32,7 @@ target_link_libraries(top
                       cache
                       cacti
                       core
+                      logic
                       iocontrollers
                       memoryctrl)
 

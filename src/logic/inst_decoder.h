@@ -28,50 +28,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __INST_DECODER_H__
+#define __INST_DECODER_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class inst_decoder : public Component {
 public:
-  const ParseXML *XML;
-  int ithCore;
-  InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
-  CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  inst_decoder(bool _is_default,
+               const InputParameter *configure_interface,
+               int opcode_length_,
+               int num_decoders_,
+               bool x86_,
+               enum Device_ty device_ty_ = Core_device,
+               enum Core_type core_ty_ = Inorder);
+  inst_decoder();
+  bool is_default;
+  int opcode_length;
+  int num_decoders;
+  bool x86;
+  int num_decoder_segments;
+  int num_decoded_signals;
+  InputParameter l_ip;
+  uca_org_t local_result;
+  enum Device_ty device_ty;
+  enum Core_type core_ty;
+
+  Decoder *final_dec;
+  Predec *pre_dec;
+
+  statsDef tdp_stats;
+  statsDef rtp_stats;
+  statsDef stats_t;
+  powerDef power_t;
+  void inst_decoder_delay_power();
+  ~inst_decoder();
+  void leakage_feedback(double temperature);
 };
 
-#endif /* CORE_H_ */
+#endif //__INST_DECODER_H__

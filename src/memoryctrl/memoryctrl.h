@@ -35,7 +35,6 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
 #include "mc_backend.h"
 #include "mc_frontend.h"
 #include "mc_phy.h"

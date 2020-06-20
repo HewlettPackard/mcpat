@@ -31,11 +31,11 @@
 
 #ifndef NOC_H_
 #define NOC_H_
+
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 #include "router.h"
 

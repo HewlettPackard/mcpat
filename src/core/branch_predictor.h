@@ -36,7 +36,6 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class BranchPredictor : public Component {
@@ -50,22 +49,30 @@ public:
   double scktRatio;
   double chip_PR_overhead;
   double macro_PR_overhead;
-  ArrayST *globalBPT;
-  ArrayST *localBPT;
-  ArrayST *L1_localBPT;
-  ArrayST *L2_localBPT;
-  ArrayST *chooser;
-  ArrayST *RAS;
+  ArrayST globalBPT;
+  ArrayST localBPT;
+  ArrayST L1_localBPT;
+  ArrayST L2_localBPT;
+  ArrayST chooser;
+  ArrayST RAS;
   bool exist;
 
-  BranchPredictor(const ParseXML *XML_interface,
+  BranchPredictor();
+  void set_params(const ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
-                  bool exsit = true);
-  void computeEnergy(bool is_tdp = true);
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~BranchPredictor();
+
+private:
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __BRANCH_PREDICTOR__

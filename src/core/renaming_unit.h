@@ -35,8 +35,8 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
+#include "dep_resource_conflict_check.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class RENAMINGU : public Component {
@@ -47,25 +47,33 @@ public:
   double clockRate;
   double executionTime;
   CoreDynParam coredynp;
-  ArrayST *iFRAT;
-  ArrayST *fFRAT;
-  ArrayST *iRRAT;
-  ArrayST *fRRAT;
-  ArrayST *ifreeL;
-  ArrayST *ffreeL;
+  ArrayST iFRAT;
+  ArrayST fFRAT;
+  ArrayST iRRAT;
+  ArrayST fRRAT;
+  ArrayST ifreeL;
+  ArrayST ffreeL;
   dep_resource_conflict_check *idcl;
   dep_resource_conflict_check *fdcl;
-  ArrayST *RAHT; // register alias history table Used to store GC
+  ArrayST RAHT; // register alias history table Used to store GC
   bool exist;
 
-  RENAMINGU(const ParseXML *XML_interface,
-            int ithCore_,
-            InputParameter *interface_ip_,
-            const CoreDynParam &dyn_p_,
-            bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
+  RENAMINGU();
+  void set_params(const ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~RENAMINGU();
+
+private:
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __RENAMING_U_H__

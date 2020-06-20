@@ -36,7 +36,7 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
+#include "functional_unit.h"
 #include "parameter.h"
 #include "regfile.h"
 #include "scheduler.h"

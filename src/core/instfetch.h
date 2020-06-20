@@ -36,9 +36,9 @@
 #include "array.h"
 #include "basic_components.h"
 #include "branch_predictor.h"
+#include "inst_decoder.h"
 #include "instcache.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class InstFetchU : public Component {

@@ -37,7 +37,6 @@
 #include "basic_components.h"
 #include "datacache.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class LoadStoreU : public Component {

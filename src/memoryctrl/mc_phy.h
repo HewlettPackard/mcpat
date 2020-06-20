@@ -35,7 +35,6 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
 #include "parameter.h"
 
 #include <vector>

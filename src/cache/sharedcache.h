@@ -38,7 +38,6 @@
 #include "basic_components.h"
 #include "cache_param.h"
 #include "datacache.h"
-#include "logic.h"
 #include "parameter.h"
 
 #include <vector>
