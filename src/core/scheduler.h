@@ -41,7 +41,7 @@
 
 class SchedulerU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -59,7 +59,7 @@ public:
   selection_logic *instruction_selection;
   bool exist;
 
-  SchedulerU(ParseXML *XML_interface,
+  SchedulerU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,

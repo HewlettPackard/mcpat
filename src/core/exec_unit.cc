@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-EXECU::EXECU(ParseXML *XML_interface,
+EXECU::EXECU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              double lsq_height_,

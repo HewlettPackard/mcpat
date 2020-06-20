@@ -51,12 +51,12 @@
 
 class Processor : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   vector<Core *> cores;
-  vector<SharedCache *> l2array;
-  vector<SharedCache *> l3array;
-  vector<SharedCache *> l1dirarray;
-  vector<SharedCache *> l2dirarray;
+  vector<SharedCache> l2array;
+  vector<SharedCache> l3array;
+  vector<SharedCache> l1dirarray;
+  vector<SharedCache> l2dirarray;
   vector<NoC *> nocs;
   MemoryController mc;
   NIUController niu;
@@ -69,13 +69,19 @@ public:
   Component core, l2, l3, l1dir, l2dir, noc, mcs, cc, nius, pcies,
       flashcontrollers;
   int numCore, numL2, numL3, numNOC, numL1Dir, numL2Dir;
-  Processor(ParseXML *XML_interface);
-  void compute();
-  void set_proc_param();
+  Processor(ParseXML *XML_interface, const bool calc_area = true);
+  void compute(ParseXML *XML_interface);
+  void create(const ParseXML *XML_interface, const bool calc_area = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   void displayDeviceType(int device_type_, uint32_t indent = 0);
   void displayInterconnectType(int interconnect_type_, uint32_t indent = 0);
   ~Processor();
+
+private:
+  void set_proc_param();
+  void init();
+  void compute_area(const bool calc_area = true);
+  void compute_power();
 };
 
 #endif /* PROCESSOR_H_ */

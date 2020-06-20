@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-SchedulerU::SchedulerU(ParseXML *XML_interface,
+SchedulerU::SchedulerU(const ParseXML *XML_interface,
                        int ithCore_,
                        InputParameter *interface_ip_,
                        const CoreDynParam &dyn_p_,

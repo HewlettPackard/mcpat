@@ -35,8 +35,8 @@
 #include "XML_Parse.h"
 #include "area.h"
 #include "array.h"
-#include "cache_param.h"
 #include "basic_components.h"
+#include "cache_param.h"
 #include "datacache.h"
 #include "logic.h"
 #include "parameter.h"
@@ -63,6 +63,7 @@ public:
   void computeDynamicPower();
   void display(uint32_t indent = 0, bool enable = true);
   ~SharedCache(){};
+
 private:
   const ParseXML *XML;
   int ithCache;

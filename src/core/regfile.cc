@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-RegFU::RegFU(ParseXML *XML_interface,
+RegFU::RegFU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,

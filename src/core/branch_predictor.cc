@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-BranchPredictor::BranchPredictor(ParseXML *XML_interface,
+BranchPredictor::BranchPredictor(const ParseXML *XML_interface,
                                  int ithCore_,
                                  InputParameter *interface_ip_,
                                  const CoreDynParam &dyn_p_,

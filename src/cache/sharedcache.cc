@@ -58,7 +58,7 @@ SharedCache::SharedCache() {
   dir_overhead = 0.0;
   scktRatio = 0.0;
   executionTime = 0.0;
-  
+
   device_t = Core_device;
   core_t = OOO;
 
@@ -71,12 +71,12 @@ SharedCache::SharedCache() {
   banks = 0.0;
 }
 
-void SharedCache::set_params(const ParseXML* XML,
+void SharedCache::set_params(const ParseXML *XML,
                              const int ithCache,
-                             InputParameter* interface_ip_,
+                             InputParameter *interface_ip_,
                              const enum cache_level cacheL_) {
   int idx = 0;
-  int tag = 0; 
+  int tag = 0;
   int data = 0;
   this->cacheL = cacheL_;
   this->interface_ip = *interface_ip_;
@@ -90,16 +90,17 @@ void SharedCache::set_params(const ParseXML* XML,
     core_t = Inorder;
   }
 
-  switch(cacheL) {
-    case L2 : {
+  switch (cacheL) {
+    case L2: {
       cachep.set_params_l2_cache(XML, ithCache);
       interface_ip.data_arr_ram_cell_tech_type =
           XML->sys.L2[ithCache].device_type; // long channel device LSTP
       interface_ip.data_arr_peri_global_tech_type =
           XML->sys.L2[ithCache].device_type;
-      interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L2[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type =
+          XML->sys.L2[ithCache].device_type;
       interface_ip.tag_arr_peri_global_tech_type =
-      XML->sys.L2[ithCache].device_type;
+          XML->sys.L2[ithCache].device_type;
       if (XML->sys.Private_L2 && XML->sys.core[ithCache].vdd > 0) {
         interface_ip.specific_hp_vdd = true;
         interface_ip.specific_lop_vdd = true;
@@ -108,7 +109,8 @@ void SharedCache::set_params(const ParseXML* XML,
         interface_ip.lop_Vdd = XML->sys.core[ithCache].vdd;
         interface_ip.lstp_Vdd = XML->sys.core[ithCache].vdd;
       }
-      if (XML->sys.Private_L2 && XML->sys.core[ithCache].power_gating_vcc > -1) {
+      if (XML->sys.Private_L2 &&
+          XML->sys.core[ithCache].power_gating_vcc > -1) {
         interface_ip.specific_vcc_min = true;
         interface_ip.user_defined_vcc_min =
             XML->sys.core[ithCache].power_gating_vcc;
@@ -128,13 +130,14 @@ void SharedCache::set_params(const ParseXML* XML,
       }
       break;
     }
-    case L3 : {
+    case L3: {
       cachep.set_params_l3_cache(XML, ithCache);
       interface_ip.data_arr_ram_cell_tech_type =
           XML->sys.L3[ithCache].device_type; // long channel device LSTP
       interface_ip.data_arr_peri_global_tech_type =
           XML->sys.L3[ithCache].device_type;
-      interface_ip.tag_arr_ram_cell_tech_type = XML->sys.L3[ithCache].device_type;
+      interface_ip.tag_arr_ram_cell_tech_type =
+          XML->sys.L3[ithCache].device_type;
       interface_ip.tag_arr_peri_global_tech_type =
           XML->sys.L3[ithCache].device_type;
       if (XML->sys.L3[ithCache].vdd > 0) {
@@ -152,10 +155,11 @@ void SharedCache::set_params(const ParseXML* XML,
       }
       break;
     }
-    case L1Directory : {
+    case L1Directory: {
       cachep.set_params_l1_directory(XML, ithCache);
       interface_ip.data_arr_ram_cell_tech_type =
-          XML->sys.L1Directory[ithCache].device_type; // long channel device LSTP
+          XML->sys.L1Directory[ithCache]
+              .device_type; // long channel device LSTP
       interface_ip.data_arr_peri_global_tech_type =
           XML->sys.L1Directory[ithCache].device_type;
       interface_ip.tag_arr_ram_cell_tech_type =
@@ -177,10 +181,11 @@ void SharedCache::set_params(const ParseXML* XML,
       }
       break;
     }
-    case L2Directory : {
+    case L2Directory: {
       cachep.set_params_l2_directory(XML, ithCache);
       interface_ip.data_arr_ram_cell_tech_type =
-          XML->sys.L2Directory[ithCache].device_type; // long channel device LSTP
+          XML->sys.L2Directory[ithCache]
+              .device_type; // long channel device LSTP
       interface_ip.data_arr_peri_global_tech_type =
           XML->sys.L2Directory[ithCache].device_type;
       interface_ip.tag_arr_ram_cell_tech_type =
@@ -202,7 +207,7 @@ void SharedCache::set_params(const ParseXML* XML,
       }
       break;
     }
-    default : {
+    default: {
       std::cerr << "[ SharedCache ] Error: Not a valid Cache Type" << std::endl;
       exit(1);
     }
@@ -399,11 +404,10 @@ void SharedCache::set_params(const ParseXML* XML,
   init_params = true;
 }
 
-void SharedCache::set_stats(const ParseXML* XML) {
+void SharedCache::set_stats(const ParseXML *XML) {
   this->XML = XML;
   init_stats = true;
 }
-
 
 void SharedCache::computeArea() {
   if (!init_params) {
@@ -1035,4 +1039,3 @@ void SharedCache::display(uint32_t indent, bool is_tdp) {
 ////  ///cout<<"maxpower=" <<maxPower<<endl;
 //
 //}
-

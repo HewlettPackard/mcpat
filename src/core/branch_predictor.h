@@ -41,7 +41,7 @@
 
 class BranchPredictor : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -58,7 +58,7 @@ public:
   ArrayST *RAS;
   bool exist;
 
-  BranchPredictor(ParseXML *XML_interface,
+  BranchPredictor(const ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,

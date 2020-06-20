@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-RENAMINGU::RENAMINGU(ParseXML *XML_interface,
+RENAMINGU::RENAMINGU(const ParseXML *XML_interface,
                      int ithCore_,
                      InputParameter *interface_ip_,
                      const CoreDynParam &dyn_p_,

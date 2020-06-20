@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-InstFetchU::InstFetchU(ParseXML *XML_interface,
+InstFetchU::InstFetchU(const ParseXML *XML_interface,
                        int ithCore_,
                        InputParameter *interface_ip_,
                        const CoreDynParam &dyn_p_,

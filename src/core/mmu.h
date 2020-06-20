@@ -41,7 +41,7 @@
 
 class MemManU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -54,7 +54,7 @@ public:
   ArrayST *dtlb;
   bool exist;
 
-  MemManU(ParseXML *XML_interface,
+  MemManU(const ParseXML *XML_interface,
           int ithCore_,
           InputParameter *interface_ip_,
           const CoreDynParam &dyn_p_,

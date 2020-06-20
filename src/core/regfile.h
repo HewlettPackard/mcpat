@@ -41,7 +41,7 @@
 
 class RegFU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -57,7 +57,7 @@ public:
   ArrayST *RFWIN;
   bool exist;
 
-  RegFU(ParseXML *XML_interface,
+  RegFU(const ParseXML *XML_interface,
         int ithCore_,
         InputParameter *interface_ip_,
         const CoreDynParam &dyn_p_,

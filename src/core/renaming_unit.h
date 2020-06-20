@@ -41,7 +41,7 @@
 
 class RENAMINGU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   double clockRate;
@@ -58,7 +58,7 @@ public:
   ArrayST *RAHT; // register alias history table Used to store GC
   bool exist;
 
-  RENAMINGU(ParseXML *XML_interface,
+  RENAMINGU(const ParseXML *XML_interface,
             int ithCore_,
             InputParameter *interface_ip_,
             const CoreDynParam &dyn_p_,

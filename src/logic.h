@@ -197,7 +197,7 @@ public:
 
 class FunctionalUnit : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -212,7 +212,7 @@ public:
   statsDef stats_t;
   powerDef power_t;
 
-  FunctionalUnit(ParseXML *XML_interface,
+  FunctionalUnit(const ParseXML *XML_interface,
                  int ithCore_,
                  InputParameter *interface_ip_,
                  const CoreDynParam &dyn_p_,
@@ -224,13 +224,13 @@ public:
 
 class UndiffCore : public Component {
 public:
-  UndiffCore(ParseXML *XML_interface,
+  UndiffCore(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,
              bool exist_ = true,
              bool embedded_ = false);
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;

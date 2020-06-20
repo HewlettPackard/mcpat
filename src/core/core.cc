@@ -44,7 +44,9 @@
 #include <string>
 //#include "globalvar.h"
 
-Core::Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_)
+Core::Core(const ParseXML *XML_interface,
+           int ithCore_,
+           InputParameter *interface_ip_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
       ifu(0), lsu(0), mmu(0), exu(0), rnu(0), corepipe(0), undiffCore(0),
       l2cache(0) {
@@ -361,11 +363,12 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << (long_channel ? power.readOp.longer_channel_leakage
                           : power.readOp.leakage)
          << " W" << endl;
-    if (power_gating)
+    if (power_gating) {
       cout << indent_str << "Subthreshold Leakage with power gating = "
            << (long_channel ? power.readOp.power_gated_with_long_channel_leakage
                             : power.readOp.power_gated_leakage)
            << " W" << endl;
+    }
     cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage << " W"
          << endl;
     cout << indent_str

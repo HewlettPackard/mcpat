@@ -48,7 +48,7 @@
 
 class Core : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   double clockRate, executionTime;
@@ -64,7 +64,9 @@ public:
   CoreDynParam coredynp;
   // full_decoder 	inst_decoder;
   // clock_network	clockNetwork;
-  Core(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_);
+  Core(const ParseXML *XML_interface,
+       int ithCore_,
+       InputParameter *interface_ip_);
   void set_core_param();
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);

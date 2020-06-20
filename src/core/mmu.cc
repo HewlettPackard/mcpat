@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-MemManU::MemManU(ParseXML *XML_interface,
+MemManU::MemManU(const ParseXML *XML_interface,
                  int ithCore_,
                  InputParameter *interface_ip_,
                  const CoreDynParam &dyn_p_,

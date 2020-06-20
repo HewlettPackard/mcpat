@@ -537,7 +537,7 @@ void Pipeline::compute_stage_vector() {
   }
 }
 
-FunctionalUnit::FunctionalUnit(ParseXML *XML_interface,
+FunctionalUnit::FunctionalUnit(const ParseXML *XML_interface,
                                int ithCore_,
                                InputParameter *interface_ip_,
                                const CoreDynParam &dyn_p_,
@@ -1018,7 +1018,7 @@ void FunctionalUnit::leakage_feedback(double temperature) {
   power.readOp.power_gated_leakage = power.readOp.leakage * pg_reduction;
 }
 
-UndiffCore::UndiffCore(ParseXML *XML_interface,
+UndiffCore::UndiffCore(const ParseXML *XML_interface,
                        int ithCore_,
                        InputParameter *interface_ip_,
                        const CoreDynParam &dyn_p_,

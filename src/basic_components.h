@@ -161,7 +161,6 @@ public:
   ~CoreDynParam(){};
 };
 
-
 class MCParam {
 public:
   MCParam(){};
