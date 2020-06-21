@@ -55,9 +55,9 @@ public:
   CoreDynParam coredynp;
   RegFU *rfu;
   SchedulerU *scheu;
-  FunctionalUnit *fp_u;
-  FunctionalUnit *exeu;
-  FunctionalUnit *mul;
+  FunctionalUnit fp_u;
+  FunctionalUnit exeu;
+  FunctionalUnit mul;
   interconnect *int_bypass;
   interconnect *intTagBypass;
   interconnect *int_mul_bypass;

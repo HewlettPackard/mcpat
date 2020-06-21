@@ -53,9 +53,14 @@ public:
   InputParameter interface_ip;
   CoreDynParam coredynp;
   double FU_height;
-  double clockRate, executionTime;
+  double clockRate;
+  double executionTime;
   double num_fu;
-  double energy, base_energy, per_access_energy, leakage, gate_leakage;
+  double energy;
+  double base_energy;
+  double per_access_energy;
+  double leakage;
+  double gate_leakage;
   bool is_default;
   enum FU_type fu_type;
   statsDef tdp_stats;
@@ -63,25 +68,37 @@ public:
   statsDef stats_t;
   powerDef power_t;
 
-  FunctionalUnit(const ParseXML *XML_interface,
-                 int ithCore_,
-                 InputParameter *interface_ip_,
-                 const CoreDynParam &dyn_p_,
-                 enum FU_type fu_type);
+  FunctionalUnit();
+  void set_params(const ParseXML *XML_interface,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  enum FU_type fu_type);
   void set_stats(const ParseXML *XML);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  void computeArea();
+  void computePower();
+  void computeRuntimeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
   void leakage_feedback(double temperature);
 
 private:
+  bool init_params;
+  bool init_stats;
+  bool set_area;
   bool long_channel;
   bool power_gating;
   bool embedded;
+
+  // Power:
+  double area_t;
 
   // Stats:
   unsigned int mul_accesses;
   unsigned int ialu_accesses;
   unsigned int fpu_accesses;
+
+  // Private Methods:
+  void computeLeakage();
 };
 
 #endif // __FUNCTIONAL_UNIT_H__

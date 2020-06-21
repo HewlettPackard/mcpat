@@ -68,11 +68,12 @@ NoC::NoC(const ParseXML *XML_interface,
   local_result = init_interface(&interface_ip);
   scktRatio = g_tp.sckt_co_eff;
 
-  if (nocdynp.type) { /*
-                       * if NOC compute router, router links must be computed
-                       * separately and called from external since total chip
-                       * area must be known first
-                       */
+  if (nocdynp.type) { 
+    /*
+     * if NOC compute router, router links must be computed
+     * separately and called from external since total chip
+     * area must be known first
+     */
     init_router();
   } else {
     init_link_bus(link_len_); // if bus compute bus
