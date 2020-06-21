@@ -49,12 +49,12 @@ EXECU::EXECU(const ParseXML *XML_interface,
              const CoreDynParam &dyn_p_,
              bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0), fp_u(0),
-      exeu(0), mul(0), int_bypass(0), intTagBypass(0), int_mul_bypass(0),
+      lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0), int_bypass(0), intTagBypass(0), int_mul_bypass(0),
       intTag_mul_Bypass(0), fp_bypass(0), fpTagBypass(0), exist(exist_) {
   bool exist_flag = true;
-  if (!exist)
+  if (!exist) {
     return;
+  }
   double fu_height = 0.0;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
@@ -66,18 +66,24 @@ EXECU::EXECU(const ParseXML *XML_interface,
   scheu->set_params(XML, ithCore, &interface_ip, coredynp);
   scheu->computeArea();
   scheu->set_stats(XML);
-  exeu = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, ALU);
-  area.set_area(area.get_area() + exeu->area.get_area() + rfu->area.get_area() +
+  exeu.set_params(XML, ithCore, &interface_ip, coredynp, ALU);
+  exeu.set_stats(XML);
+  exeu.computeArea();
+  area.set_area(area.get_area() + exeu.area.get_area() + rfu->area.get_area() +
                 scheu->area.get_area());
-  fu_height = exeu->FU_height;
+  fu_height = exeu.FU_height;
   if (coredynp.num_fpus > 0) {
-    fp_u = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, FPU);
-    area.set_area(area.get_area() + fp_u->area.get_area());
+    fp_u.set_params(XML, ithCore, &interface_ip, coredynp, FPU);
+    fp_u.set_stats(XML);
+    fp_u.computeArea();
+    area.set_area(area.get_area() + fp_u.area.get_area());
   }
   if (coredynp.num_muls > 0) {
-    mul = new FunctionalUnit(XML, ithCore, &interface_ip, coredynp, MUL);
-    area.set_area(area.get_area() + mul->area.get_area());
-    fu_height += mul->FU_height;
+    mul.set_params(XML, ithCore, &interface_ip, coredynp, MUL);
+    mul.set_stats(XML);
+    mul.computeArea();
+    area.set_area(area.get_area() + mul.area.get_area());
+    fu_height += mul.FU_height;
   }
   /*
    * broadcast logic, including int-broadcast; int_tag-broadcast; fp-broadcast;
@@ -107,7 +113,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                          1,
                          1,
                          int(ceil(XML->sys.machine_bits / 32.0) * 32),
-                         rfu->int_regfile_height + exeu->FU_height + lsq_height,
+                         rfu->int_regfile_height + exeu.FU_height + lsq_height,
                          &interface_ip,
                          3,
                          false,
@@ -120,7 +126,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                     1,
                                     1,
                                     coredynp.perThreadState,
-                                    rfu->int_regfile_height + exeu->FU_height +
+                                    rfu->int_regfile_height + exeu.FU_height +
                                         lsq_height + scheu->Iw_height,
                                     &interface_ip,
                                     3,
@@ -138,8 +144,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                            1,
                            1,
                            int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                           rfu->fp_regfile_height + exeu->FU_height +
-                               mul->FU_height + lsq_height,
+                           rfu->fp_regfile_height + exeu.FU_height +
+                               mul.FU_height + lsq_height,
                            &interface_ip,
                            3,
                            false,
@@ -154,8 +160,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                            1,
                            1,
                            coredynp.perThreadState,
-                           rfu->fp_regfile_height + exeu->FU_height +
-                               mul->FU_height + lsq_height + scheu->Iw_height,
+                           rfu->fp_regfile_height + exeu.FU_height +
+                               mul.FU_height + lsq_height + scheu->Iw_height,
                            &interface_ip,
                            3,
                            false,
@@ -173,7 +179,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                            1,
                            1,
                            int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                           rfu->fp_regfile_height + fp_u->FU_height,
+                           rfu->fp_regfile_height + fp_u.FU_height,
                            &interface_ip,
                            3,
                            false,
@@ -186,7 +192,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                      1,
                                      1,
                                      coredynp.perThreadState,
-                                     rfu->fp_regfile_height + fp_u->FU_height +
+                                     rfu->fp_regfile_height + fp_u.FU_height +
                                          lsq_height + scheu->Iw_height,
                                      &interface_ip,
                                      3,
@@ -209,7 +215,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                     1,
                                     1,
                                     int(ceil(coredynp.int_data_width)),
-                                    rfu->int_regfile_height + exeu->FU_height +
+                                    rfu->int_regfile_height + exeu.FU_height +
                                         lsq_height,
                                     &interface_ip,
                                     3,
@@ -225,7 +231,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                       1,
                                       coredynp.phy_ireg_width,
                                       rfu->int_regfile_height +
-                                          exeu->FU_height + lsq_height +
+                                          exeu.FU_height + lsq_height +
                                           scheu->Iw_height + scheu->ROB_height,
                                       &interface_ip,
                                       3,
@@ -243,8 +249,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                              1,
                              1,
                              int(ceil(coredynp.int_data_width)),
-                             rfu->int_regfile_height + exeu->FU_height +
-                                 mul->FU_height + lsq_height,
+                             rfu->int_regfile_height + exeu.FU_height +
+                                 mul.FU_height + lsq_height,
                              &interface_ip,
                              3,
                              false,
@@ -257,7 +263,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
             1,
             1,
             coredynp.phy_ireg_width,
-            rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
+            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
             &interface_ip,
             3,
@@ -277,7 +283,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                      1,
                                      1,
                                      int(ceil(coredynp.fp_data_width)),
-                                     rfu->fp_regfile_height + fp_u->FU_height,
+                                     rfu->fp_regfile_height + fp_u.FU_height,
                                      &interface_ip,
                                      3,
                                      false,
@@ -290,7 +296,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
             1,
             1,
             coredynp.phy_freg_width,
-            rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
+            rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
                 scheu->fp_Iw_height + scheu->ROB_height,
             &interface_ip,
             3,
@@ -313,7 +319,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                     1,
                                     1,
                                     int(ceil(coredynp.int_data_width)),
-                                    rfu->int_regfile_height + exeu->FU_height +
+                                    rfu->int_regfile_height + exeu.FU_height +
                                         lsq_height + scheu->Iw_height +
                                         scheu->ROB_height,
                                     &interface_ip,
@@ -328,7 +334,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                       1,
                                       coredynp.phy_ireg_width,
                                       rfu->int_regfile_height +
-                                          exeu->FU_height + lsq_height +
+                                          exeu.FU_height + lsq_height +
                                           scheu->Iw_height + scheu->ROB_height,
                                       &interface_ip,
                                       3,
@@ -347,7 +353,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
             1,
             1,
             int(ceil(coredynp.int_data_width)),
-            rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
+            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
             &interface_ip,
             3,
@@ -361,7 +367,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
             1,
             1,
             coredynp.phy_ireg_width,
-            rfu->int_regfile_height + exeu->FU_height + mul->FU_height +
+            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
                 lsq_height + scheu->Iw_height + scheu->ROB_height,
             &interface_ip,
             3,
@@ -381,7 +387,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                      1,
                                      1,
                                      int(ceil(coredynp.fp_data_width)),
-                                     rfu->fp_regfile_height + fp_u->FU_height +
+                                     rfu->fp_regfile_height + fp_u.FU_height +
                                          lsq_height + scheu->fp_Iw_height +
                                          scheu->ROB_height,
                                      &interface_ip,
@@ -396,7 +402,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
             1,
             1,
             coredynp.phy_freg_width,
-            rfu->fp_regfile_height + fp_u->FU_height + lsq_height +
+            rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
                 scheu->fp_Iw_height + scheu->ROB_height,
             &interface_ip,
             3,
@@ -422,17 +428,32 @@ void EXECU::computeEnergy(bool is_tdp) {
   //	rfu->rt_power.reset();
   //	scheu->power.reset();
   //	scheu->rt_power.reset();
-  //	exeu->power.reset();
-  //	exeu->rt_power.reset();
+  //	exeu.power.reset();
+  //	exeu.rt_power.reset();
 
   rfu->computeDynamicPower(is_tdp);
   scheu->computeDynamicPower(is_tdp);
-  exeu->computeEnergy(is_tdp);
+  if(is_tdp) {
+    exeu.computePower();
+  }
+  else {
+    exeu.computeRuntimeDynamicPower();
+  }
   if (coredynp.num_fpus > 0) {
-    fp_u->computeEnergy(is_tdp);
+    if(is_tdp) {
+      fp_u.computePower();
+    }
+    else {
+      fp_u.computeRuntimeDynamicPower();
+    }
   }
   if (coredynp.num_muls > 0) {
-    mul->computeEnergy(is_tdp);
+    if(is_tdp) {
+      mul.computePower();
+    }
+    else {
+      mul.computeRuntimeDynamicPower();
+    }
   }
 
   if (is_tdp) {
@@ -457,7 +478,7 @@ void EXECU::computeEnergy(bool is_tdp) {
                                         // be passed for each int instruction.
       bypass.power = bypass.power + intTag_mul_Bypass->power * pppm_t +
                      int_mul_bypass->power * pppm_t;
-      power = power + mul->power;
+      power = power + mul.power;
     }
     if (coredynp.num_fpus > 0) {
       set_pppm(
@@ -470,10 +491,10 @@ void EXECU::computeEnergy(bool is_tdp) {
                                         // to be passed for each fp instruction.
       bypass.power = bypass.power + fp_bypass->power * pppm_t +
                      fpTagBypass->power * pppm_t;
-      power = power + fp_u->power;
+      power = power + fp_u.power;
     }
 
-    power = power + rfu->power + exeu->power + bypass.power + scheu->power;
+    power = power + rfu->power + exeu.power + bypass.power + scheu->power;
   } else {
     set_pppm(pppm_t,
              XML->sys.core[ithCore].cdb_alu_accesses,
@@ -493,7 +514,7 @@ void EXECU::computeEnergy(bool is_tdp) {
                                        // be passed for each int instruction.
       bypass.rt_power = bypass.rt_power + intTag_mul_Bypass->power * pppm_t +
                         int_mul_bypass->power * pppm_t;
-      rt_power = rt_power + mul->rt_power;
+      rt_power = rt_power + mul.rt_power;
     }
 
     if (coredynp.num_fpus > 0) {
@@ -504,9 +525,9 @@ void EXECU::computeEnergy(bool is_tdp) {
                XML->sys.core[ithCore].cdb_fpu_accesses);
       bypass.rt_power = bypass.rt_power + fp_bypass->power * pppm_t;
       bypass.rt_power = bypass.rt_power + fpTagBypass->power * pppm_t;
-      rt_power = rt_power + fp_u->rt_power;
+      rt_power = rt_power + fp_u.rt_power;
     }
-    rt_power = rt_power + rfu->rt_power + exeu->rt_power + bypass.rt_power +
+    rt_power = rt_power + rfu->rt_power + exeu.rt_power + bypass.rt_power +
                scheu->rt_power;
   }
 }
@@ -572,12 +593,12 @@ void EXECU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     if (plevel > 3) {
       scheu->displayEnergy(indent + 4, is_tdp);
     }
-    exeu->displayEnergy(indent, is_tdp);
+    exeu.display(indent, is_tdp);
     if (coredynp.num_fpus > 0) {
-      fp_u->displayEnergy(indent, is_tdp);
+      fp_u.display(indent, is_tdp);
     }
     if (coredynp.num_muls > 0) {
-      mul->displayEnergy(indent, is_tdp);
+      mul.display(indent, is_tdp);
     }
     cout << indent_str << "Results Broadcast Bus:" << endl;
     cout << indent_str_next
@@ -651,18 +672,6 @@ EXECU ::~EXECU() {
   if (fpTagBypass) {
     delete fpTagBypass;
     fpTagBypass = 0;
-  }
-  if (fp_u) {
-    delete fp_u;
-    fp_u = 0;
-  }
-  if (exeu) {
-    delete exeu;
-    exeu = 0;
-  }
-  if (mul) {
-    delete mul;
-    mul = 0;
   }
   if (rfu) {
     delete rfu;
