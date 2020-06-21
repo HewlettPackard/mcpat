@@ -49,7 +49,7 @@ public:
   double chip_PR_overhead;
   double macro_PR_overhead;
   Router router;
-  interconnect *link_bus;
+  interconnect link_bus;
   NoCParam nocdynp;
   uca_org_t local_result;
   statsDef tdp_stats;
@@ -67,7 +67,7 @@ public:
                   InputParameter *interface_ip_,
                   double M_traffic_pattern_ = 0.6,
                   double link_len_ = 0);
-  void set_stats(const ParseXML* XML);
+  void set_stats(const ParseXML *XML);
   void computeArea();
   void computePower();
   void computeRuntimeDynamicPower();
@@ -90,7 +90,7 @@ private:
 
   unsigned int total_accesses;
 
-  void set_noc_param(const ParseXML* XML);
+  void set_noc_param(const ParseXML *XML);
   void init_router();
 };
 

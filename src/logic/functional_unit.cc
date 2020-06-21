@@ -112,8 +112,8 @@ void FunctionalUnit::computeArea() {
       FU_height =
           (9334 * num_fu) * interface_ip.F_sz_um; // divider/mul from Sun's data
     } else {
-      std::cerr << "[ FunctionalUnit ] Error: Unknown Functional Unit Type" <<
-      std::endl;
+      std::cerr << "[ FunctionalUnit ] Error: Unknown Functional Unit Type"
+                << std::endl;
       exit(0);
     }
   } else {
@@ -144,8 +144,8 @@ void FunctionalUnit::computeArea() {
       FU_height =
           (9334 * num_fu) * interface_ip.F_sz_um; // divider/mul from Sun's data
     } else {
-      std::cout << "[ FunctionalUnit ] Error: Unknown Functional Unit Type" <<
-      std::endl;
+      std::cout << "[ FunctionalUnit ] Error: Unknown Functional Unit Type"
+                << std::endl;
       exit(1);
     }
   }
@@ -419,7 +419,8 @@ void FunctionalUnit::computeLeakage() {
            90.0); //(g_tp.peri_global.Vdd*g_tp.peri_global.Vdd/1.2/1.2);//0.00649*1e-9;
                   ////This is per cycle energy(nJ), coefficient based on Wattch
     } else {
-      std::cerr << "[ FunctionalUnit ]Unknown Functional Unit Type" << std::endl;
+      std::cerr << "[ FunctionalUnit ]Unknown Functional Unit Type"
+                << std::endl;
       exit(0);
     }
     per_access_energy *= 0.5; // According to ARM data embedded processor has
@@ -503,8 +504,8 @@ void FunctionalUnit::computeLeakage() {
            90.0); //(g_tp.peri_global.Vdd*g_tp.peri_global.Vdd/1.2/1.2);//0.00649*1e-9;
                   ////This is per cycle energy(nJ), coefficient based on Wattch
     } else {
-      std::cerr << "[ FunctionalUnit ] Error: Unknown Functional Unit Type" <<
-      std::endl;
+      std::cerr << "[ FunctionalUnit ] Error: Unknown Functional Unit Type"
+                << std::endl;
       exit(1);
     }
   }

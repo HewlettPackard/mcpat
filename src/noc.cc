@@ -50,7 +50,6 @@ NoC::NoC() {
   set_area = false;
   router_exist = false;
   link_bus_exist = false;
-  link_bus = nullptr;
   M_traffic_pattern = 0.0;
   link_len = 0.0;
   ithNoC = 0;
@@ -106,8 +105,7 @@ void NoC::init_router() {
               nocdynp.output_ports,
               M_traffic_pattern);
   // router.print_router();
-  area.set_area(area.get_area() +
-                router.area.get_area() * nocdynp.total_nodes);
+  area.set_area(area.get_area() + router.area.get_area() * nocdynp.total_nodes);
 
   double long_channel_device_reduction =
       longer_channel_device_reduction(Uncore_device);
@@ -161,8 +159,7 @@ void NoC::init_link_bus(double link_len_) {
   //	if (nocdynp.min_ports==1 )
   if (nocdynp.type) {
     link_name = "Links";
-  }
-  else {
+  } else {
     link_name = "Bus";
   }
 
@@ -177,20 +174,20 @@ void NoC::init_link_bus(double link_len_) {
   if (nocdynp.total_nodes > 1) {
     link_len /= 2; // All links are shared by neighbors
   }
-  link_bus = new interconnect(name,
-                              Uncore_device,
-                              1,
-                              1,
-                              nocdynp.flit_size,
-                              link_len,
-                              &interface_ip,
-                              3,
-                              true /*pipelinable*/,
-                              nocdynp.route_over_perc);
+  link_bus.init(name,
+                Uncore_device,
+                1,
+                1,
+                nocdynp.flit_size,
+                link_len,
+                &interface_ip,
+                3,
+                true /*pipelinable*/,
+                nocdynp.route_over_perc);
 
   link_bus_tot_per_Router.area.set_area(
       link_bus_tot_per_Router.area.get_area() +
-      link_bus->area.get_area() * nocdynp.global_linked_ports);
+      link_bus.area.get_area() * nocdynp.global_linked_ports);
 
   area.set_area(area.get_area() +
                 link_bus_tot_per_Router.area.get_area() * nocdynp.total_nodes);
@@ -198,7 +195,7 @@ void NoC::init_link_bus(double link_len_) {
 }
 
 void NoC::computeArea() {
-  if (nocdynp.type) { 
+  if (nocdynp.type) {
     /*
      * if NOC compute router, router links must be computed
      * separately and called from external since total chip
@@ -211,7 +208,7 @@ void NoC::computeArea() {
   set_area = true;
 }
 
-void NoC::set_stats(const ParseXML* XML) {
+void NoC::set_stats(const ParseXML *XML) {
   total_accesses = XML->sys.NoC[ithNoC].total_accesses;
   init_stats = true;
 }
@@ -247,7 +244,7 @@ void NoC::computePower() {
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports); // reset traffic pattern
 
-    link_bus_tot_per_Router.power = link_bus->power * pppm_t;
+    link_bus_tot_per_Router.power = link_bus.power * pppm_t;
 
     set_pppm(pppm_t,
              nocdynp.total_nodes,
@@ -284,8 +281,8 @@ void NoC::computeRuntimeDynamicPower() {
   }
   if (link_bus_exist) {
     set_pppm(pppm_t, rtp_stats.readAc.access, 1, 1, rtp_stats.readAc.access);
-    link_bus->rt_power = link_bus->power * pppm_t;
-    rt_power = rt_power + link_bus->rt_power;
+    link_bus.rt_power = link_bus.power * pppm_t;
+    rt_power = rt_power + link_bus.rt_power;
   }
 }
 
@@ -334,12 +331,11 @@ void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
                             : router.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
-        cout
-            << indent_str_next << "Subthreshold Leakage with power gating = "
-            << (long_channel
-                    ? router.power.readOp.power_gated_with_long_channel_leakage
-                    : router.power.readOp.power_gated_leakage)
-            << " W" << endl;
+        cout << indent_str_next << "Subthreshold Leakage with power gating = "
+             << (long_channel
+                     ? router.power.readOp.power_gated_with_long_channel_leakage
+                     : router.power.readOp.power_gated_leakage)
+             << " W" << endl;
       cout << indent_str_next
            << "Gate Leakage = " << router.power.readOp.gate_leakage << " W"
            << endl;
@@ -361,8 +357,7 @@ void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << (long_channel
                      ? router.buffer.power.readOp.longer_channel_leakage *
                            nocdynp.input_ports
-                     : router.buffer.power.readOp.leakage *
-                           nocdynp.input_ports)
+                     : router.buffer.power.readOp.leakage * nocdynp.input_ports)
              << " W" << endl;
         if (power_gating)
           cout << indent_str << indent_str_next
@@ -458,7 +453,7 @@ void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       cout << indent_str_next << "Gate Leakage = "
            << link_bus_tot_per_Router.power.readOp.gate_leakage << " W" << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << link_bus->rt_power.readOp.dynamic / nocdynp.executionTime << " W"
+           << link_bus.rt_power.readOp.dynamic / nocdynp.executionTime << " W"
            << endl;
       cout << endl;
     }
@@ -495,7 +490,7 @@ void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   }
 }
 
-void NoC::set_noc_param(const ParseXML* XML) {
+void NoC::set_noc_param(const ParseXML *XML) {
   nocdynp.type = XML->sys.NoC[ithNoC].type;
   nocdynp.clockRate = XML->sys.NoC[ithNoC].clockrate;
   nocdynp.clockRate *= 1e6;
@@ -560,8 +555,5 @@ void NoC::set_noc_param(const ParseXML* XML) {
 }
 
 NoC ::~NoC() {
-  if (link_bus) {
-    delete link_bus;
-    link_bus = 0;
-  }
+  // Do Nothing
 }
