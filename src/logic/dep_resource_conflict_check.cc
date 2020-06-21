@@ -141,4 +141,3 @@ void dep_resource_conflict_check::leakage_feedback(double temperature) {
   power.readOp.power_gated_with_long_channel_leakage =
       power.readOp.power_gated_leakage * long_channel_device_reduction;
 }
-

@@ -36,8 +36,8 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "selection_logic.h"
 #include "parameter.h"
+#include "selection_logic.h"
 
 class SchedulerU : public Component {
 public:

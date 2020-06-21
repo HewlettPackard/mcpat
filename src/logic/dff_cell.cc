@@ -96,4 +96,3 @@ void DFFCell::compute_DFF_cell() {
       g_tp.peri_global.Vdd;
   // printf("leakage =%E\n",cmos_Ileak(1, is_dram) );
 }
-

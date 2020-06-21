@@ -72,6 +72,7 @@ public:
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   void leakage_feedback(double temperature);
+
 private:
   bool long_channel;
   bool power_gating;
@@ -81,8 +82,6 @@ private:
   unsigned int mul_accesses;
   unsigned int ialu_accesses;
   unsigned int fpu_accesses;
-
-  
 };
 
 #endif // __FUNCTIONAL_UNIT_H__

@@ -85,7 +85,6 @@ Core::Core(const ParseXML *XML_interface,
     rnu->set_params(XML, ithCore, &interface_ip, coredynp);
     rnu->computeArea();
     rnu->set_stats(XML);
-    rnu->computeStaticPower();
   }
   corepipe = new Pipeline(&interface_ip, coredynp);
 
@@ -160,7 +159,7 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeDynamicPower(is_tdp);
+      rnu->computeStaticPower(is_tdp);
       set_pppm(
           pppm_t,
           coredynp.num_pipelines / num_units,
@@ -250,7 +249,7 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeDynamicPower(is_tdp);
+      rnu->computeStaticPower(is_tdp);
       if (XML->sys.homogeneous_cores == 1) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            XML->sys.total_cycles * XML->sys.number_of_cores;
@@ -434,7 +433,7 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << rnu->rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
         if (plevel > 2) {
-          rnu->displayEnergy(indent + 4, plevel, is_tdp);
+          rnu->display(indent + 4, plevel, is_tdp);
         }
       }
     }

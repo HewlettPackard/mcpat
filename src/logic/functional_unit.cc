@@ -36,8 +36,8 @@ FunctionalUnit::FunctionalUnit(const ParseXML *XML,
                                InputParameter *interface_ip_,
                                const CoreDynParam &dyn_p_,
                                enum FU_type fu_type_)
-    : ithCore(ithCore_), interface_ip(*interface_ip_),
-      coredynp(dyn_p_), fu_type(fu_type_) {
+    : ithCore(ithCore_), interface_ip(*interface_ip_), coredynp(dyn_p_),
+      fu_type(fu_type_) {
 
   long_channel = false;
   power_gating = false;
@@ -275,7 +275,6 @@ FunctionalUnit::FunctionalUnit(const ParseXML *XML,
   }
   set_stats(XML);
 
-
   // IEXEU, simple ALU and FPU
   //  double C_ALU, C_EXEU, C_FPU; //Lum Equivalent capacitance of IEXEU and
   //  FPU. Based on Intel and Sun 90nm process fabracation.
@@ -290,7 +289,7 @@ FunctionalUnit::FunctionalUnit(const ParseXML *XML,
   area.set_area(area.get_area() * macro_layout_overhead);
 }
 
-void FunctionalUnit::set_stats(const ParseXML* XML) {
+void FunctionalUnit::set_stats(const ParseXML *XML) {
   mul_accesses = XML->sys.core[ithCore].mul_accesses;
   ialu_accesses = XML->sys.core[ithCore].ialu_accesses;
   fpu_accesses = XML->sys.core[ithCore].fpu_accesses;
@@ -370,86 +369,89 @@ void FunctionalUnit::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   if (is_tdp) {
     if (fu_type == FPU) {
       std::cout << indent_str
-           << "Floating Point Units (FPUs) (Count: " << coredynp.num_fpus
-           << " ):" << std::endl;
-      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-           << std::endl;
+                << "Floating Point Units (FPUs) (Count: " << coredynp.num_fpus
+                << " ):" << std::endl;
+      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6
+                << " mm^2" << std::endl;
       std::cout << indent_str_next
-           << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
-           << std::endl;
+                << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
+                << std::endl;
       //			std::cout << indent_str_next << "Subthreshold Leakage
       //= " << power.readOp.leakage  << " W" << std::endl;
       std::cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? power.readOp.longer_channel_leakage
-                            : power.readOp.leakage)
-           << " W" << std::endl;
+                << (long_channel ? power.readOp.longer_channel_leakage
+                                 : power.readOp.leakage)
+                << " W" << std::endl;
       if (power_gating) {
-        std::cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? power.readOp.power_gated_with_long_channel_leakage
-                     : power.readOp.power_gated_leakage)
-             << " W" << std::endl;
+        std::cout << indent_str_next
+                  << "Subthreshold Leakage with power gating = "
+                  << (long_channel
+                          ? power.readOp.power_gated_with_long_channel_leakage
+                          : power.readOp.power_gated_leakage)
+                  << " W" << std::endl;
       }
-      std::cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-           << " W" << std::endl;
       std::cout << indent_str_next
-           << "Runtime Dynamic = " << rt_power.readOp.dynamic / executionTime
-           << " W" << std::endl;
+                << "Gate Leakage = " << power.readOp.gate_leakage << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Runtime Dynamic = "
+                << rt_power.readOp.dynamic / executionTime << " W" << std::endl;
       std::cout << std::endl;
     } else if (fu_type == ALU) {
       std::cout << indent_str << "Integer ALUs (Count: " << coredynp.num_alus
-           << " ):" << std::endl;
-      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-           << std::endl;
+                << " ):" << std::endl;
+      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6
+                << " mm^2" << std::endl;
       std::cout << indent_str_next
-           << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
-           << std::endl;
+                << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
+                << std::endl;
       //			std::cout << indent_str_next << "Subthreshold Leakage
       //= " << power.readOp.leakage  << " W" << std::endl;
       std::cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? power.readOp.longer_channel_leakage
-                            : power.readOp.leakage)
-           << " W" << std::endl;
+                << (long_channel ? power.readOp.longer_channel_leakage
+                                 : power.readOp.leakage)
+                << " W" << std::endl;
       if (power_gating) {
-        std::cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? power.readOp.power_gated_with_long_channel_leakage
-                     : power.readOp.power_gated_leakage)
-             << " W" << std::endl;
+        std::cout << indent_str_next
+                  << "Subthreshold Leakage with power gating = "
+                  << (long_channel
+                          ? power.readOp.power_gated_with_long_channel_leakage
+                          : power.readOp.power_gated_leakage)
+                  << " W" << std::endl;
       }
-      std::cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-           << " W" << std::endl;
       std::cout << indent_str_next
-           << "Runtime Dynamic = " << rt_power.readOp.dynamic / executionTime
-           << " W" << std::endl;
+                << "Gate Leakage = " << power.readOp.gate_leakage << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Runtime Dynamic = "
+                << rt_power.readOp.dynamic / executionTime << " W" << std::endl;
       std::cout << std::endl;
     } else if (fu_type == MUL) {
       std::cout << indent_str
-           << "Complex ALUs (Mul/Div) (Count: " << coredynp.num_muls
-           << " ):" << std::endl;
-      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-           << std::endl;
+                << "Complex ALUs (Mul/Div) (Count: " << coredynp.num_muls
+                << " ):" << std::endl;
+      std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6
+                << " mm^2" << std::endl;
       std::cout << indent_str_next
-           << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
-           << std::endl;
+                << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
+                << std::endl;
       //			std::cout << indent_str_next << "Subthreshold Leakage
       //= " << power.readOp.leakage  << " W" << std::endl;
       std::cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? power.readOp.longer_channel_leakage
-                            : power.readOp.leakage)
-           << " W" << std::endl;
+                << (long_channel ? power.readOp.longer_channel_leakage
+                                 : power.readOp.leakage)
+                << " W" << std::endl;
       if (power_gating) {
-        std::cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? power.readOp.power_gated_with_long_channel_leakage
-                     : power.readOp.power_gated_leakage)
-             << " W" << std::endl;
+        std::cout << indent_str_next
+                  << "Subthreshold Leakage with power gating = "
+                  << (long_channel
+                          ? power.readOp.power_gated_with_long_channel_leakage
+                          : power.readOp.power_gated_leakage)
+                  << " W" << std::endl;
       }
-      std::cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-           << " W" << std::endl;
       std::cout << indent_str_next
-           << "Runtime Dynamic = " << rt_power.readOp.dynamic / executionTime
-           << " W" << std::endl;
+                << "Gate Leakage = " << power.readOp.gate_leakage << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Runtime Dynamic = "
+                << rt_power.readOp.dynamic / executionTime << " W" << std::endl;
       std::cout << std::endl;
     }
 
@@ -532,4 +534,3 @@ void FunctionalUnit::leakage_feedback(double temperature) {
   double pg_reduction = power_gating_leakage_reduction(false);
   power.readOp.power_gated_leakage = power.readOp.leakage * pg_reduction;
 }
-

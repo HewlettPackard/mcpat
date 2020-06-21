@@ -161,41 +161,45 @@ void UndiffCore::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 
   if (is_tdp) {
     std::cout << indent_str << "UndiffCore:" << std::endl;
-    std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-         << std::endl;
+    std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6
+              << " mm^2" << std::endl;
     std::cout << indent_str_next
-         << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
-         << std::endl;
+              << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
+              << std::endl;
     // std::cout << indent_str_next << "Subthreshold Leakage = " <<
     // power.readOp.leakage <<" W" << std::endl;
     std::cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? power.readOp.longer_channel_leakage
-                          : power.readOp.leakage)
-         << " W" << std::endl;
+              << (long_channel ? power.readOp.longer_channel_leakage
+                               : power.readOp.leakage)
+              << " W" << std::endl;
     if (power_gating)
-      std::cout << indent_str_next << "Subthreshold Leakage with power gating = "
-           << (long_channel ? power.readOp.power_gated_with_long_channel_leakage
-                            : power.readOp.power_gated_leakage)
-           << " W" << std::endl;
-    std::cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-         << " W" << std::endl;
+      std::cout << indent_str_next
+                << "Subthreshold Leakage with power gating = "
+                << (long_channel
+                        ? power.readOp.power_gated_with_long_channel_leakage
+                        : power.readOp.power_gated_leakage)
+                << " W" << std::endl;
+    std::cout << indent_str_next
+              << "Gate Leakage = " << power.readOp.gate_leakage << " W"
+              << std::endl;
     // std::cout << indent_str_next << "Runtime Dynamic = " <<
     // rt_power.readOp.dynamic/executionTime << " W" << std::endl;
     std::cout << std::endl;
   } else {
     std::cout << indent_str << "UndiffCore:" << std::endl;
-    std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6 << " mm^2"
-         << std::endl;
+    std::cout << indent_str_next << "Area = " << area.get_area() * 1e-6
+              << " mm^2" << std::endl;
     std::cout << indent_str_next
-         << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
-         << std::endl;
-    std::cout << indent_str_next << "Subthreshold Leakage = " << power.readOp.leakage
-         << " W" << std::endl;
-    std::cout << indent_str_next << "Gate Leakage = " << power.readOp.gate_leakage
-         << " W" << std::endl;
+              << "Peak Dynamic = " << power.readOp.dynamic * clockRate << " W"
+              << std::endl;
+    std::cout << indent_str_next
+              << "Subthreshold Leakage = " << power.readOp.leakage << " W"
+              << std::endl;
+    std::cout << indent_str_next
+              << "Gate Leakage = " << power.readOp.gate_leakage << " W"
+              << std::endl;
     // std::cout << indent_str_next << "Runtime Dynamic = " <<
     // rt_power.readOp.dynamic/executionTime << " W" << std::endl;
     std::cout << std::endl;
   }
 }
-

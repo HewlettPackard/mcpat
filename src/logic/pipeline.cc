@@ -30,6 +30,7 @@
  ***************************************************************************/
 
 #include "pipeline.h"
+
 #include "dff_cell.h"
 
 Pipeline::Pipeline(const InputParameter *configure_interface,
@@ -239,6 +240,3 @@ void Pipeline::compute_stage_vector() {
     }
   }
 }
-
-
-

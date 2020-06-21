@@ -45,24 +45,385 @@
 #include <fstream>
 #include <iostream>
 
-Processor::Processor(ParseXML *XML_interface, const bool calc_area)
+Processor::Processor(ParseXML *XML_interface)
     : XML(XML_interface) { // TODO: using one global copy may have problems.
   /*
    *  placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
    * controller on chip, thus McPAT only support homogeneous memory controllers.
    */
-  create(XML_interface, calc_area);
-}
-
-void Processor::create(const ParseXML *XML_interface, const bool calc_area) {
   int i;
   double pppm_t[4] = {1, 1, 1, 1};
+  set_proc_param();
+  if (procdynp.homoCore)
+    numCore = procdynp.numCore == 0 ? 0 : 1;
+  else
+    numCore = procdynp.numCore;
 
-  this->XML = XML_interface;
-  init();
-  compute_area(calc_area);
-  compute_power();
+  if (procdynp.homoL2)
+    numL2 = procdynp.numL2 == 0 ? 0 : 1;
+  else
+    numL2 = procdynp.numL2;
+
+  if (XML->sys.Private_L2 && numCore != numL2) {
+    cout << "Number of private L2 does not match number of cores" << endl;
+    exit(0);
+  }
+
+  if (procdynp.homoL3)
+    numL3 = procdynp.numL3 == 0 ? 0 : 1;
+  else
+    numL3 = procdynp.numL3;
+
+  if (procdynp.homoNOC)
+    numNOC = procdynp.numNOC == 0 ? 0 : 1;
+  else
+    numNOC = procdynp.numNOC;
+
+  //  if (!procdynp.homoNOC)
+  //  {
+  //	  cout<<"Current McPAT does not support heterogeneous NOC"<<endl;
+  //      exit(0);
+  //  }
+
+  if (procdynp.homoL1Dir)
+    numL1Dir = procdynp.numL1Dir == 0 ? 0 : 1;
+  else
+    numL1Dir = procdynp.numL1Dir;
+
+  if (procdynp.homoL2Dir)
+    numL2Dir = procdynp.numL2Dir == 0 ? 0 : 1;
+  else
+    numL2Dir = procdynp.numL2Dir;
+
+  for (i = 0; i < numCore; i++) {
+    cores.push_back(new Core(XML, i, &interface_ip));
+    cores[i]->computeEnergy();
+    cores[i]->computeEnergy(false);
+    if (procdynp.homoCore) {
+      core.area.set_area(core.area.get_area() +
+                         cores[i]->area.get_area() * procdynp.numCore);
+      set_pppm(pppm_t,
+               cores[i]->clockRate * procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore);
+      core.power = core.power + cores[i]->power * pppm_t;
+      set_pppm(pppm_t,
+               1 / cores[i]->executionTime,
+               procdynp.numCore,
+               procdynp.numCore,
+               procdynp.numCore);
+      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
+      area.set_area(area.get_area() +
+                    core.area.get_area()); // placement and routing overhead is
+                                           // 10%, core scales worse than cache
+                                           // 40% is accumulated from 90 to 22nm
+      power = power + core.power;
+      rt_power = rt_power + core.rt_power;
+    } else {
+      core.area.set_area(core.area.get_area() + cores[i]->area.get_area());
+      area.set_area(
+          area.get_area() +
+          cores[i]->area.get_area()); // placement and routing overhead is 10%,
+                                      // core scales worse than cache 40% is
+                                      // accumulated from 90 to 22nm
+
+      set_pppm(pppm_t, cores[i]->clockRate, 1, 1, 1);
+      core.power = core.power + cores[i]->power * pppm_t;
+      power = power + cores[i]->power * pppm_t;
+
+      set_pppm(pppm_t, 1 / cores[i]->executionTime, 1, 1, 1);
+      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
+      rt_power = rt_power + cores[i]->rt_power * pppm_t;
+    }
+  }
+
+  if (!XML->sys.Private_L2) {
+    if (numL2 > 0) {
+      for (i = 0; i < numL2; i++) {
+        l2array.push_back(new SharedCache());
+        l2array[i]->set_params(XML, i, &interface_ip);
+        l2array[i]->set_stats(XML);
+        l2array[i]->computeArea();
+        l2array[i]->computeStaticPower(true);
+        l2array[i]->computeStaticPower();
+        if (procdynp.homoL2) {
+          l2.area.set_area(l2.area.get_area() +
+                           l2array[i]->area.get_area() * procdynp.numL2);
+          set_pppm(pppm_t,
+                   l2array[i]->cachep.clockRate * procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2);
+          l2.power = l2.power + l2array[i]->power * pppm_t;
+          set_pppm(pppm_t,
+                   1 / l2array[i]->cachep.executionTime,
+                   procdynp.numL2,
+                   procdynp.numL2,
+                   procdynp.numL2);
+          l2.rt_power = l2.rt_power + l2array[i]->rt_power * pppm_t;
+          area.set_area(
+              area.get_area() +
+              l2.area.get_area()); // placement and routing overhead is 10%, l2
+                                   // scales worse than cache 40% is accumulated
+                                   // from 90 to 22nm
+          power = power + l2.power;
+          rt_power = rt_power + l2.rt_power;
+        } else {
+          l2.area.set_area(l2.area.get_area() + l2array[i]->area.get_area());
+          area.set_area(
+              area.get_area() +
+              l2array[i]
+                  ->area.get_area()); // placement and routing overhead is
+                                      // 10%, l2 scales worse than cache
+                                      // 40% is accumulated from 90 to 22nm
+
+          set_pppm(pppm_t, l2array[i]->cachep.clockRate, 1, 1, 1);
+          l2.power = l2.power + l2array[i]->power * pppm_t;
+          power = power + l2array[i]->power * pppm_t;
+          ;
+          set_pppm(pppm_t, 1 / l2array[i]->cachep.executionTime, 1, 1, 1);
+          l2.rt_power = l2.rt_power + l2array[i]->rt_power * pppm_t;
+          rt_power = rt_power + l2array[i]->rt_power * pppm_t;
+        }
+      }
+    }
+  }
+
+  if (numL3 > 0) {
+    for (i = 0; i < numL3; i++) {
+      l3array.push_back(new SharedCache());
+      l3array[i]->set_params(XML, i, &interface_ip, L3);
+      l3array[i]->set_stats(XML);
+      l3array[i]->computeArea();
+      l3array[i]->computeStaticPower(true);
+      l3array[i]->computeStaticPower();
+      if (procdynp.homoL3) {
+        l3.area.set_area(l3.area.get_area() +
+                         l3array[i]->area.get_area() * procdynp.numL3);
+        set_pppm(pppm_t,
+                 l3array[i]->cachep.clockRate * procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3);
+        l3.power = l3.power + l3array[i]->power * pppm_t;
+        set_pppm(pppm_t,
+                 1 / l3array[i]->cachep.executionTime,
+                 procdynp.numL3,
+                 procdynp.numL3,
+                 procdynp.numL3);
+        l3.rt_power = l3.rt_power + l3array[i]->rt_power * pppm_t;
+        area.set_area(area.get_area() +
+                      l3.area.get_area()); // placement and routing overhead is
+                                           // 10%, l3 scales worse than cache
+                                           // 40% is accumulated from 90 to 22nm
+        power = power + l3.power;
+        rt_power = rt_power + l3.rt_power;
+
+      } else {
+        l3.area.set_area(l3.area.get_area() + l3array[i]->area.get_area());
+        area.set_area(
+            area.get_area() +
+            l3array[i]->area.get_area()); // placement and routing overhead is
+                                          // 10%, l3 scales worse than cache 40%
+                                          // is accumulated from 90 to 22nm
+        set_pppm(pppm_t, l3array[i]->cachep.clockRate, 1, 1, 1);
+        l3.power = l3.power + l3array[i]->power * pppm_t;
+        power = power + l3array[i]->power * pppm_t;
+        set_pppm(pppm_t, 1 / l3array[i]->cachep.executionTime, 1, 1, 1);
+        l3.rt_power = l3.rt_power + l3array[i]->rt_power * pppm_t;
+        rt_power = rt_power + l3array[i]->rt_power * pppm_t;
+      }
+    }
+  }
+  if (numL1Dir > 0) {
+    for (i = 0; i < numL1Dir; i++) {
+      l1dirarray.push_back(new SharedCache());
+      l1dirarray[i]->set_params(XML, i, &interface_ip, L1Directory);
+      l1dirarray[i]->set_stats(XML);
+      l1dirarray[i]->computeArea();
+      l1dirarray[i]->computeStaticPower(true);
+      l1dirarray[i]->computeStaticPower();
+      if (procdynp.homoL1Dir) {
+        l1dir.area.set_area(l1dir.area.get_area() +
+                            l1dirarray[i]->area.get_area() * procdynp.numL1Dir);
+        set_pppm(pppm_t,
+                 l1dirarray[i]->cachep.clockRate * procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir);
+        l1dir.power = l1dir.power + l1dirarray[i]->power * pppm_t;
+        set_pppm(pppm_t,
+                 1 / l1dirarray[i]->cachep.executionTime,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir,
+                 procdynp.numL1Dir);
+        l1dir.rt_power = l1dir.rt_power + l1dirarray[i]->rt_power * pppm_t;
+        area.set_area(
+            area.get_area() +
+            l1dir.area.get_area()); // placement and routing overhead is 10%,
+                                    // l1dir scales worse than cache 40% is
+                                    // accumulated from 90 to 22nm
+        power = power + l1dir.power;
+        rt_power = rt_power + l1dir.rt_power;
+
+      } else {
+        l1dir.area.set_area(l1dir.area.get_area() +
+                            l1dirarray[i]->area.get_area());
+        area.set_area(area.get_area() + l1dirarray[i]->area.get_area());
+        set_pppm(pppm_t, l1dirarray[i]->cachep.clockRate, 1, 1, 1);
+        l1dir.power = l1dir.power + l1dirarray[i]->power * pppm_t;
+        power = power + l1dirarray[i]->power;
+        set_pppm(pppm_t, 1 / l1dirarray[i]->cachep.executionTime, 1, 1, 1);
+        l1dir.rt_power = l1dir.rt_power + l1dirarray[i]->rt_power * pppm_t;
+        rt_power = rt_power + l1dirarray[i]->rt_power;
+      }
+    }
+  }
+  if (numL2Dir > 0)
+    for (i = 0; i < numL2Dir; i++) {
+      l2dirarray.push_back(new SharedCache());
+      l2dirarray[i]->set_params(XML, i, &interface_ip, L2Directory);
+      l2dirarray[i]->set_stats(XML);
+      l2dirarray[i]->computeArea();
+      l2dirarray[i]->computeStaticPower(true);
+      l2dirarray[i]->computeStaticPower();
+      if (procdynp.homoL2Dir) {
+        l2dir.area.set_area(l2dir.area.get_area() +
+                            l2dirarray[i]->area.get_area() * procdynp.numL2Dir);
+        set_pppm(pppm_t,
+                 l2dirarray[i]->cachep.clockRate * procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir);
+        l2dir.power = l2dir.power + l2dirarray[i]->power * pppm_t;
+        set_pppm(pppm_t,
+                 1 / l2dirarray[i]->cachep.executionTime,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir,
+                 procdynp.numL2Dir);
+        l2dir.rt_power = l2dir.rt_power + l2dirarray[i]->rt_power * pppm_t;
+        area.set_area(
+            area.get_area() +
+            l2dir.area.get_area()); // placement and routing overhead is 10%,
+                                    // l2dir scales worse than cache 40% is
+                                    // accumulated from 90 to 22nm
+        power = power + l2dir.power;
+        rt_power = rt_power + l2dir.rt_power;
+
+      } else {
+        l2dir.area.set_area(l2dir.area.get_area() +
+                            l2dirarray[i]->area.get_area());
+        area.set_area(area.get_area() + l2dirarray[i]->area.get_area());
+        set_pppm(pppm_t, l2dirarray[i]->cachep.clockRate, 1, 1, 1);
+        l2dir.power = l2dir.power + l2dirarray[i]->power * pppm_t;
+        power = power + l2dirarray[i]->power * pppm_t;
+        set_pppm(pppm_t, 1 / l2dirarray[i]->cachep.executionTime, 1, 1, 1);
+        l2dir.rt_power = l2dir.rt_power + l2dirarray[i]->rt_power * pppm_t;
+        rt_power = rt_power + l2dirarray[i]->rt_power * pppm_t;
+      }
+    }
+
+  if (XML->sys.mc.number_mcs > 0 && XML->sys.mc.memory_channels_per_mc > 0) {
+    mc.set_params(XML, &interface_ip, MC);
+    mc.computeArea();
+    mcs.area.set_area(mcs.area.get_area() +
+                      mc.area.get_area() * XML->sys.mc.number_mcs);
+    area.set_area(area.get_area() +
+                  mc.area.get_area() * XML->sys.mc.number_mcs);
+
+    mc.computeStaticPower();
+    mc.set_stats(XML);
+    mc.computeDynamicPower();
+    set_pppm(pppm_t,
+             XML->sys.mc.number_mcs * mc.mcp.clockRate,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs);
+    mcs.power = mc.power * pppm_t;
+    power = power + mcs.power;
+    set_pppm(pppm_t,
+             1 / mc.mcp.executionTime,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs,
+             XML->sys.mc.number_mcs);
+    mcs.rt_power = mc.rt_power * pppm_t;
+    rt_power = rt_power + mcs.rt_power;
+  }
+
+  if (XML->sys.flashc.number_mcs > 0) // flash controller
+  {
+    flashcontroller.set_params(XML, &interface_ip);
+    flashcontroller.set_stats(XML);
+    flashcontroller.computeArea();
+    flashcontroller.computeStaticPower();
+    flashcontroller.computeDynamicPower();
+    double number_fcs = flashcontroller.fcp.num_mcs;
+    flashcontrollers.area.set_area(flashcontrollers.area.get_area() +
+                                   flashcontroller.area.get_area() *
+                                       number_fcs);
+    area.set_area(area.get_area() + flashcontrollers.area.get_area());
+    set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
+    flashcontrollers.power = flashcontroller.power * pppm_t;
+    power = power + flashcontrollers.power;
+    set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
+    flashcontrollers.rt_power = flashcontroller.rt_power * pppm_t;
+    rt_power = rt_power + flashcontrollers.rt_power;
+  }
+
+  if (XML->sys.niu.number_units > 0) {
+    niu.set_params(XML, &interface_ip);
+    niu.computeArea();
+    niu.computeStaticPower();
+    nius.area.set_area(nius.area.get_area() +
+                       niu.area.get_area() * XML->sys.niu.number_units);
+    area.set_area(area.get_area() +
+                  niu.area.get_area() * XML->sys.niu.number_units);
+    set_pppm(pppm_t,
+             XML->sys.niu.number_units * niu.niup.clockRate,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units);
+    niu.set_stats(XML);
+    niu.computeDynamicPower();
+    nius.power = niu.power * pppm_t;
+    power = power + nius.power;
+    set_pppm(pppm_t,
+             XML->sys.niu.number_units * niu.niup.clockRate,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units,
+             XML->sys.niu.number_units);
+    nius.rt_power = niu.rt_power * pppm_t;
+    rt_power = rt_power + nius.rt_power;
+  }
+
+  if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
+    pcie.set_params(XML, &interface_ip);
+    pcie.computeArea();
+    pcies.area.set_area(pcies.area.get_area() +
+                        pcie.area.get_area() * XML->sys.pcie.number_units);
+    area.set_area(area.get_area() +
+                  pcie.area.get_area() * XML->sys.pcie.number_units);
+    set_pppm(pppm_t,
+             XML->sys.pcie.number_units * pcie.pciep.clockRate,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units);
+
+    pcie.set_stats(XML);
+    pcie.computeStaticPower();
+    pcie.computeDynamicPower();
+    pcies.power = pcie.power * pppm_t;
+    power = power + pcies.power;
+    set_pppm(pppm_t,
+             XML->sys.pcie.number_units * pcie.pciep.clockRate,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units,
+             XML->sys.pcie.number_units);
+    pcies.rt_power = pcie.rt_power * pppm_t;
+    rt_power = rt_power + pcies.rt_power;
+  }
 
   if (numNOC > 0) {
     for (i = 0; i < numNOC; i++) {
@@ -158,517 +519,6 @@ void Processor::create(const ParseXML *XML_interface, const bool calc_area) {
   //  globalClock.start_wiring_level =5;//toplevel metal
   //  globalClock.l_ip.with_clock_grid=false;//global clock does not drive local
   //  final nodes globalClock.optimize_wire();
-}
-
-void Processor::init() {
-  int i;
-  set_proc_param();
-  if (procdynp.homoCore)
-    numCore = procdynp.numCore == 0 ? 0 : 1;
-  else
-    numCore = procdynp.numCore;
-
-  if (procdynp.homoL2)
-    numL2 = procdynp.numL2 == 0 ? 0 : 1;
-  else
-    numL2 = procdynp.numL2;
-
-  if (XML->sys.Private_L2 && numCore != numL2) {
-    std::cerr << "[ Processor ] Error: Number of private L2 does not match "
-                 "number of cores"
-              << endl;
-    exit(1);
-  }
-
-  if (procdynp.homoL3)
-    numL3 = procdynp.numL3 == 0 ? 0 : 1;
-  else
-    numL3 = procdynp.numL3;
-
-  if (procdynp.homoNOC)
-    numNOC = procdynp.numNOC == 0 ? 0 : 1;
-  else
-    numNOC = procdynp.numNOC;
-
-  if (procdynp.homoL1Dir)
-    numL1Dir = procdynp.numL1Dir == 0 ? 0 : 1;
-  else
-    numL1Dir = procdynp.numL1Dir;
-
-  if (procdynp.homoL2Dir)
-    numL2Dir = procdynp.numL2Dir == 0 ? 0 : 1;
-  else
-    numL2Dir = procdynp.numL2Dir;
-
-  // Core Init:
-  for (i = 0; i < numCore; i++) {
-    cores.push_back(new Core(XML, i, &interface_ip));
-  }
-
-  // L2:
-  if (!XML->sys.Private_L2) {
-    if (numL2 > 0) {
-      for (i = 0; i < numL2; i++) {
-        l2array.push_back(SharedCache());
-        l2array[i].set_params(XML, i, &interface_ip);
-        l2array[i].set_stats(XML);
-      }
-    }
-  }
-
-  // L3:
-  if (numL3 > 0) {
-    for (i = 0; i < numL3; i++) {
-      l3array.push_back(SharedCache());
-      l3array[i].set_params(XML, i, &interface_ip, L3);
-      l3array[i].set_stats(XML);
-    }
-  }
-
-  // L1 Dir:
-  if (numL1Dir > 0) {
-    for (i = 0; i < numL1Dir; i++) {
-      l1dirarray.push_back(SharedCache());
-      l1dirarray[i].set_params(XML, i, &interface_ip, L1Directory);
-      l1dirarray[i].set_stats(XML);
-    }
-  }
-
-  // L2 Dir:
-  if (numL2Dir > 0) {
-    for (i = 0; i < numL2Dir; i++) {
-      l2dirarray.push_back(SharedCache());
-      l2dirarray[i].set_params(XML, i, &interface_ip, L2Directory);
-      l2dirarray[i].set_stats(XML);
-    }
-  }
-
-  // MC:
-  if (XML->sys.mc.number_mcs > 0 && XML->sys.mc.memory_channels_per_mc > 0) {
-    mc.set_params(XML, &interface_ip, MC);
-    mc.set_stats(XML);
-  }
-
-  // Flash Controller Init:
-  if (XML->sys.flashc.number_mcs > 0) // flash controller
-  {
-    flashcontroller.set_params(XML, &interface_ip);
-    flashcontroller.set_stats(XML);
-  }
-
-  // Network Interface Unit Init
-  if (XML->sys.niu.number_units > 0) {
-    niu.set_params(XML, &interface_ip);
-    niu.set_stats(XML);
-  }
-
-  // PCIE Init
-  if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-    pcie.set_params(XML, &interface_ip);
-    pcie.set_stats(XML);
-  }
-
-  // TODO: Noc Init
-}
-
-void Processor::compute_area(const bool calc_area) {
-  int i;
-  double pppm_t[4] = {1, 1, 1, 1};
-
-  // Compute Area:
-  for (i = 0; i < numCore; i++) {
-    if (procdynp.homoCore) {
-      core.area.set_area(core.area.get_area() +
-                         cores[i]->area.get_area() * procdynp.numCore);
-      area.set_area(area.get_area() +
-                    core.area.get_area()); // placement and routing overhead is
-                                           // 10%, core scales worse than cache
-                                           // 40% is accumulated from 90 to 22nm
-    } else {
-      core.area.set_area(core.area.get_area() + cores[i]->area.get_area());
-      area.set_area(
-          area.get_area() +
-          cores[i]->area.get_area()); // placement and routing overhead is 10%,
-                                      // core scales worse than cache 40% is
-                                      // accumulated from 90 to 22nm
-    }
-  }
-
-  // L2 Calc Area:
-  if (!XML->sys.Private_L2) {
-    if (numL2 > 0) {
-      for (i = 0; i < numL2; i++) {
-        if (calc_area) {
-          l2array[i].computeArea();
-        }
-        if (procdynp.homoL2) {
-          l2.area.set_area(l2.area.get_area() +
-                           l2array[i].area.get_area() * procdynp.numL2);
-          area.set_area(
-              area.get_area() +
-              l2.area.get_area()); // placement and routing overhead is 10%, l2
-                                   // scales worse than cache 40% is accumulated
-                                   // from 90 to 22nm
-        } else {
-          l2.area.set_area(l2.area.get_area() + l2array[i].area.get_area());
-          area.set_area(
-              area.get_area() +
-              l2array[i].area.get_area()); // placement and routing overhead is
-                                           // 10%, l2 scales worse than cache
-                                           // 40% is accumulated from 90 to 22nm
-        }
-      }
-    }
-  }
-
-  // L3 Area:
-  if (numL3 > 0) {
-    for (i = 0; i < numL3; i++) {
-      l3array[i].computeArea();
-      if (procdynp.homoL3) {
-        l3.area.set_area(l3.area.get_area() +
-                         l3array[i].area.get_area() * procdynp.numL3);
-        area.set_area(area.get_area() +
-                      l3.area.get_area()); // placement and routing overhead is
-                                           // 10%, l3 scales worse than cache
-                                           // 40% is accumulated from 90 to 22nm
-      } else {
-        l3.area.set_area(l3.area.get_area() + l3array[i].area.get_area());
-        area.set_area(
-            area.get_area() +
-            l3array[i].area.get_area()); // placement and routing overhead is
-                                         // 10%, l3 scales worse than cache 40%
-                                         // is accumulated from 90 to 22nm
-      }
-    }
-  }
-
-  // L1 Dir Area:
-  if (numL1Dir > 0) {
-    for (i = 0; i < numL1Dir; i++) {
-      l1dirarray[i].computeArea();
-      if (procdynp.homoL1Dir) {
-        l1dir.area.set_area(l1dir.area.get_area() +
-                            l1dirarray[i].area.get_area() * procdynp.numL1Dir);
-        area.set_area(
-            area.get_area() +
-            l1dir.area.get_area()); // placement and routing overhead is 10%,
-                                    // l1dir scales worse than cache 40% is
-                                    // accumulated from 90 to 22nm
-
-      } else {
-        l1dir.area.set_area(l1dir.area.get_area() +
-                            l1dirarray[i].area.get_area());
-        area.set_area(area.get_area() + l1dirarray[i].area.get_area());
-      }
-    }
-  }
-
-  // L2 Dir Area:
-  if (numL2Dir > 0) {
-    for (i = 0; i < numL2Dir; i++) {
-      if (calc_area) {
-        l2dirarray[i].computeArea();
-      }
-      if (procdynp.homoL2Dir) {
-        l2dir.area.set_area(l2dir.area.get_area() +
-                            l2dirarray[i].area.get_area() * procdynp.numL2Dir);
-        area.set_area(
-            area.get_area() +
-            l2dir.area.get_area()); // placement and routing overhead is 10%,
-                                    // l2dir scales worse than cache 40% is
-                                    // accumulated from 90 to 22nm
-      } else {
-        l2dir.area.set_area(l2dir.area.get_area() +
-                            l2dirarray[i].area.get_area());
-        area.set_area(area.get_area() + l2dirarray[i].area.get_area());
-      }
-    }
-  }
-
-  // MC Calc Area:
-  if (XML->sys.mc.number_mcs > 0 && XML->sys.mc.memory_channels_per_mc > 0) {
-    if (calc_area) {
-      mc.computeArea();
-    }
-    mcs.area.set_area(mcs.area.get_area() +
-                      mc.area.get_area() * XML->sys.mc.number_mcs);
-    area.set_area(area.get_area() +
-                  mc.area.get_area() * XML->sys.mc.number_mcs);
-  }
-
-  // Flash Controller Area:
-  if (XML->sys.flashc.number_mcs > 0) // flash controller
-  {
-    if (calc_area) {
-      flashcontroller.computeArea();
-    }
-    double number_fcs = flashcontroller.fcp.num_mcs;
-    flashcontrollers.area.set_area(flashcontrollers.area.get_area() +
-                                   flashcontroller.area.get_area() *
-                                       number_fcs);
-    area.set_area(area.get_area() + flashcontrollers.area.get_area());
-  }
-
-  // Network Interface Unit Area
-  if (XML->sys.niu.number_units > 0) {
-    if (calc_area) {
-      niu.computeArea();
-    }
-    nius.area.set_area(nius.area.get_area() +
-                       niu.area.get_area() * XML->sys.niu.number_units);
-    area.set_area(area.get_area() +
-                  niu.area.get_area() * XML->sys.niu.number_units);
-  }
-
-  // PCIE Area
-  if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-    if (calc_area) {
-      pcie.computeArea();
-    }
-    pcies.area.set_area(pcies.area.get_area() +
-                        pcie.area.get_area() * XML->sys.pcie.number_units);
-    area.set_area(area.get_area() +
-                  pcie.area.get_area() * XML->sys.pcie.number_units);
-  }
-}
-
-void Processor::compute_power() {
-  int i;
-  double pppm_t[4] = {1, 1, 1, 1};
-
-  // Compute Core Power
-  for (i = 0; i < numCore; i++) {
-    cores[i]->computeEnergy();
-    cores[i]->computeEnergy(false);
-    if (procdynp.homoCore) {
-      set_pppm(pppm_t,
-               cores[i]->clockRate * procdynp.numCore,
-               procdynp.numCore,
-               procdynp.numCore,
-               procdynp.numCore);
-      core.power = core.power + cores[i]->power * pppm_t;
-      set_pppm(pppm_t,
-               1 / cores[i]->executionTime,
-               procdynp.numCore,
-               procdynp.numCore,
-               procdynp.numCore);
-      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
-      power = power + core.power;
-      rt_power = rt_power + core.rt_power;
-    } else {
-      set_pppm(pppm_t, cores[i]->clockRate, 1, 1, 1);
-      core.power = core.power + cores[i]->power * pppm_t;
-      power = power + cores[i]->power * pppm_t;
-
-      set_pppm(pppm_t, 1 / cores[i]->executionTime, 1, 1, 1);
-      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
-      rt_power = rt_power + cores[i]->rt_power * pppm_t;
-    }
-  }
-
-  // L2 Calc Power:
-  if (!XML->sys.Private_L2) {
-    if (numL2 > 0) {
-      for (i = 0; i < numL2; i++) {
-        l2array[i].computeStaticPower(true);
-        l2array[i].computeStaticPower();
-        if (procdynp.homoL2) {
-          set_pppm(pppm_t,
-                   l2array[i].cachep.clockRate * procdynp.numL2,
-                   procdynp.numL2,
-                   procdynp.numL2,
-                   procdynp.numL2);
-          l2.power = l2.power + l2array[i].power * pppm_t;
-          set_pppm(pppm_t,
-                   1 / l2array[i].cachep.executionTime,
-                   procdynp.numL2,
-                   procdynp.numL2,
-                   procdynp.numL2);
-          l2.rt_power = l2.rt_power + l2array[i].rt_power * pppm_t;
-          power = power + l2.power;
-          rt_power = rt_power + l2.rt_power;
-        } else {
-          set_pppm(pppm_t, l2array[i].cachep.clockRate, 1, 1, 1);
-          l2.power = l2.power + l2array[i].power * pppm_t;
-          power = power + l2array[i].power * pppm_t;
-          ;
-          set_pppm(pppm_t, 1 / l2array[i].cachep.executionTime, 1, 1, 1);
-          l2.rt_power = l2.rt_power + l2array[i].rt_power * pppm_t;
-          rt_power = rt_power + l2array[i].rt_power * pppm_t;
-        }
-      }
-    }
-  }
-
-  // L3 Power:
-  if (numL3 > 0) {
-    for (i = 0; i < numL3; i++) {
-      l3array[i].computeStaticPower(true);
-      l3array[i].computeStaticPower();
-      if (procdynp.homoL3) {
-        set_pppm(pppm_t,
-                 l3array[i].cachep.clockRate * procdynp.numL3,
-                 procdynp.numL3,
-                 procdynp.numL3,
-                 procdynp.numL3);
-        l3.power = l3.power + l3array[i].power * pppm_t;
-        set_pppm(pppm_t,
-                 1 / l3array[i].cachep.executionTime,
-                 procdynp.numL3,
-                 procdynp.numL3,
-                 procdynp.numL3);
-        l3.rt_power = l3.rt_power + l3array[i].rt_power * pppm_t;
-        power = power + l3.power;
-        rt_power = rt_power + l3.rt_power;
-      } else {
-        set_pppm(pppm_t, l3array[i].cachep.clockRate, 1, 1, 1);
-        l3.power = l3.power + l3array[i].power * pppm_t;
-        power = power + l3array[i].power * pppm_t;
-        set_pppm(pppm_t, 1 / l3array[i].cachep.executionTime, 1, 1, 1);
-        l3.rt_power = l3.rt_power + l3array[i].rt_power * pppm_t;
-        rt_power = rt_power + l3array[i].rt_power * pppm_t;
-      }
-    }
-  }
-
-  // L1 Dir Power:
-  if (numL1Dir > 0) {
-    for (i = 0; i < numL1Dir; i++) {
-      l1dirarray[i].computeStaticPower(true);
-      l1dirarray[i].computeStaticPower();
-      if (procdynp.homoL1Dir) {
-        set_pppm(pppm_t,
-                 l1dirarray[i].cachep.clockRate * procdynp.numL1Dir,
-                 procdynp.numL1Dir,
-                 procdynp.numL1Dir,
-                 procdynp.numL1Dir);
-        l1dir.power = l1dir.power + l1dirarray[i].power * pppm_t;
-        set_pppm(pppm_t,
-                 1 / l1dirarray[i].cachep.executionTime,
-                 procdynp.numL1Dir,
-                 procdynp.numL1Dir,
-                 procdynp.numL1Dir);
-        l1dir.rt_power = l1dir.rt_power + l1dirarray[i].rt_power * pppm_t;
-        power = power + l1dir.power;
-        rt_power = rt_power + l1dir.rt_power;
-
-      } else {
-        set_pppm(pppm_t, l1dirarray[i].cachep.clockRate, 1, 1, 1);
-        l1dir.power = l1dir.power + l1dirarray[i].power * pppm_t;
-        power = power + l1dirarray[i].power;
-        set_pppm(pppm_t, 1 / l1dirarray[i].cachep.executionTime, 1, 1, 1);
-        l1dir.rt_power = l1dir.rt_power + l1dirarray[i].rt_power * pppm_t;
-        rt_power = rt_power + l1dirarray[i].rt_power;
-      }
-    }
-  }
-
-  // L2 Dir Power
-  if (numL2Dir > 0) {
-    for (i = 0; i < numL2Dir; i++) {
-      l2dirarray[i].computeStaticPower(true);
-      l2dirarray[i].computeStaticPower();
-      if (procdynp.homoL2Dir) {
-        set_pppm(pppm_t,
-                 l2dirarray[i].cachep.clockRate * procdynp.numL2Dir,
-                 procdynp.numL2Dir,
-                 procdynp.numL2Dir,
-                 procdynp.numL2Dir);
-        l2dir.power = l2dir.power + l2dirarray[i].power * pppm_t;
-        set_pppm(pppm_t,
-                 1 / l2dirarray[i].cachep.executionTime,
-                 procdynp.numL2Dir,
-                 procdynp.numL2Dir,
-                 procdynp.numL2Dir);
-        l2dir.rt_power = l2dir.rt_power + l2dirarray[i].rt_power * pppm_t;
-        power = power + l2dir.power;
-        rt_power = rt_power + l2dir.rt_power;
-
-      } else {
-        set_pppm(pppm_t, l2dirarray[i].cachep.clockRate, 1, 1, 1);
-        l2dir.power = l2dir.power + l2dirarray[i].power * pppm_t;
-        power = power + l2dirarray[i].power * pppm_t;
-        set_pppm(pppm_t, 1 / l2dirarray[i].cachep.executionTime, 1, 1, 1);
-        l2dir.rt_power = l2dir.rt_power + l2dirarray[i].rt_power * pppm_t;
-        rt_power = rt_power + l2dirarray[i].rt_power * pppm_t;
-      }
-    }
-  }
-
-  // MC Calc Power:
-  if (XML->sys.mc.number_mcs > 0 && XML->sys.mc.memory_channels_per_mc > 0) {
-    mc.computeStaticPower();
-    mc.computeDynamicPower();
-    set_pppm(pppm_t,
-             XML->sys.mc.number_mcs * mc.mcp.clockRate,
-             XML->sys.mc.number_mcs,
-             XML->sys.mc.number_mcs,
-             XML->sys.mc.number_mcs);
-    mcs.power = mc.power * pppm_t;
-    power = power + mcs.power;
-    set_pppm(pppm_t,
-             1 / mc.mcp.executionTime,
-             XML->sys.mc.number_mcs,
-             XML->sys.mc.number_mcs,
-             XML->sys.mc.number_mcs);
-    mcs.rt_power = mc.rt_power * pppm_t;
-    rt_power = rt_power + mcs.rt_power;
-  }
-
-  // Flash Controller Power:
-  if (XML->sys.flashc.number_mcs > 0) // flash controller
-  {
-    flashcontroller.computeStaticPower();
-    flashcontroller.computeDynamicPower();
-    double number_fcs = flashcontroller.fcp.num_mcs;
-    set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
-    flashcontrollers.power = flashcontroller.power * pppm_t;
-    power = power + flashcontrollers.power;
-    set_pppm(pppm_t, number_fcs, number_fcs, number_fcs, number_fcs);
-    flashcontrollers.rt_power = flashcontroller.rt_power * pppm_t;
-    rt_power = rt_power + flashcontrollers.rt_power;
-  }
-
-  // Network Interface Unit Power
-  if (XML->sys.niu.number_units > 0) {
-    niu.computeStaticPower();
-    niu.computeDynamicPower();
-    set_pppm(pppm_t,
-             XML->sys.niu.number_units * niu.niup.clockRate,
-             XML->sys.niu.number_units,
-             XML->sys.niu.number_units,
-             XML->sys.niu.number_units);
-    nius.power = niu.power * pppm_t;
-    power = power + nius.power;
-    set_pppm(pppm_t,
-             XML->sys.niu.number_units * niu.niup.clockRate,
-             XML->sys.niu.number_units,
-             XML->sys.niu.number_units,
-             XML->sys.niu.number_units);
-    nius.rt_power = niu.rt_power * pppm_t;
-    rt_power = rt_power + nius.rt_power;
-  }
-
-  // PCIE Power
-  if (XML->sys.pcie.number_units > 0 && XML->sys.pcie.num_channels > 0) {
-    pcie.computeStaticPower();
-    pcie.computeDynamicPower();
-    set_pppm(pppm_t,
-             XML->sys.pcie.number_units * pcie.pciep.clockRate,
-             XML->sys.pcie.number_units,
-             XML->sys.pcie.number_units,
-             XML->sys.pcie.number_units);
-    pcies.power = pcie.power * pppm_t;
-    power = power + pcies.power;
-    set_pppm(pppm_t,
-             XML->sys.pcie.number_units * pcie.pciep.clockRate,
-             XML->sys.pcie.number_units,
-             XML->sys.pcie.number_units,
-             XML->sys.pcie.number_units);
-    pcies.rt_power = pcie.rt_power * pppm_t;
-    rt_power = rt_power + pcies.rt_power;
-  }
 }
 
 void Processor::displayDeviceType(int device_type_, uint32_t indent) {
@@ -1063,26 +913,26 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
       if (!XML->sys.Private_L2) {
         for (i = 0; i < numL2; i++) {
-          l2array[i].display(indent + 4, is_tdp);
+          l2array[i]->display(indent + 4, is_tdp);
           cout << "************************************************************"
                   "*****************************"
                << endl;
         }
       }
       for (i = 0; i < numL3; i++) {
-        l3array[i].display(indent + 4, is_tdp);
+        l3array[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
       }
       for (i = 0; i < numL1Dir; i++) {
-        l1dirarray[i].display(indent + 4, is_tdp);
+        l1dirarray[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
       }
       for (i = 0; i < numL2Dir; i++) {
-        l2dirarray[i].display(indent + 4, is_tdp);
+        l2dirarray[i]->display(indent + 4, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -1255,8 +1105,24 @@ Processor::~Processor() {
     delete cores.back();
     cores.pop_back();
   }
+  while (!l2array.empty()) {
+    delete l2array.back();
+    l2array.pop_back();
+  }
+  while (!l3array.empty()) {
+    delete l3array.back();
+    l3array.pop_back();
+  }
   while (!nocs.empty()) {
     delete nocs.back();
     nocs.pop_back();
+  }
+  while (!l1dirarray.empty()) {
+    delete l1dirarray.back();
+    l1dirarray.pop_back();
+  }
+  while (!l2dirarray.empty()) {
+    delete l2dirarray.back();
+    l2dirarray.pop_back();
   }
 };

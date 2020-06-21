@@ -224,4 +224,3 @@ inst_decoder::~inst_decoder() {
   delete pre_dec->drv2;
   delete pre_dec;
 }
-
