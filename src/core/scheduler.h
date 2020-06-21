@@ -36,12 +36,12 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
+#include "selection_logic.h"
 
 class SchedulerU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -60,7 +60,7 @@ public:
   bool exist;
 
   SchedulerU();
-  void set_params(ParseXML *XML_interface,
+  void set_params(const ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
@@ -69,11 +69,10 @@ public:
   void computeArea();
   void computeStaticPower();
   void computeDynamicPower(bool is_tdp);
-    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-   ~SchedulerU();
-  
-  private:
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~SchedulerU();
 
+private:
   bool init_params;
   bool init_stats;
 };

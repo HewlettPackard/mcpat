@@ -31,17 +31,17 @@
 
 #ifndef NOC_H_
 #define NOC_H_
+
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 #include "router.h"
 
 class NoC : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithNoC;
   InputParameter interface_ip;
   double link_len;
@@ -60,7 +60,7 @@ public:
   bool router_exist;
   string name, link_name;
   double M_traffic_pattern;
-  NoC(ParseXML *XML_interface,
+  NoC(const ParseXML *XML_interface,
       int ithNoC_,
       InputParameter *interface_ip_,
       double M_traffic_pattern_ = 0.6,

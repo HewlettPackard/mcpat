@@ -43,13 +43,17 @@
 #include <iostream>
 #include <string>
 
-MemManU::MemManU(){
+MemManU::MemManU() {
   init_params = false;
   init_stats = false;
 }
 
-void MemManU::set_params(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_, const CoreDynParam &dyn_p_, bool exist_){
-  
+void MemManU::set_params(const ParseXML *XML_interface,
+                         int ithCore_,
+                         InputParameter *interface_ip_,
+                         const CoreDynParam &dyn_p_,
+                         bool exist_) {
+
   XML = XML_interface;
   interface_ip = *interface_ip_;
   coredynp = dyn_p_;
@@ -145,37 +149,31 @@ void MemManU::set_params(ParseXML *XML_interface, int ithCore_, InputParameter *
   init_params = true;
 }
 
-void MemManU::computeArea(){
+void MemManU::computeArea() {
   if (!init_params) {
     std::cerr << "[ MemManU ] Error: must set params before calling "
                  "computeArea()\n";
-                
+
     exit(1);
   }
 
   dtlb.computeArea();
-  dtlb.area.set_area(dtlb.area.get_area() +
-                           dtlb.local_result.area);
+  dtlb.area.set_area(dtlb.area.get_area() + dtlb.local_result.area);
   area.set_area(area.get_area() + dtlb.local_result.area);
 
   itlb.computeArea();
-  itlb.area.set_area(itlb.area.get_area() +
-                           itlb.local_result.area);
+  itlb.area.set_area(itlb.area.get_area() + itlb.local_result.area);
   area.set_area(area.get_area() + itlb.local_result.area);
-
 }
 
-void MemManU::set_stats(const ParseXML *XML){
-  init_stats = true;
-}
+void MemManU::set_stats(const ParseXML *XML) { init_stats = true; }
 
 void MemManU::computeStaticPower() {
   // NOTE: this does nothing, as the static power is optimized
   // along with the array area.
 }
 
-
-void MemManU::computeDynamicPower(bool is_tdp){
+void MemManU::computeDynamicPower(bool is_tdp) {
   if (!exist)
     return;
   if (!init_stats) {
@@ -217,13 +215,13 @@ void MemManU::computeDynamicPower(bool is_tdp){
   dtlb.power_t.reset();
   itlb.power_t.readOp.dynamic +=
       itlb.stats_t.readAc.access * itlb.local_result.power.searchOp
-                                        .dynamic // FA spent most power in tag,
-                                                 // so use total access not hits
+                                       .dynamic // FA spent most power in tag,
+                                                // so use total access not hits
       + itlb.stats_t.readAc.miss * itlb.local_result.power.writeOp.dynamic;
   dtlb.power_t.readOp.dynamic +=
       dtlb.stats_t.readAc.access * dtlb.local_result.power.searchOp
-                                        .dynamic // FA spent most power in tag,
-                                                 // so use total access not hits
+                                       .dynamic // FA spent most power in tag,
+                                                // so use total access not hits
       + dtlb.stats_t.readAc.miss * dtlb.local_result.power.writeOp.dynamic;
 
   if (is_tdp) {
@@ -235,7 +233,6 @@ void MemManU::computeDynamicPower(bool is_tdp){
     dtlb.rt_power = dtlb.power_t + dtlb.local_result.power * pppm_lkg;
     rt_power = rt_power + itlb.rt_power + dtlb.rt_power;
   }
-
 }
 
 void MemManU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
@@ -264,10 +261,10 @@ void MemManU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
                    : itlb.power.readOp.power_gated_leakage)
            << " W" << endl;
     cout << indent_str_next
-         << "Gate Leakage = " << itlb.power.readOp.gate_leakage << " W"
-         << endl;
-    cout << indent_str_next << "Runtime Dynamic = "
-         << itlb.rt_power.readOp.dynamic / executionTime << " W" << endl;
+         << "Gate Leakage = " << itlb.power.readOp.gate_leakage << " W" << endl;
+    cout << indent_str_next
+         << "Runtime Dynamic = " << itlb.rt_power.readOp.dynamic / executionTime
+         << " W" << endl;
     cout << endl;
     cout << indent_str << "Dtlb:" << endl;
     cout << indent_str_next << "Area = " << dtlb.area.get_area() * 1e-6
@@ -286,10 +283,10 @@ void MemManU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
                    : dtlb.power.readOp.power_gated_leakage)
            << " W" << endl;
     cout << indent_str_next
-         << "Gate Leakage = " << dtlb.power.readOp.gate_leakage << " W"
-         << endl;
-    cout << indent_str_next << "Runtime Dynamic = "
-         << dtlb.rt_power.readOp.dynamic / executionTime << " W" << endl;
+         << "Gate Leakage = " << dtlb.power.readOp.gate_leakage << " W" << endl;
+    cout << indent_str_next
+         << "Runtime Dynamic = " << dtlb.rt_power.readOp.dynamic / executionTime
+         << " W" << endl;
     cout << endl;
   } else {
     cout << indent_str_next << "Itlb    Peak Dynamic = "
@@ -300,8 +297,9 @@ void MemManU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     cout << indent_str_next
          << "Itlb    Gate Leakage = " << itlb.rt_power.readOp.gate_leakage
          << " W" << endl;
-    cout << indent_str_next << "Dtlb   Peak Dynamic = "
-         << dtlb.rt_power.readOp.dynamic * clockRate << " W" << endl;
+    cout << indent_str_next
+         << "Dtlb   Peak Dynamic = " << dtlb.rt_power.readOp.dynamic * clockRate
+         << " W" << endl;
     cout << indent_str_next
          << "Dtlb   Subthreshold Leakage = " << dtlb.rt_power.readOp.leakage
          << " W" << endl;

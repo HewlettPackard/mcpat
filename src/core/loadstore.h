@@ -37,12 +37,11 @@
 #include "basic_components.h"
 #include "datacache.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class LoadStoreU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -59,7 +58,7 @@ public:
   ArrayST *LoadQ;
   bool exist;
 
-  LoadStoreU(ParseXML *XML_interface,
+  LoadStoreU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,

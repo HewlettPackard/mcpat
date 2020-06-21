@@ -36,12 +36,11 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class MemManU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -55,7 +54,7 @@ public:
   bool exist;
 
   MemManU();
-  void set_params(ParseXML *XML_interface,
+  void set_params(const ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
@@ -67,7 +66,7 @@ public:
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~MemManU();
 
-  private:
+private:
   bool init_params;
   bool init_stats;
 };

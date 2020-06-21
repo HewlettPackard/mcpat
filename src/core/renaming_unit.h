@@ -35,13 +35,12 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
+#include "dep_resource_conflict_check.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class RENAMINGU : public Component {
 public:
-  ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   double clockRate;
@@ -55,26 +54,34 @@ public:
   ArrayST ffreeL;
   dep_resource_conflict_check *idcl;
   dep_resource_conflict_check *fdcl;
-  ArrayST RAHT; // register alias history table Used to store GC
   bool exist;
 
   RENAMINGU();
-  void set_params(ParseXML *XML_interface,
+  void set_params(const ParseXML *XML,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
                   bool exist_ = true);
   void set_stats(const ParseXML *XML);
   void computeArea();
-  void computeStaticPower();
-  void computeDynamicPower(bool is_tdp);
-    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-   ~RENAMINGU();
-  
-  private:
+  void computeStaticPower(bool is_tdp = true);
+  void computeDynamicPower(); // TODO; add this
+  void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~RENAMINGU();
 
-  bool init_params;
+private:
   bool init_stats;
+  bool init_params;
+  bool set_area;
+  bool long_channel;
+  bool power_gating;
+
+  unsigned int fp_rename_writes;
+  unsigned int fp_rename_reads;
+  unsigned int rename_writes;
+  unsigned int rename_reads;
+  unsigned int int_instructions;
+  unsigned int fp_instructions;
 };
 
 #endif // __RENAMING_U_H__

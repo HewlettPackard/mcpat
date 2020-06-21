@@ -28,50 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __DFF_CELL_H__
+#define __DFF_CELL_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class DFFCell : public Component {
 public:
-  const ParseXML *XML;
-  int ithCore;
-  InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
-  CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  DFFCell(bool _is_dram,
+          double _WdecNANDn,
+          double _WdecNANDp,
+          double _cell_load,
+          const InputParameter *configure_interface);
+  InputParameter l_ip;
+  bool is_dram;
+  double cell_load;
+  double WdecNANDn;
+  double WdecNANDp;
+  double clock_cap;
+  int model;
+  int n_switch;
+  int n_keep_1;
+  int n_keep_0;
+  int n_clock;
+  powerDef e_switch;
+  powerDef e_keep_1;
+  powerDef e_keep_0;
+  powerDef e_clock;
+
+  double fpfp_node_cap(unsigned int fan_in, unsigned int fan_out);
+  void compute_DFF_cell(void);
 };
 
-#endif /* CORE_H_ */
+#endif //__DFF_CELL_H__

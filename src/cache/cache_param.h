@@ -32,18 +32,13 @@
 #ifndef __CACHE_PARAM_H__
 #define __CACHE_PARAM_H__
 
-#include "basic_components.h"
 #include "XML_Parse.h"
+#include "basic_components.h"
 #include "parameter.h"
 
 #include <vector>
 
-enum cache_level { 
-  L2,
-  L3,
-  L1Directory,
-  L2Directory
-};
+enum cache_level { L2, L3, L1Directory, L2Directory };
 
 class CacheDynParam {
 public:
@@ -68,10 +63,10 @@ public:
   double power_gating_vcc;
   CacheDynParam(){};
   ~CacheDynParam(){};
-  void set_params_l2_cache(const ParseXML* XML, const int ithCache);
-  void set_params_l3_cache(const ParseXML* XML, const int ithCache);
-  void set_params_l1_directory(const ParseXML* XML, const int ithCache);
-  void set_params_l2_directory(const ParseXML* XML, const int ithCache);
+  void set_params_l2_cache(const ParseXML *XML, const int ithCache);
+  void set_params_l3_cache(const ParseXML *XML, const int ithCache);
+  void set_params_l1_directory(const ParseXML *XML, const int ithCache);
+  void set_params_l2_directory(const ParseXML *XML, const int ithCache);
 };
 
 #endif

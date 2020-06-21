@@ -28,50 +28,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __PIPELINE_H__
+#define __PIPELINE_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class Pipeline : public Component {
 public:
-  const ParseXML *XML;
-  int ithCore;
-  InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
+  Pipeline(const InputParameter *configure_interface,
+           const CoreDynParam &dyn_p_,
+           enum Device_ty device_ty_ = Core_device,
+           bool _is_core_pipeline = true,
+           bool _is_default = true);
+  InputParameter l_ip;
+  uca_org_t local_result;
   CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  enum Device_ty device_ty;
+  bool is_core_pipeline, is_default;
+  double num_piperegs;
+  //	int pipeline_stages;
+  //	int tot_stage_vector, per_stage_vector;
+  bool process_ind;
+  double WNANDn;
+  double WNANDp;
+  double load_per_pipeline_stage;
+  //	int  Hthread,  num_thread, fetchWidth, decodeWidth, issueWidth,
+  // commitWidth, instruction_length; 	int  PC_width, opcode_length,
+  // num_arch_reg_tag, data_width,num_phsical_reg_tag, address_width; 	bool
+  // thread_clock_gated; 	bool in_order, multithreaded;
+  void compute_stage_vector();
+  void compute();
+  ~Pipeline() { local_result.cleanup(); };
 };
 
-#endif /* CORE_H_ */
+#endif // __PIPELINE_H__

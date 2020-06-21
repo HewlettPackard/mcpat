@@ -36,13 +36,12 @@
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class BranchPredictor : public Component {
 public:
+  const ParseXML *XML;
   int ithCore;
-  ParseXML *XML;
   InputParameter interface_ip;
   CoreDynParam coredynp;
   double clockRate;
@@ -59,7 +58,7 @@ public:
   bool exist;
 
   BranchPredictor();
-  void set_params(ParseXML *XML_interface,
+  void set_params(const ParseXML *XML_interface,
                   int ithCore_,
                   InputParameter *interface_ip_,
                   const CoreDynParam &dyn_p_,
@@ -68,16 +67,12 @@ public:
   void computeArea();
   void computeStaticPower();
   void computeDynamicPower(bool is_tdp);
-    void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-   ~BranchPredictor();
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~BranchPredictor();
 
 private:
-
   bool init_params;
   bool init_stats;
-
-
-
 };
 
 #endif // __BRANCH_PREDICTOR__

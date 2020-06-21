@@ -29,7 +29,6 @@
  *
  ***************************************************************************/
 
-
 #include "branch_predictor.h"
 
 #include "XML_Parse.h"
@@ -44,15 +43,17 @@
 #include <iostream>
 #include <string>
 
-
-
-BranchPredictor::BranchPredictor(){
+BranchPredictor::BranchPredictor() {
   init_params = false;
   init_stats = false;
 }
 
-void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputParameter *interface_ip_, const CoreDynParam &dyn_p_, bool exist_){
-  
+void BranchPredictor::set_params(const ParseXML *XML_interface,
+                                 int ithCore_,
+                                 InputParameter *interface_ip_,
+                                 const CoreDynParam &dyn_p_,
+                                 bool exist_) {
+
   XML = XML_interface;
   interface_ip = *interface_ip_;
   coredynp = dyn_p_;
@@ -99,11 +100,15 @@ void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputPar
   interface_ip.num_rd_ports = coredynp.predictionW;
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
-  globalBPT.set_params(&interface_ip, "Global Predictor", Core_device, coredynp.opt_local, coredynp.core_ty);
+  globalBPT.set_params(&interface_ip,
+                       "Global Predictor",
+                       Core_device,
+                       coredynp.opt_local,
+                       coredynp.core_ty);
 
-  //local BPT 1
+  // local BPT 1
   data =
-    int(ceil(XML->sys.core[ithCore].predictor.local_predictor_size[0] / 8.0));
+      int(ceil(XML->sys.core[ithCore].predictor.local_predictor_size[0] / 8.0));
   interface_ip.line_sz = data;
   interface_ip.cache_sz =
       data * XML->sys.core[ithCore].predictor.local_predictor_entries;
@@ -121,10 +126,10 @@ void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputPar
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
   L1_localBPT.set_params(&interface_ip,
-                            "L1 local Predictor",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "L1 local Predictor",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
 
   // Local BPT (Level 2)
   data =
@@ -146,11 +151,11 @@ void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputPar
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
   L2_localBPT.set_params(&interface_ip,
-                            "L2 local Predictor",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-  
+                         "L2 local Predictor",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
+
   // Chooser
   data =
       int(ceil(XML->sys.core[ithCore].predictor.chooser_predictor_bits / 8.0));
@@ -171,10 +176,10 @@ void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputPar
   interface_ip.num_wr_ports = coredynp.predictionW;
   interface_ip.num_se_rd_ports = 0;
   chooser.set_params(&interface_ip,
-                        "Predictor Chooser",
-                        Core_device,
-                        coredynp.opt_local,
-                        coredynp.core_ty);
+                     "Predictor Chooser",
+                     Core_device,
+                     coredynp.opt_local,
+                     coredynp.core_ty);
   // RAS return address stacks are Duplicated for each thread.
   interface_ip.is_cache = false;
   interface_ip.pure_ram = true;
@@ -199,59 +204,50 @@ void BranchPredictor::set_params(ParseXML *XML_interface, int ithCore_, InputPar
       &interface_ip, "RAS", Core_device, coredynp.opt_local, coredynp.core_ty);
 
   init_params = true;
-
 }
 
-
-
-
-void BranchPredictor::computeArea(){
+void BranchPredictor::computeArea() {
   if (!init_params) {
     std::cerr << "[ BranchPredictor ] Error: must set params before calling "
                  "computeArea()\n";
-                
+
     exit(1);
   }
 
   globalBPT.computeArea();
   globalBPT.area.set_area(globalBPT.area.get_area() +
-                           globalBPT.local_result.area);
+                          globalBPT.local_result.area);
   area.set_area(area.get_area() + globalBPT.local_result.area);
 
   L1_localBPT.computeArea();
   L1_localBPT.area.set_area(L1_localBPT.area.get_area() +
-                           L1_localBPT.local_result.area);
+                            L1_localBPT.local_result.area);
   area.set_area(area.get_area() + L1_localBPT.local_result.area);
 
   L2_localBPT.computeArea();
   L2_localBPT.area.set_area(L2_localBPT.area.get_area() +
-                           L2_localBPT.local_result.area);
+                            L2_localBPT.local_result.area);
   area.set_area(area.get_area() + L2_localBPT.local_result.area);
 
   chooser.computeArea();
-  chooser.area.set_area(chooser.area.get_area() +
-                           chooser.local_result.area);
+  chooser.area.set_area(chooser.area.get_area() + chooser.local_result.area);
   area.set_area(area.get_area() + chooser.local_result.area);
 
   RAS.computeArea();
   RAS.area.set_area(RAS.area.get_area() +
-                           RAS.local_result.area*coredynp.num_hthreads);
-  area.set_area(area.get_area() + RAS.local_result.area *coredynp.num_hthreads);
-
-
+                    RAS.local_result.area * coredynp.num_hthreads);
+  area.set_area(area.get_area() +
+                RAS.local_result.area * coredynp.num_hthreads);
 }
-
 
 void BranchPredictor::computeStaticPower() {
   // NOTE: this does nothing, as the static power is optimized
   // along with the array area.
 }
 
-void BranchPredictor::set_stats(const ParseXML *XML){
-  init_stats = true;
-}
+void BranchPredictor::set_stats(const ParseXML *XML) { init_stats = true; }
 
-void BranchPredictor::computeDynamicPower(bool is_tdp){
+void BranchPredictor::computeDynamicPower(bool is_tdp) {
   if (!exist)
     return;
   if (!init_stats) {
@@ -260,7 +256,7 @@ void BranchPredictor::computeDynamicPower(bool is_tdp){
     exit(1);
   }
   double r_access;
-  double w_access; 
+  double w_access;
   if (is_tdp) {
     r_access = coredynp.predictionW * coredynp.BR_duty_cycle;
     w_access = 0 * coredynp.BR_duty_cycle;
@@ -364,15 +360,13 @@ void BranchPredictor::computeDynamicPower(bool is_tdp){
         L1_localBPT.power_t + L1_localBPT.local_result.power * pppm_lkg;
     L2_localBPT.rt_power =
         L2_localBPT.power_t + L2_localBPT.local_result.power * pppm_lkg;
-    chooser.rt_power =
-        chooser.power_t + chooser.local_result.power * pppm_lkg;
+    chooser.rt_power = chooser.power_t + chooser.local_result.power * pppm_lkg;
     RAS.rt_power =
         RAS.power_t + RAS.local_result.power * coredynp.pppm_lkg_multhread;
     rt_power = rt_power + globalBPT.rt_power + L1_localBPT.rt_power +
                L2_localBPT.rt_power + chooser.rt_power + RAS.rt_power;
   }
 }
-
 
 void BranchPredictor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   if (!exist)
@@ -393,11 +387,12 @@ void BranchPredictor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
                           : globalBPT.power.readOp.leakage)
          << " W" << endl;
     if (power_gating)
-      cout << indent_str_next << "Subthreshold Leakage with power gating = "
-           << (long_channel ? globalBPT.power.readOp
-                                  .power_gated_with_long_channel_leakage
-                            : globalBPT.power.readOp.power_gated_leakage)
-           << " W" << endl;
+      cout
+          << indent_str_next << "Subthreshold Leakage with power gating = "
+          << (long_channel
+                  ? globalBPT.power.readOp.power_gated_with_long_channel_leakage
+                  : globalBPT.power.readOp.power_gated_leakage)
+          << " W" << endl;
     cout << indent_str_next
          << "Gate Leakage = " << globalBPT.power.readOp.gate_leakage << " W"
          << endl;
@@ -425,8 +420,7 @@ void BranchPredictor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << "Gate Leakage = " << L1_localBPT.power.readOp.gate_leakage << " W"
          << endl;
     cout << indent_str_next << "Runtime Dynamic = "
-         << L1_localBPT.rt_power.readOp.dynamic / executionTime << " W"
-         << endl;
+         << L1_localBPT.rt_power.readOp.dynamic / executionTime << " W" << endl;
     cout << endl;
     cout << indent_str << "L2_Local Predictor:" << endl;
     cout << indent_str_next << "Area = " << L2_localBPT.area.get_area() * 1e-6
@@ -448,8 +442,7 @@ void BranchPredictor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << "Gate Leakage = " << L2_localBPT.power.readOp.gate_leakage << " W"
          << endl;
     cout << indent_str_next << "Runtime Dynamic = "
-         << L2_localBPT.rt_power.readOp.dynamic / executionTime << " W"
-         << endl;
+         << L2_localBPT.rt_power.readOp.dynamic / executionTime << " W" << endl;
     cout << endl;
 
     cout << indent_str << "Chooser:" << endl;

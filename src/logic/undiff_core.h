@@ -28,50 +28,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __UNDIFF_CORE_H__
+#define __UNDIFF_CORE_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class UndiffCore : public Component {
 public:
+  UndiffCore(const ParseXML *XML_interface,
+             int ithCore_,
+             InputParameter *interface_ip_,
+             const CoreDynParam &dyn_p_,
+             bool exist_ = true,
+             bool embedded_ = false);
   const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
+  CoreDynParam coredynp;
   double clockRate, executionTime;
   double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
-  CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
-  void computeEnergy(bool is_tdp = true);
+  enum Core_type core_ty;
+  bool opt_performance, embedded;
+  double pipeline_stage, num_hthreads, issue_width;
+  bool is_default;
+
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  ~UndiffCore(){};
+  bool exist;
 };
 
-#endif /* CORE_H_ */
+#endif //__UNDIFF_CORE_H__

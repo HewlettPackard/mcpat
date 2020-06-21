@@ -42,7 +42,7 @@
 #include <iostream>
 #include <string>
 
-EXECU::EXECU(ParseXML *XML_interface,
+EXECU::EXECU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              double lsq_height_,
@@ -412,7 +412,6 @@ EXECU::EXECU(ParseXML *XML_interface,
     }
   }
   area.set_area(area.get_area() + bypass.area.get_area());
-
 }
 
 void EXECU::computeEnergy(bool is_tdp) {

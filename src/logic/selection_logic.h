@@ -28,50 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __SELECTION_LOGIC_H__
+#define __SELECTION_LOGIC_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class selection_logic : public Component {
 public:
-  const ParseXML *XML;
-  int ithCore;
-  InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
-  CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  selection_logic(
+      bool _is_default,
+      int win_entries_,
+      int issue_width_,
+      const InputParameter *configure_interface,
+      enum Device_ty device_ty_ = Core_device,
+      enum Core_type core_ty_ = Inorder); //, const ParseXML *_XML_interface);
+  bool is_default;
+  InputParameter l_ip;
+  uca_org_t local_result;
+  const ParseXML *XML_interface;
+  int win_entries;
+  int issue_width;
+  int num_threads;
+  enum Device_ty device_ty;
+  enum Core_type core_ty;
+
+  void selection_power();
+  void leakage_feedback(double temperature); // TODO
 };
 
-#endif /* CORE_H_ */
+#endif //__SELECTION_LOGIC_H__

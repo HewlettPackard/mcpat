@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-NoC::NoC(ParseXML *XML_interface,
+NoC::NoC(const ParseXML *XML_interface,
          int ithNoC_,
          InputParameter *interface_ip_,
          double M_traffic_pattern_,

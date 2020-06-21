@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-LoadStoreU::LoadStoreU(ParseXML *XML_interface,
+LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                        int ithCore_,
                        InputParameter *interface_ip_,
                        const CoreDynParam &dyn_p_,

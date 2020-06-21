@@ -35,15 +35,15 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
+#include "functional_unit.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 #include "regfile.h"
 #include "scheduler.h"
 
 class EXECU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   double clockRate;
@@ -68,7 +68,7 @@ public:
   Component bypass;
   bool exist;
 
-  EXECU(ParseXML *XML_interface,
+  EXECU(const ParseXML *XML_interface,
         int ithCore_,
         InputParameter *interface_ip_,
         double lsq_height_,

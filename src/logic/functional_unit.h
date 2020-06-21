@@ -28,50 +28,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef CORE_H_
-#define CORE_H_
+#ifndef __FUNCTIONAL_UNIT_H__
+#define __FUNCTIONAL_UNIT_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "branch_predictor.h"
-#include "exec_unit.h"
-#include "instfetch.h"
-#include "interconnect.h"
-#include "loadstore.h"
-#include "mmu.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "pipeline.h"
-#include "renaming_unit.h"
-#include "sharedcache.h"
-#include "undiff_core.h"
+#include "xmlParser.h"
 
-class Core : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class FunctionalUnit : public Component {
 public:
-  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
-  LoadStoreU *lsu;
-  MemManU *mmu;
-  EXECU *exu;
-  RENAMINGU *rnu;
-  Pipeline *corepipe;
-  UndiffCore *undiffCore;
-  SharedCache *l2cache;
   CoreDynParam coredynp;
-  // full_decoder 	inst_decoder;
-  // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
-  void set_core_param();
+  double FU_height;
+  double clockRate, executionTime;
+  double num_fu;
+  double energy, base_energy, per_access_energy, leakage, gate_leakage;
+  bool is_default;
+  enum FU_type fu_type;
+  statsDef tdp_stats;
+  statsDef rtp_stats;
+  statsDef stats_t;
+  powerDef power_t;
+
+  FunctionalUnit(const ParseXML *XML_interface,
+                 int ithCore_,
+                 InputParameter *interface_ip_,
+                 const CoreDynParam &dyn_p_,
+                 enum FU_type fu_type);
+  void set_stats(const ParseXML *XML);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~Core();
+  void leakage_feedback(double temperature);
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool embedded;
+
+  // Stats:
+  unsigned int mul_accesses;
+  unsigned int ialu_accesses;
+  unsigned int fpu_accesses;
 };
 
-#endif /* CORE_H_ */
+#endif // __FUNCTIONAL_UNIT_H__

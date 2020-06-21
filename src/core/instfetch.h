@@ -36,14 +36,14 @@
 #include "array.h"
 #include "basic_components.h"
 #include "branch_predictor.h"
+#include "inst_decoder.h"
 #include "instcache.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 
 class InstFetchU : public Component {
 public:
-  ParseXML *XML;
+  const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
   CoreDynParam coredynp;
@@ -62,7 +62,7 @@ public:
   inst_decoder *ID_misc;
   bool exist;
 
-  InstFetchU(ParseXML *XML_interface,
+  InstFetchU(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,

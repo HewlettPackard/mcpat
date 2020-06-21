@@ -43,80 +43,80 @@
 #include <iostream>
 #include <string>
 
-RENAMINGU::RENAMINGU(){
-  init_params = false;
+RENAMINGU::RENAMINGU() {
   init_stats = false;
-
+  init_params = false;
+  set_area = false;
+  long_channel = false;
+  power_gating = false;
+  fp_rename_writes = 0;
+  fp_rename_reads = 0;
+  rename_writes = 0;
+  rename_reads = 0;
+  int_instructions = 0;
+  fp_instructions = 0;
 }
 
-
-void RENAMINGU::set_params(ParseXML *XML_interface,
-                     int ithCore_,
-                     InputParameter *interface_ip_,
-                     const CoreDynParam &dyn_p_,
-                     bool exist_) {
-  /*
-   * Although renaming logic maybe be used in in-order processors,
-* McPAT assumes no renaming logic is used since the performance gain is very
-limited and
-* the only major inorder processor with renaming logic is Itainium
-* that is a VLIW processor and different from current McPAT's model.
-   * physical register base OOO must have Dual-RAT architecture or equivalent
-structure.FRAT:FrontRAT, RRAT:RetireRAT;
-   * i,f prefix mean int and fp
-   * RAT for all Renaming logic, random accessible checkpointing is used, but
-only update when instruction retires.
-   * FRAT will be read twice and written once per instruction;
-   * RRAT will be write once per instruction when committing and reads out all
-when context switch
-   *
-   * RAM scheme has # ARchi Reg entry with each entry hold phy reg tag,
-   * CAM scheme has # Phy Reg entry with each entry hold ARchi reg tag,
-   *
-   * RAM-based RAT is duplicated/partitioned for each different hardware threads
-   * CAM-based RAT is shared for all hardware threads
-   * With SMT, RAT is partitioned and tagged. RAM-based RAT needs to have N
-(N-way SMT) sets of entries, with each set for a thread.
-   * The RAT control logic will determine different sets to use for different
-threads. But it does not need extra tag bits in the entries.
-   * However, CAM-based RAT need extra tag bits to distinguish the architecture
-register ids for different threads.
-
-   *
-   * checkpointing of RAT and RRAT are both for architecture state recovery with
-events including mis-speculation;
-   * Checkpointing is easier to implement in CAM than in RAM based RAT, despite
-of the inferior scalabilty of the CAM-based RATs.
-   * McPAT assumes at least 1 checkpoint for CAM-based RATs, and no more than 4
-checkpoints (based on MIPS designs) for RAM based RATs,
-   * thus CAM-based RAT does not need RRAT
-   * Although no Dual-RAT is needed in RS-based OOO processors, since archi
-RegFile contains the committed register values,
-   * a RRAT or GC (not both) will speedup the mis-speculation recovery. Thus,
-when RAM-RAT does not have any GC, McPAT assumes the existence of a RRAT.
-   *
-   * RAM-base RAT does not need to scan/search all contents during instruction
-commit, since the ROB for RAM-based RAT contains the ARF-PRF mapping that is
-used for index the RAT entry to be updated.
-   *
-   * Both RAM and CAM have same DCL
-   *
-
-   *
-   */
-    XML = XML_interface;
+/*
+ * Although renaming logic maybe be used in in-order processors, McPAT
+ * assumes no renaming logic is used since the performance gain is very
+ * limited and the only major inorder processor with renaming logic is
+ * Itainium that is a VLIW processor and different from current McPAT's
+ * model. physical register base OOO must have Dual-RAT architecture or
+ * equivalent structure.FRAT:FrontRAT, RRAT:RetireRAT; i,f prefix mean int
+ * and fp RAT for all Renaming logic, random accessible checkpointing is
+ * used, but only update when instruction retires. FRAT will be read twice
+ * and written once per instruction; RRAT will be write once per instruction
+ * when committing and reads out all when context switch
+ *
+ * RAM scheme has # ARchi Reg entry with each entry hold phy reg tag,
+ * CAM scheme has # Phy Reg entry with each entry hold ARchi reg tag,
+ *
+ * RAM-based RAT is duplicated/partitioned for each different hardware
+ * threads CAM-based RAT is shared for all hardware threads With SMT, RAT is
+ * partitioned and tagged. RAM-based RAT needs to have N (N-way SMT) sets of
+ * entries, with each set for a thread. The RAT control logic will determine
+ * different sets to use for different threads. But it does not need extra
+ * tag bits in the entries. However, CAM-based RAT need extra tag bits to
+ * distinguish the architecture register ids for different threads.
+ *
+ * checkpointing of RAT and RRAT are both for architecture state recovery
+ * with events including mis-speculation; Checkpointing is easier to
+ * implement in CAM than in RAM based RAT, despite of the inferior scalabilty
+ * of the CAM-based RATs.  McPAT assumes at least 1 checkpoint for CAM-based
+ * RATs, and no more than 4 checkpoints (based on MIPS designs) for RAM based
+ * RATs, thus CAM-based RAT does not need RRAT Although no Dual-RAT is needed
+ * in RS-based OOO processors, since archi RegFile contains the committed
+ * register values, a RRAT or GC (not both) will speedup the mis-speculation
+ * recovery. Thus, when RAM-RAT does not have any GC, McPAT assumes the
+ * existence of a RRAT.
+ *
+ * RAM-base RAT does not need to scan/search all contents during instruction
+ * commit, since the ROB for RAM-based RAT contains the ARF-PRF mapping that
+ * is used for index the RAT entry to be updated.
+ *
+ * Both RAM and CAM have same DCL
+ */
+void RENAMINGU::set_params(const ParseXML *XML,
+                           int ithCore_,
+                           InputParameter *interface_ip_,
+                           const CoreDynParam &dyn_p_,
+                           bool exist_) {
+  int tag = 0;
+  int data = 0;
+  int out_w = 0;
+  exist = exist_;
+  if (!exist_) {
+    return;
+  }
+  ithCore = ithCore_;
   interface_ip = *interface_ip_;
   coredynp = dyn_p_;
-  ithCore = ithCore_;
-
-  exist = exist_;
-
-  if (!exist)
-    return;
-  int tag, data, out_w;
-  //	interface_ip.wire_is_mat_type = 0;
-  //	interface_ip.wire_os_mat_type = 0;
-  //	interface_ip.wt               = Global_30;
+  long_channel = XML->sys.longer_channel_device;
+  power_gating = XML->sys.power_gating;
+  // interface_ip.wire_is_mat_type = 0;
+  // interface_ip.wire_os_mat_type = 0;
+  // interface_ip.wt               = Global_30;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
   if (coredynp.core_ty == OOO) {
@@ -150,10 +150,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         iFRAT.set_params(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // FRAT floating point
         data = int(ceil(coredynp.phy_freg_width *
                         (1 + coredynp.globalCheckpoint) / 8.0));
@@ -180,10 +180,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         fFRAT.set_params(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
         tag = coredynp.arch_ireg_width + coredynp.hthread_width;
@@ -216,10 +216,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
         iFRAT.set_params(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // FRAT for FP
         tag = coredynp.arch_freg_width + coredynp.hthread_width;
         data = int(
@@ -251,10 +251,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
         fFRAT.set_params(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
 
       // RRAT is always RAM based, does not have GCs, and is used only for
@@ -291,10 +291,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
         iRRAT.set_params(&interface_ip,
-                            "Int RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "Int RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // RRAT for FP
         data = int(ceil(coredynp.phy_freg_width / 8.0));
         interface_ip.is_cache = false;
@@ -320,10 +320,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         fRRAT.set_params(&interface_ip,
-                            "FP RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "FP RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
       // Freelist of renaming unit always RAM based and needed for RAM-based
       // RATs. Although it can be implemented within the CAM-based RAT, Current
@@ -358,10 +358,10 @@ used for index the RAT entry to be updated.
       // tags, committW insts needs to update freelist buffers
       interface_ip.num_se_rd_ports = 0;
       ifreeL.set_params(&interface_ip,
-                           "Int Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
+                        "Int Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
 
       // freelist for FP
       data = int(ceil(coredynp.phy_freg_width / 8.0));
@@ -386,10 +386,10 @@ used for index the RAT entry to be updated.
           coredynp.fp_decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
       ffreeL.set_params(&interface_ip,
-                           "FP Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
+                        "FP Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
 
       idcl = new dep_resource_conflict_check(
           &interface_ip,
@@ -427,13 +427,13 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         iFRAT.set_params(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        //			iFRAT.local_result.power.readOp.dynamic *=
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
+        //   iFRAT.local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
-        //			iFRAT.local_result.power.writeOp.dynamic
+        //   iFRAT.local_result.power.writeOp.dynamic
         //*=1+0.2*0.05;//compensate for GC
         // FP
         data = int(ceil(coredynp.phy_freg_width *
@@ -461,15 +461,14 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         fFRAT.set_params(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        //			fFRAT.local_result.power.readOp.dynamic *=
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
+        //   fFRAT.local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
-        //			fFRAT.local_result.power.writeOp.dynamic
+        //   fFRAT.local_result.power.writeOp.dynamic
         //*=1+0.2*0.05;//compensate for GC
-
 
       } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
@@ -501,10 +500,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
         iFRAT.set_params(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
 
         // FRAT
         tag = coredynp.arch_freg_width + coredynp.hthread_width;
@@ -536,10 +535,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
         fFRAT.set_params(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
       // Although no RRAT for RS based OOO is really needed since the archiRF
       // always holds the non-speculative data, having the RRAT or GC (not both)
@@ -570,10 +569,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
         iRRAT.set_params(&interface_ip,
-                            "Int RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "Int RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // RRAT for FP
         data = int(ceil(coredynp.phy_freg_width / 8.0));
         interface_ip.is_cache = false;
@@ -599,10 +598,10 @@ used for index the RAT entry to be updated.
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         fRRAT.set_params(&interface_ip,
-                            "FP RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
+                         "FP RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
 
       // Freelist of renaming unit of RS based OOO is unifed for both int and fp
@@ -629,10 +628,10 @@ used for index the RAT entry to be updated.
           coredynp.decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
       ifreeL.set_params(&interface_ip,
-                           "Unified Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
+                        "Unified Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
       // ifreeL.area.set_area(ifreeL.area.get_area()+
       // ifreeL.local_result.area*XML->sys.core[ithCore].number_hardware_threads);
 
@@ -659,15 +658,24 @@ used for index the RAT entry to be updated.
   init_params = true;
 }
 
-void RENAMINGU::computeArea(){
+void RENAMINGU::set_stats(const ParseXML *XML) {
+  fp_rename_writes = XML->sys.core[ithCore].fp_rename_writes;
+  fp_rename_reads = XML->sys.core[ithCore].fp_rename_reads;
+  rename_writes = XML->sys.core[ithCore].rename_writes;
+  rename_reads = XML->sys.core[ithCore].rename_reads;
+  int_instructions = XML->sys.core[ithCore].int_instructions;
+  fp_instructions = XML->sys.core[ithCore].fp_instructions;
+  init_stats = true;
+}
 
+void RENAMINGU::computeArea() {
   if (!init_params) {
     std::cerr << "[ RENAMINGU ] Error: must set params before calling "
                  "computeArea()\n";
-                
     exit(1);
   }
-    if (coredynp.core_ty == OOO) {
+  set_area = true;
+  if (coredynp.core_ty == OOO) {
     if (coredynp.scheu_ty == PhysicalRegFile) {
       if (coredynp.rm_ty ==
           RAMbased) { // FRAT with global checkpointing (GCs) please see paper
@@ -718,13 +726,11 @@ void RENAMINGU::computeArea(){
       // therefore num_wr port = decode-1(-1 means at least one phy reg will be
       // used for the current renaming group) + commit width
       ifreeL.computeArea();
-      ifreeL.area.set_area(ifreeL.area.get_area() +
-                            ifreeL.local_result.area);
+      ifreeL.area.set_area(ifreeL.area.get_area() + ifreeL.local_result.area);
       area.set_area(area.get_area() + ifreeL.area.get_area());
 
       ffreeL.computeArea();
-      ffreeL.area.set_area(ffreeL.area.get_area() +
-                            ffreeL.local_result.area);
+      ffreeL.area.set_area(ffreeL.area.get_area() + ffreeL.local_result.area);
       area.set_area(area.get_area() + ffreeL.area.get_area());
 
     } else if (coredynp.scheu_ty == ReservationStation) {
@@ -754,7 +760,7 @@ void RENAMINGU::computeArea(){
         area.set_area(area.get_area() + iFRAT.area.get_area());
 
         // FRAT
-       fFRAT.computeArea();
+        fFRAT.computeArea();
         fFRAT.area.set_area(fFRAT.area.get_area() + fFRAT.local_result.area);
         area.set_area(area.get_area() + fFRAT.area.get_area());
       }
@@ -779,29 +785,22 @@ void RENAMINGU::computeArea(){
       // ifreeL.area.set_area(ifreeL.area.get_area()+
       // ifreeL.local_result.area*XML->sys.core[ithCore].number_hardware_threads);
       area.set_area(area.get_area() + ifreeL.area.get_area());
-
     }
   }
-
 }
 
-void RENAMINGU::computeStaticPower() {
-  // NOTE: this does nothing, as the static power is optimized
-  // along with the array area.
-}
-
-void RENAMINGU::set_stats(const ParseXML *XML){
-  init_stats = true;
-}
-
-
-void RENAMINGU::computeDynamicPower(bool is_tdp) {
-  if (!exist)
+void RENAMINGU::computeStaticPower(bool is_tdp) {
+  if (!exist) {
     return;
-  if (!init_stats) {
-    std::cerr << "[ RENAMINGU ] Error: must set stats before calling "
-                 "computeDynamicPower()\n";
-                
+  }
+  if (!init_params) {
+    std::cerr << "[ RENAMINGU ] Error: must set params before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
+  if (!set_area) {
+    std::cerr << "[ RENAMINGU ] Error: must computeArea before calling "
+                 "computeStaticPower()\n";
     exit(1);
   }
   double pppm_t[4] = {1, 1, 1, 1};
@@ -899,114 +898,88 @@ void RENAMINGU::computeDynamicPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
-          iFRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
           iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT.stats_t.readAc.access = XML->sys.core[ithCore].fp_rename_reads;
-          fFRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
           fFRAT.rtp_stats = fFRAT.stats_t;
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
-          iFRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
           iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT.stats_t.readAc.access = XML->sys.core[ithCore].fp_rename_reads;
-          fFRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
           fFRAT.rtp_stats = fFRAT.stats_t;
         }
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT.stats_t.readAc.access =
-              XML->sys.core[ithCore]
-                  .rename_writes; // Hack, should be (context switch + branch
-                                  // mispredictions)*16
-          iRRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
+          // HACK, should be (context switch + branch mispredictions)*16
+          iRRAT.stats_t.readAc.access = rename_writes;
+          iRRAT.stats_t.writeAc.access = rename_writes;
           iRRAT.rtp_stats = iRRAT.stats_t;
 
-          fRRAT.stats_t.readAc.access =
-              XML->sys.core[ithCore]
-                  .fp_rename_writes; // Hack, should be (context switch + branch
-                                     // mispredictions)*16
-          fRRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
+          // HACK, should be (context switch + branch mispredictions)*16
+          fRRAT.stats_t.readAc.access = fp_rename_writes;
+          fRRAT.stats_t.writeAc.access = fp_rename_writes;
           fRRAT.rtp_stats = fRRAT.stats_t;
         }
-        ifreeL.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
-        ifreeL.stats_t.writeAc.access =
-            2 * XML->sys.core[ithCore].rename_writes;
+        ifreeL.stats_t.readAc.access = rename_reads;
+        ifreeL.stats_t.writeAc.access = 2 * rename_writes;
         ifreeL.rtp_stats = ifreeL.stats_t;
 
-        ffreeL.stats_t.readAc.access = XML->sys.core[ithCore].fp_rename_reads;
-        ffreeL.stats_t.writeAc.access =
-            2 * XML->sys.core[ithCore].fp_rename_writes;
+        ffreeL.stats_t.readAc.access = fp_rename_reads;
+        ffreeL.stats_t.writeAc.access = 2 * fp_rename_writes;
         ffreeL.rtp_stats = ffreeL.stats_t;
       } else if (coredynp.scheu_ty == ReservationStation) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
-          iFRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
-          //					iFRAT.stats_t.searchAc.access =
-          // XML->sys.core[ithCore].committed_int_instructions;//hack: not all
-          // committed instructions use regs.
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
           iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT.stats_t.readAc.access = XML->sys.core[ithCore].fp_rename_reads;
-          fFRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
-          //					fFRAT.stats_t.searchAc.access =
-          // XML->sys.core[ithCore].committed_fp_instructions;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
           fFRAT.rtp_stats = fFRAT.stats_t;
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads;
-          iFRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
           iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT.stats_t.readAc.access = XML->sys.core[ithCore].fp_rename_reads;
-          fFRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
           fFRAT.rtp_stats = fFRAT.stats_t;
         }
 
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT.stats_t.readAc.access =
-              XML->sys.core[ithCore]
-                  .rename_writes; // Hack, should be (context switch + branch
-                                  // mispredictions)*16
-          iRRAT.stats_t.writeAc.access = XML->sys.core[ithCore].rename_writes;
+          // HACK, should be (context switch + branch mispredictions)*16
+          iRRAT.stats_t.readAc.access = rename_writes;
+          iRRAT.stats_t.writeAc.access = rename_writes;
           iRRAT.rtp_stats = iRRAT.stats_t;
 
-          fRRAT.stats_t.readAc.access =
-              XML->sys.core[ithCore]
-                  .fp_rename_writes; // Hack, should be (context switch + branch
-                                     // mispredictions)*16
-          fRRAT.stats_t.writeAc.access =
-              XML->sys.core[ithCore].fp_rename_writes;
+          // HACK, should be (context switch + branch mispredictions)*16
+          fRRAT.stats_t.readAc.access = fp_rename_writes;
+          fRRAT.stats_t.writeAc.access = fp_rename_writes;
           fRRAT.rtp_stats = fRRAT.stats_t;
         }
         // Unified free list for both int and fp since the ROB act as physcial
         // registers
-        ifreeL.stats_t.readAc.access = XML->sys.core[ithCore].rename_reads +
-                                        XML->sys.core[ithCore].fp_rename_reads;
-        ifreeL.stats_t.writeAc.access =
-            2 * (XML->sys.core[ithCore].rename_writes +
-                 XML->sys.core[ithCore]
-                     .fp_rename_writes); // HACK: 2-> since some of renaming in
-                                         // the same group are terminated early
+        ifreeL.stats_t.readAc.access = rename_reads + fp_rename_reads;
+        // HACK: 2-> since some of renaming in the same group are terminated
+        // early
+        ifreeL.stats_t.writeAc.access = 2 * (rename_writes + fp_rename_writes);
         ifreeL.rtp_stats = ifreeL.stats_t;
       }
-      idcl->stats_t.readAc.access = 3 * coredynp.decodeW * coredynp.decodeW *
-                                    XML->sys.core[ithCore].rename_reads;
-      fdcl->stats_t.readAc.access = 3 * coredynp.fp_issueW *
-                                    coredynp.fp_issueW *
-                                    XML->sys.core[ithCore].fp_rename_writes;
+      idcl->stats_t.readAc.access =
+          3 * coredynp.decodeW * coredynp.decodeW * rename_reads;
+      fdcl->stats_t.readAc.access =
+          3 * coredynp.fp_issueW * coredynp.fp_issueW * fp_rename_writes;
       idcl->rtp_stats = idcl->stats_t;
       fdcl->rtp_stats = fdcl->stats_t;
     } else {
       if (coredynp.issueW > 1) {
-        idcl->stats_t.readAc.access =
-            2 * XML->sys.core[ithCore].int_instructions;
-        fdcl->stats_t.readAc.access = XML->sys.core[ithCore].fp_instructions;
+        idcl->stats_t.readAc.access = 2 * int_instructions;
+        fdcl->stats_t.readAc.access = fp_instructions;
         idcl->rtp_stats = idcl->stats_t;
         fdcl->rtp_stats = fdcl->stats_t;
       }
@@ -1230,13 +1203,12 @@ void RENAMINGU::computeDynamicPower(bool is_tdp) {
   }
 }
 
-void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
-  if (!exist)
+void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
+  if (!exist) {
     return;
+  }
   string indent_str(indent, ' ');
   string indent_str_next(indent + 2, ' ');
-  bool long_channel = XML->sys.longer_channel_device;
-  bool power_gating = XML->sys.power_gating;
 
   if (is_tdp) {
 
@@ -1252,12 +1224,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << (long_channel ? iFRAT.power.readOp.longer_channel_leakage
                             : iFRAT.power.readOp.leakage)
            << " W" << endl;
-      if (power_gating)
+      if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
                      ? iFRAT.power.readOp.power_gated_with_long_channel_leakage
                      : iFRAT.power.readOp.power_gated_leakage)
              << " W" << endl;
+      }
       cout << indent_str_next
            << "Gate Leakage = " << iFRAT.power.readOp.gate_leakage << " W"
            << endl;
@@ -1275,12 +1248,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << (long_channel ? fFRAT.power.readOp.longer_channel_leakage
                             : fFRAT.power.readOp.leakage)
            << " W" << endl;
-      if (power_gating)
+      if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
                      ? fFRAT.power.readOp.power_gated_with_long_channel_leakage
                      : fFRAT.power.readOp.power_gated_leakage)
              << " W" << endl;
+      }
       cout << indent_str_next
            << "Gate Leakage = " << fFRAT.power.readOp.gate_leakage << " W"
            << endl;
@@ -1297,13 +1271,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << (long_channel ? ifreeL.power.readOp.longer_channel_leakage
                             : ifreeL.power.readOp.leakage)
            << " W" << endl;
-      if (power_gating)
-        cout
-            << indent_str_next << "Subthreshold Leakage with power gating = "
-            << (long_channel
-                    ? ifreeL.power.readOp.power_gated_with_long_channel_leakage
-                    : ifreeL.power.readOp.power_gated_leakage)
-            << " W" << endl;
+      if (power_gating) {
+        cout << indent_str_next << "Subthreshold Leakage with power gating = "
+             << (long_channel
+                     ? ifreeL.power.readOp.power_gated_with_long_channel_leakage
+                     : ifreeL.power.readOp.power_gated_leakage)
+             << " W" << endl;
+      }
       cout << indent_str_next
            << "Gate Leakage = " << ifreeL.power.readOp.gate_leakage << " W"
            << endl;
@@ -1321,12 +1295,14 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << (long_channel ? iRRAT.power.readOp.longer_channel_leakage
                               : iRRAT.power.readOp.leakage)
              << " W" << endl;
-        if (power_gating)
-          cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? iRRAT.power.readOp
-                                      .power_gated_with_long_channel_leakage
-                                : iRRAT.power.readOp.power_gated_leakage)
-               << " W" << endl;
+        if (power_gating) {
+          cout
+              << indent_str_next << "Subthreshold Leakage with power gating = "
+              << (long_channel
+                      ? iRRAT.power.readOp.power_gated_with_long_channel_leakage
+                      : iRRAT.power.readOp.power_gated_leakage)
+              << " W" << endl;
+        }
         cout << indent_str_next
              << "Gate Leakage = " << iRRAT.power.readOp.gate_leakage << " W"
              << endl;
@@ -1343,12 +1319,14 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << (long_channel ? fRRAT.power.readOp.longer_channel_leakage
                               : fRRAT.power.readOp.leakage)
              << " W" << endl;
-        if (power_gating)
-          cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? fRRAT.power.readOp
-                                      .power_gated_with_long_channel_leakage
-                                : fRRAT.power.readOp.power_gated_leakage)
-               << " W" << endl;
+        if (power_gating) {
+          cout
+              << indent_str_next << "Subthreshold Leakage with power gating = "
+              << (long_channel
+                      ? fRRAT.power.readOp.power_gated_with_long_channel_leakage
+                      : fRRAT.power.readOp.power_gated_leakage)
+              << " W" << endl;
+        }
         cout << indent_str_next
              << "Gate Leakage = " << fRRAT.power.readOp.gate_leakage << " W"
              << endl;
@@ -1367,12 +1345,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
              << (long_channel ? ffreeL.power.readOp.longer_channel_leakage
                               : ffreeL.power.readOp.leakage)
              << " W" << endl;
-        if (power_gating)
+        if (power_gating) {
           cout << indent_str_next << "Subthreshold Leakage with power gating = "
                << (long_channel ? ffreeL.power.readOp
                                       .power_gated_with_long_channel_leakage
                                 : ffreeL.power.readOp.power_gated_leakage)
                << " W" << endl;
+        }
         cout << indent_str_next
              << "Gate Leakage = " << ffreeL.power.readOp.gate_leakage << " W"
              << endl;
@@ -1389,12 +1368,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << (long_channel ? idcl->power.readOp.longer_channel_leakage
                             : idcl->power.readOp.leakage)
            << " W" << endl;
-      if (power_gating)
+      if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
                      ? idcl->power.readOp.power_gated_with_long_channel_leakage
                      : idcl->power.readOp.power_gated_leakage)
              << " W" << endl;
+      }
       cout << indent_str_next
            << "Gate Leakage = " << idcl->power.readOp.gate_leakage << " W"
            << endl;
@@ -1408,12 +1388,13 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
            << (long_channel ? fdcl->power.readOp.longer_channel_leakage
                             : fdcl->power.readOp.leakage)
            << " W" << endl;
-      if (power_gating)
+      if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
                      ? fdcl->power.readOp.power_gated_with_long_channel_leakage
                      : fdcl->power.readOp.power_gated_leakage)
              << " W" << endl;
+      }
       cout << indent_str_next
            << "Gate Leakage = " << fdcl->power.readOp.gate_leakage << " W"
            << endl;
@@ -1482,9 +1463,9 @@ void RENAMINGU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 }
 
 RENAMINGU ::~RENAMINGU() {
-
-  if (!exist)
+  if (!exist) {
     return;
+  }
   if (idcl) {
     delete idcl;
     idcl = 0;

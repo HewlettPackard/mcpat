@@ -43,18 +43,17 @@
 #include <iostream>
 #include <string>
 
-SchedulerU::SchedulerU(){
+SchedulerU::SchedulerU() {
   init_params = false;
   init_stats = false;
-
 }
 
-void SchedulerU::set_params(ParseXML *XML_interface,
-                       int ithCore_,
-                       InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_,
-                       bool exist_){
-  
+void SchedulerU::set_params(const ParseXML *XML_interface,
+                            int ithCore_,
+                            InputParameter *interface_ip_,
+                            const CoreDynParam &dyn_p_,
+                            bool exist_) {
+
   XML = XML_interface;
   interface_ip = *interface_ip_;
   coredynp = dyn_p_;
@@ -107,10 +106,10 @@ void SchedulerU::set_params(ParseXML *XML_interface,
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.peak_issueW;
     int_inst_window.set_params(&interface_ip,
-                                  "InstFetchQueue",
-                                  Core_device,
-                                  coredynp.opt_local,
-                                  coredynp.core_ty);
+                               "InstFetchQueue",
+                               Core_device,
+                               coredynp.opt_local,
+                               coredynp.core_ty);
     /*
      * selection logic
      * In a single-issue Inorder multithreaded processor like Niagara, issue
@@ -192,10 +191,10 @@ void SchedulerU::set_params(ParseXML *XML_interface,
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.peak_issueW;
     int_inst_window.set_params(&interface_ip,
-                                  tmp_name,
-                                  Core_device,
-                                  coredynp.opt_local,
-                                  coredynp.core_ty);
+                               tmp_name,
+                               Core_device,
+                               coredynp.opt_local,
+                               coredynp.core_ty);
     // FU inst window
     if (coredynp.scheu_ty == PhysicalRegFile) {
       tag = 2 * coredynp.phy_freg_width; // TODO: each time only half of the tag
@@ -238,10 +237,10 @@ void SchedulerU::set_params(ParseXML *XML_interface,
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = coredynp.fp_issueW;
     fp_inst_window.set_params(&interface_ip,
-                                 tmp_name,
-                                 Core_device,
-                                 coredynp.opt_local,
-                                 coredynp.core_ty);
+                              tmp_name,
+                              Core_device,
+                              coredynp.opt_local,
+                              coredynp.core_ty);
     if (XML->sys.core[ithCore].ROB_size > 0) {
       /*
        *  if ROB_size = 0, then the target processor does not support
@@ -366,10 +365,10 @@ void SchedulerU::set_params(ParseXML *XML_interface,
       interface_ip.num_se_rd_ports = 0;
       interface_ip.num_search_ports = 0;
       ROB.set_params(&interface_ip,
-                        "ReorderBuffer",
-                        Core_device,
-                        coredynp.opt_local,
-                        coredynp.core_ty);
+                     "ReorderBuffer",
+                     Core_device,
+                     coredynp.opt_local,
+                     coredynp.core_ty);
     }
     instruction_selection =
         new selection_logic(is_default,
@@ -388,7 +387,7 @@ void SchedulerU::computeStaticPower() {
   // along with the array area.
 }
 
-void SchedulerU::set_stats(const ParseXML *XML){
+void SchedulerU::set_stats(const ParseXML *XML) {
   init_stats = true;
   if ((coredynp.core_ty == Inorder && coredynp.multithreaded)) {
     Iw_height = int_inst_window.local_result.cache_ht;
@@ -403,20 +402,20 @@ void SchedulerU::set_stats(const ParseXML *XML){
   }
 }
 
-void SchedulerU::computeArea(){
+void SchedulerU::computeArea() {
 
   if (!init_params) {
     std::cerr << "[ SchedulerU ] Error: must set params before calling "
                  "computeArea()\n";
-                
+
     exit(1);
   }
 
   if ((coredynp.core_ty == Inorder && coredynp.multithreaded)) {
     int_inst_window.computeArea();
     int_inst_window.area.set_area(int_inst_window.area.get_area() +
-                                   int_inst_window.local_result.area *
-                                       coredynp.num_pipelines);
+                                  int_inst_window.local_result.area *
+                                      coredynp.num_pipelines);
     area.set_area(area.get_area() +
                   int_inst_window.local_result.area * coredynp.num_pipelines);
   }
@@ -424,27 +423,26 @@ void SchedulerU::computeArea(){
   if (coredynp.core_ty == OOO) {
     int_inst_window.computeArea();
     int_inst_window.area.set_area(int_inst_window.area.get_area() +
-                                   int_inst_window.local_result.area *
-                                       coredynp.num_pipelines);
+                                  int_inst_window.local_result.area *
+                                      coredynp.num_pipelines);
     area.set_area(area.get_area() +
                   int_inst_window.local_result.area * coredynp.num_pipelines);
 
     fp_inst_window.computeArea();
     fp_inst_window.area.set_area(fp_inst_window.area.get_area() +
-                                  fp_inst_window.local_result.area *
-                                      coredynp.num_fp_pipelines);
-    area.set_area(area.get_area() + fp_inst_window.local_result.area *
-                                        coredynp.num_fp_pipelines);
+                                 fp_inst_window.local_result.area *
+                                     coredynp.num_fp_pipelines);
+    area.set_area(area.get_area() +
+                  fp_inst_window.local_result.area * coredynp.num_fp_pipelines);
 
     if (XML->sys.core[ithCore].ROB_size > 0) {
       ROB.computeArea();
       ROB.area.set_area(ROB.area.get_area() +
-                         ROB.local_result.area * coredynp.num_pipelines);
+                        ROB.local_result.area * coredynp.num_pipelines);
       area.set_area(area.get_area() +
                     ROB.local_result.area * coredynp.num_pipelines);
     }
   }
-
 }
 
 void SchedulerU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
@@ -489,16 +487,14 @@ void SchedulerU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       cout << indent_str_next << "Peak Dynamic = "
            << fp_inst_window.power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel
-                   ? fp_inst_window.power.readOp.longer_channel_leakage
-                   : fp_inst_window.power.readOp.leakage)
+           << (long_channel ? fp_inst_window.power.readOp.longer_channel_leakage
+                            : fp_inst_window.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? fp_inst_window.power.readOp
-                           .power_gated_with_long_channel_leakage
-                     : fp_inst_window.power.readOp.power_gated_leakage)
+             << (long_channel ? fp_inst_window.power.readOp
+                                    .power_gated_with_long_channel_leakage
+                              : fp_inst_window.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next
            << "Gate Leakage = " << fp_inst_window.power.readOp.gate_leakage
@@ -599,10 +595,10 @@ void SchedulerU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 void SchedulerU::computeDynamicPower(bool is_tdp) {
   if (!exist)
     return;
-    if (!init_stats) {
+  if (!init_stats) {
     std::cerr << "[ SchedulerU ] Error: must set stats before calling "
                  "computeDynamicPower()\n";
-                
+
     exit(1);
   }
   double ROB_duty_cycle;
@@ -801,8 +797,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
           fp_inst_window.power_t +
           (fp_inst_window.local_result.power + instruction_selection->power) *
               pppm_lkg;
-      rt_power =
-          rt_power + int_inst_window.rt_power + fp_inst_window.rt_power;
+      rt_power = rt_power + int_inst_window.rt_power + fp_inst_window.rt_power;
       if (XML->sys.core[ithCore].ROB_size > 0) {
         ROB.rt_power = ROB.power_t + ROB.local_result.power * pppm_lkg;
         rt_power = rt_power + ROB.rt_power;

@@ -33,7 +33,8 @@
 
 #include <vector>
 
-void CacheDynParam::set_params_l2_cache(const ParseXML* XML, const int ithCache) {
+void CacheDynParam::set_params_l2_cache(const ParseXML *XML,
+                                        const int ithCache) {
   this->name = "L2";
   this->clockRate = XML->sys.L2[ithCache].clockrate;
   this->clockRate *= 1e6;
@@ -58,7 +59,8 @@ void CacheDynParam::set_params_l2_cache(const ParseXML* XML, const int ithCache)
   }
 }
 
-void CacheDynParam::set_params_l3_cache(const ParseXML* XML, const int ithCache) {
+void CacheDynParam::set_params_l3_cache(const ParseXML *XML,
+                                        const int ithCache) {
   this->name = "L3";
   this->clockRate = XML->sys.L3[ithCache].clockrate;
   this->clockRate *= 1e6;
@@ -83,10 +85,10 @@ void CacheDynParam::set_params_l3_cache(const ParseXML* XML, const int ithCache)
   }
 }
 
-void CacheDynParam::set_params_l1_directory(const ParseXML* XML, const int ithCache) {
+void CacheDynParam::set_params_l1_directory(const ParseXML *XML,
+                                            const int ithCache) {
   this->name = "First Level Directory";
-  this->dir_ty =
-      (enum Dir_type)XML->sys.L1Directory[ithCache].Directory_type;
+  this->dir_ty = (enum Dir_type)XML->sys.L1Directory[ithCache].Directory_type;
   this->clockRate = XML->sys.L1Directory[ithCache].clockrate;
   this->clockRate *= 1e6;
   this->executionTime =
@@ -106,10 +108,10 @@ void CacheDynParam::set_params_l1_directory(const ParseXML* XML, const int ithCa
   this->duty_cycle = XML->sys.L1Directory[ithCache].duty_cycle;
 }
 
-void CacheDynParam::set_params_l2_directory(const ParseXML* XML, const int ithCache) {
+void CacheDynParam::set_params_l2_directory(const ParseXML *XML,
+                                            const int ithCache) {
   this->name = "Second Level Directory";
-  this->dir_ty =
-      (enum Dir_type)XML->sys.L2Directory[ithCache].Directory_type;
+  this->dir_ty = (enum Dir_type)XML->sys.L2Directory[ithCache].Directory_type;
   this->clockRate = XML->sys.L2Directory[ithCache].clockrate;
   this->clockRate *= 1e6;
   this->executionTime =
