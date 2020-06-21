@@ -41,13 +41,14 @@
 
 class NoC : public Component {
 public:
-  const ParseXML *XML;
   int ithNoC;
   InputParameter interface_ip;
   double link_len;
   double executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  Router *router;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  Router router;
   interconnect *link_bus;
   NoCParam nocdynp;
   uca_org_t local_result;
@@ -60,22 +61,37 @@ public:
   bool router_exist;
   string name, link_name;
   double M_traffic_pattern;
-  NoC(const ParseXML *XML_interface,
-      int ithNoC_,
-      InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6,
-      double link_len_ = 0);
-  void set_noc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  NoC();
+  void set_params(const ParseXML *XML,
+                  int ithNoC_,
+                  InputParameter *interface_ip_,
+                  double M_traffic_pattern_ = 0.6,
+                  double link_len_ = 0);
+  void set_stats(const ParseXML* XML);
+  void computeArea();
+  void computePower();
+  void computeRuntimeDynamicPower();
   void init_link_bus(double link_len_);
-  void init_router();
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   // TODO
   void computeEnergy_link_bus(bool is_tdp = true);
   void displayEnergy_link_bus(uint32_t indent = 0,
                               int plevel = 100,
                               bool is_tdp = true);
   ~NoC();
+
+private:
+  bool embedded;
+  bool init_stats;
+  bool init_params;
+  bool set_area;
+  bool long_channel;
+  bool power_gating;
+
+  unsigned int total_accesses;
+
+  void set_noc_param(const ParseXML* XML);
+  void init_router();
 };
 
 #endif /* NOC_H_ */
