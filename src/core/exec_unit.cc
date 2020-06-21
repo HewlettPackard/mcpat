@@ -49,8 +49,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
              const CoreDynParam &dyn_p_,
              bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0), int_bypass(0), intTagBypass(0), int_mul_bypass(0),
-      intTag_mul_Bypass(0), fp_bypass(0), fpTagBypass(0), exist(exist_) {
+      lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0),
+      exist(exist_) {
   bool exist_flag = true;
   if (!exist) {
     return;
@@ -107,101 +107,96 @@ EXECU::EXECU(const ParseXML *XML_interface,
   }
 
   if (coredynp.core_ty == Inorder) {
-    int_bypass =
-        new interconnect("Int Bypass Data",
-                         Core_device,
-                         1,
-                         1,
-                         int(ceil(XML->sys.machine_bits / 32.0) * 32),
-                         rfu->int_regfile_height + exeu.FU_height + lsq_height,
-                         &interface_ip,
-                         3,
-                         false,
-                         1.0,
-                         coredynp.opt_local,
-                         coredynp.core_ty);
-    bypass.area.set_area(bypass.area.get_area() + int_bypass->area.get_area());
-    intTagBypass = new interconnect("Int Bypass tag",
-                                    Core_device,
-                                    1,
-                                    1,
-                                    coredynp.perThreadState,
-                                    rfu->int_regfile_height + exeu.FU_height +
-                                        lsq_height + scheu->Iw_height,
-                                    &interface_ip,
-                                    3,
-                                    false,
-                                    1.0,
-                                    coredynp.opt_local,
-                                    coredynp.core_ty);
-    bypass.area.set_area(bypass.area.get_area() +
-                         intTagBypass->area.get_area());
+    int_bypass.init("Int Bypass Data",
+                    Core_device,
+                    1,
+                    1,
+                    int(ceil(XML->sys.machine_bits / 32.0) * 32),
+                    rfu->int_regfile_height + exeu.FU_height + lsq_height,
+                    &interface_ip,
+                    3,
+                    false,
+                    1.0,
+                    coredynp.opt_local,
+                    coredynp.core_ty);
+    bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
+    intTagBypass.init("Int Bypass tag",
+                      Core_device,
+                      1,
+                      1,
+                      coredynp.perThreadState,
+                      rfu->int_regfile_height + exeu.FU_height + lsq_height +
+                          scheu->Iw_height,
+                      &interface_ip,
+                      3,
+                      false,
+                      1.0,
+                      coredynp.opt_local,
+                      coredynp.core_ty);
+    bypass.area.set_area(bypass.area.get_area() + intTagBypass.area.get_area());
 
     if (coredynp.num_muls > 0) {
-      int_mul_bypass =
-          new interconnect("Mul Bypass Data",
-                           Core_device,
-                           1,
-                           1,
-                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                           rfu->fp_regfile_height + exeu.FU_height +
-                               mul.FU_height + lsq_height,
-                           &interface_ip,
-                           3,
-                           false,
-                           1.0,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
+      int_mul_bypass.init("Mul Bypass Data",
+                          Core_device,
+                          1,
+                          1,
+                          int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+                          rfu->fp_regfile_height + exeu.FU_height +
+                              mul.FU_height + lsq_height,
+                          &interface_ip,
+                          3,
+                          false,
+                          1.0,
+                          coredynp.opt_local,
+                          coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
-                           int_mul_bypass->area.get_area());
-      intTag_mul_Bypass =
-          new interconnect("Mul Bypass tag",
-                           Core_device,
-                           1,
-                           1,
-                           coredynp.perThreadState,
-                           rfu->fp_regfile_height + exeu.FU_height +
-                               mul.FU_height + lsq_height + scheu->Iw_height,
-                           &interface_ip,
-                           3,
-                           false,
-                           1.0,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
+                           int_mul_bypass.area.get_area());
+      intTag_mul_Bypass.init("Mul Bypass tag",
+                             Core_device,
+                             1,
+                             1,
+                             coredynp.perThreadState,
+                             rfu->fp_regfile_height + exeu.FU_height +
+                                 mul.FU_height + lsq_height + scheu->Iw_height,
+                             &interface_ip,
+                             3,
+                             false,
+                             1.0,
+                             coredynp.opt_local,
+                             coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
-                           intTag_mul_Bypass->area.get_area());
+                           intTag_mul_Bypass.area.get_area());
     }
 
     if (coredynp.num_fpus > 0) {
-      fp_bypass =
-          new interconnect("FP Bypass Data",
-                           Core_device,
-                           1,
-                           1,
-                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                           rfu->fp_regfile_height + fp_u.FU_height,
-                           &interface_ip,
-                           3,
-                           false,
-                           1.0,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-      bypass.area.set_area(bypass.area.get_area() + fp_bypass->area.get_area());
-      fpTagBypass = new interconnect("FP Bypass tag",
-                                     Core_device,
-                                     1,
-                                     1,
-                                     coredynp.perThreadState,
-                                     rfu->fp_regfile_height + fp_u.FU_height +
-                                         lsq_height + scheu->Iw_height,
-                                     &interface_ip,
-                                     3,
-                                     false,
-                                     1.0,
-                                     coredynp.opt_local,
-                                     coredynp.core_ty);
+      fp_bypass.init("FP Bypass Data",
+                     Core_device,
+                     1,
+                     1,
+                     int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+                     rfu->fp_regfile_height + fp_u.FU_height,
+                     &interface_ip,
+                     3,
+                     false,
+                     1.0,
+                     coredynp.opt_local,
+                     coredynp.core_ty);
+      bypass.area.set_area(bypass.area.get_area() + fp_bypass.area.get_area());
+      fpTagBypass.init("FP Bypass tag",
+                       Core_device,
+                       1,
+                       1,
+                       coredynp.perThreadState,
+                       rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
+                           scheu->Iw_height,
+                       &interface_ip,
+                       3,
+                       false,
+                       1.0,
+                       coredynp.opt_local,
+                       coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
-                           fpTagBypass->area.get_area());
+                           fpTagBypass.area.get_area());
     }
   } else { // OOO
     if (coredynp.scheu_ty == PhysicalRegFile) {
@@ -210,210 +205,200 @@ EXECU::EXECU(const ParseXML *XML_interface,
        * windows and register files, while tag broadcast interconnects also
        * cover across ROB
        */
-      int_bypass = new interconnect("Int Bypass Data",
-                                    Core_device,
-                                    1,
-                                    1,
-                                    int(ceil(coredynp.int_data_width)),
-                                    rfu->int_regfile_height + exeu.FU_height +
-                                        lsq_height,
-                                    &interface_ip,
-                                    3,
-                                    false,
-                                    1.0,
-                                    coredynp.opt_local,
-                                    coredynp.core_ty);
+      int_bypass.init("Int Bypass Data",
+                      Core_device,
+                      1,
+                      1,
+                      int(ceil(coredynp.int_data_width)),
+                      rfu->int_regfile_height + exeu.FU_height + lsq_height,
+                      &interface_ip,
+                      3,
+                      false,
+                      1.0,
+                      coredynp.opt_local,
+                      coredynp.core_ty);
+      bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
+      intTagBypass.init("Int Bypass tag",
+                        Core_device,
+                        1,
+                        1,
+                        coredynp.phy_ireg_width,
+                        rfu->int_regfile_height + exeu.FU_height + lsq_height +
+                            scheu->Iw_height + scheu->ROB_height,
+                        &interface_ip,
+                        3,
+                        false,
+                        1.0,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
       bypass.area.set_area(bypass.area.get_area() +
-                           int_bypass->area.get_area());
-      intTagBypass = new interconnect("Int Bypass tag",
-                                      Core_device,
-                                      1,
-                                      1,
-                                      coredynp.phy_ireg_width,
-                                      rfu->int_regfile_height +
-                                          exeu.FU_height + lsq_height +
-                                          scheu->Iw_height + scheu->ROB_height,
-                                      &interface_ip,
-                                      3,
-                                      false,
-                                      1.0,
-                                      coredynp.opt_local,
-                                      coredynp.core_ty);
-      bypass.area.set_area(bypass.area.get_area() +
-                           intTagBypass->area.get_area());
+                           intTagBypass.area.get_area());
 
       if (coredynp.num_muls > 0) {
-        int_mul_bypass =
-            new interconnect("Mul Bypass Data",
-                             Core_device,
-                             1,
-                             1,
-                             int(ceil(coredynp.int_data_width)),
-                             rfu->int_regfile_height + exeu.FU_height +
-                                 mul.FU_height + lsq_height,
-                             &interface_ip,
-                             3,
-                             false,
-                             1.0,
-                             coredynp.opt_local,
-                             coredynp.core_ty);
-        intTag_mul_Bypass = new interconnect(
-            "Mul Bypass tag",
-            Core_device,
-            1,
-            1,
-            coredynp.phy_ireg_width,
-            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
-                lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip,
-            3,
-            false,
-            1.0,
-            coredynp.opt_local,
-            coredynp.core_ty);
+        int_mul_bypass.init("Mul Bypass Data",
+                            Core_device,
+                            1,
+                            1,
+                            int(ceil(coredynp.int_data_width)),
+                            rfu->int_regfile_height + exeu.FU_height +
+                                mul.FU_height + lsq_height,
+                            &interface_ip,
+                            3,
+                            false,
+                            1.0,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
+        intTag_mul_Bypass.init("Mul Bypass tag",
+                               Core_device,
+                               1,
+                               1,
+                               coredynp.phy_ireg_width,
+                               rfu->int_regfile_height + exeu.FU_height +
+                                   mul.FU_height + lsq_height +
+                                   scheu->Iw_height + scheu->ROB_height,
+                               &interface_ip,
+                               3,
+                               false,
+                               1.0,
+                               coredynp.opt_local,
+                               coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
-                             int_mul_bypass->area.get_area());
+                             int_mul_bypass.area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
-                             intTag_mul_Bypass->area.get_area());
+                             intTag_mul_Bypass.area.get_area());
       }
 
       if (coredynp.num_fpus > 0) {
-        fp_bypass = new interconnect("FP Bypass Data",
-                                     Core_device,
-                                     1,
-                                     1,
-                                     int(ceil(coredynp.fp_data_width)),
-                                     rfu->fp_regfile_height + fp_u.FU_height,
-                                     &interface_ip,
-                                     3,
-                                     false,
-                                     1.0,
-                                     coredynp.opt_local,
-                                     coredynp.core_ty);
-        fpTagBypass = new interconnect(
-            "FP Bypass tag",
-            Core_device,
-            1,
-            1,
-            coredynp.phy_freg_width,
-            rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                scheu->fp_Iw_height + scheu->ROB_height,
-            &interface_ip,
-            3,
-            false,
-            1.0,
-            coredynp.opt_local,
-            coredynp.core_ty);
+        fp_bypass.init("FP Bypass Data",
+                       Core_device,
+                       1,
+                       1,
+                       int(ceil(coredynp.fp_data_width)),
+                       rfu->fp_regfile_height + fp_u.FU_height,
+                       &interface_ip,
+                       3,
+                       false,
+                       1.0,
+                       coredynp.opt_local,
+                       coredynp.core_ty);
+        fpTagBypass.init("FP Bypass tag",
+                         Core_device,
+                         1,
+                         1,
+                         coredynp.phy_freg_width,
+                         rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
+                             scheu->fp_Iw_height + scheu->ROB_height,
+                         &interface_ip,
+                         3,
+                         false,
+                         1.0,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
-                             fp_bypass->area.get_area());
+                             fp_bypass.area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
-                             fpTagBypass->area.get_area());
+                             fpTagBypass.area.get_area());
       }
     } else {
       /*
        * In RS based processor both data and tag are broadcast together,
        * covering functional units, lsq, nst windows, register files, and ROBs
        */
-      int_bypass = new interconnect("Int Bypass Data",
-                                    Core_device,
-                                    1,
-                                    1,
-                                    int(ceil(coredynp.int_data_width)),
-                                    rfu->int_regfile_height + exeu.FU_height +
-                                        lsq_height + scheu->Iw_height +
-                                        scheu->ROB_height,
-                                    &interface_ip,
-                                    3,
-                                    false,
-                                    1.0,
-                                    coredynp.opt_local,
-                                    coredynp.core_ty);
-      intTagBypass = new interconnect("Int Bypass tag",
-                                      Core_device,
-                                      1,
-                                      1,
-                                      coredynp.phy_ireg_width,
-                                      rfu->int_regfile_height +
-                                          exeu.FU_height + lsq_height +
-                                          scheu->Iw_height + scheu->ROB_height,
-                                      &interface_ip,
-                                      3,
-                                      false,
-                                      1.0,
-                                      coredynp.opt_local,
-                                      coredynp.core_ty);
+      int_bypass.init("Int Bypass Data",
+                      Core_device,
+                      1,
+                      1,
+                      int(ceil(coredynp.int_data_width)),
+                      rfu->int_regfile_height + exeu.FU_height + lsq_height +
+                          scheu->Iw_height + scheu->ROB_height,
+                      &interface_ip,
+                      3,
+                      false,
+                      1.0,
+                      coredynp.opt_local,
+                      coredynp.core_ty);
+      intTagBypass.init("Int Bypass tag",
+                        Core_device,
+                        1,
+                        1,
+                        coredynp.phy_ireg_width,
+                        rfu->int_regfile_height + exeu.FU_height + lsq_height +
+                            scheu->Iw_height + scheu->ROB_height,
+                        &interface_ip,
+                        3,
+                        false,
+                        1.0,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
+      bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
       bypass.area.set_area(bypass.area.get_area() +
-                           int_bypass->area.get_area());
-      bypass.area.set_area(bypass.area.get_area() +
-                           intTagBypass->area.get_area());
+                           intTagBypass.area.get_area());
       if (coredynp.num_muls > 0) {
-        int_mul_bypass = new interconnect(
-            "Mul Bypass Data",
-            Core_device,
-            1,
-            1,
-            int(ceil(coredynp.int_data_width)),
-            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
-                lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip,
-            3,
-            false,
-            1.0,
-            coredynp.opt_local,
-            coredynp.core_ty);
-        intTag_mul_Bypass = new interconnect(
-            "Mul Bypass tag",
-            Core_device,
-            1,
-            1,
-            coredynp.phy_ireg_width,
-            rfu->int_regfile_height + exeu.FU_height + mul.FU_height +
-                lsq_height + scheu->Iw_height + scheu->ROB_height,
-            &interface_ip,
-            3,
-            false,
-            1.0,
-            coredynp.opt_local,
-            coredynp.core_ty);
+        int_mul_bypass.init("Mul Bypass Data",
+                            Core_device,
+                            1,
+                            1,
+                            int(ceil(coredynp.int_data_width)),
+                            rfu->int_regfile_height + exeu.FU_height +
+                                mul.FU_height + lsq_height + scheu->Iw_height +
+                                scheu->ROB_height,
+                            &interface_ip,
+                            3,
+                            false,
+                            1.0,
+                            coredynp.opt_local,
+                            coredynp.core_ty);
+        intTag_mul_Bypass.init("Mul Bypass tag",
+                               Core_device,
+                               1,
+                               1,
+                               coredynp.phy_ireg_width,
+                               rfu->int_regfile_height + exeu.FU_height +
+                                   mul.FU_height + lsq_height +
+                                   scheu->Iw_height + scheu->ROB_height,
+                               &interface_ip,
+                               3,
+                               false,
+                               1.0,
+                               coredynp.opt_local,
+                               coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
-                             int_mul_bypass->area.get_area());
+                             int_mul_bypass.area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
-                             intTag_mul_Bypass->area.get_area());
+                             intTag_mul_Bypass.area.get_area());
       }
 
       if (coredynp.num_fpus > 0) {
-        fp_bypass = new interconnect("FP Bypass Data",
-                                     Core_device,
-                                     1,
-                                     1,
-                                     int(ceil(coredynp.fp_data_width)),
-                                     rfu->fp_regfile_height + fp_u.FU_height +
-                                         lsq_height + scheu->fp_Iw_height +
-                                         scheu->ROB_height,
-                                     &interface_ip,
-                                     3,
-                                     false,
-                                     1.0,
-                                     coredynp.opt_local,
-                                     coredynp.core_ty);
-        fpTagBypass = new interconnect(
-            "FP Bypass tag",
-            Core_device,
-            1,
-            1,
-            coredynp.phy_freg_width,
-            rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                scheu->fp_Iw_height + scheu->ROB_height,
-            &interface_ip,
-            3,
-            false,
-            1.0,
-            coredynp.opt_local,
-            coredynp.core_ty);
+        fp_bypass.init("FP Bypass Data",
+                       Core_device,
+                       1,
+                       1,
+                       int(ceil(coredynp.fp_data_width)),
+                       rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
+                           scheu->fp_Iw_height + scheu->ROB_height,
+                       &interface_ip,
+                       3,
+                       false,
+                       1.0,
+                       coredynp.opt_local,
+                       coredynp.core_ty);
+        fpTagBypass.init("FP Bypass tag",
+                         Core_device,
+                         1,
+                         1,
+                         coredynp.phy_freg_width,
+                         rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
+                             scheu->fp_Iw_height + scheu->ROB_height,
+                         &interface_ip,
+                         3,
+                         false,
+                         1.0,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         bypass.area.set_area(bypass.area.get_area() +
-                             fp_bypass->area.get_area());
+                             fp_bypass.area.get_area());
         bypass.area.set_area(bypass.area.get_area() +
-                             fpTagBypass->area.get_area());
+                             fpTagBypass.area.get_area());
       }
     }
   }
@@ -433,25 +418,22 @@ void EXECU::computeEnergy(bool is_tdp) {
 
   rfu->computeDynamicPower(is_tdp);
   scheu->computeDynamicPower(is_tdp);
-  if(is_tdp) {
+  if (is_tdp) {
     exeu.computePower();
-  }
-  else {
+  } else {
     exeu.computeRuntimeDynamicPower();
   }
   if (coredynp.num_fpus > 0) {
-    if(is_tdp) {
+    if (is_tdp) {
       fp_u.computePower();
-    }
-    else {
+    } else {
       fp_u.computeRuntimeDynamicPower();
     }
   }
   if (coredynp.num_muls > 0) {
-    if(is_tdp) {
+    if (is_tdp) {
       mul.computePower();
-    }
-    else {
+    } else {
       mul.computeRuntimeDynamicPower();
     }
   }
@@ -465,8 +447,8 @@ void EXECU::computeEnergy(bool is_tdp) {
         2 * coredynp
                 .ALU_cdb_duty_cycle); // 2 means two source operands needs to be
                                       // passed for each int instruction.
-    bypass.power = bypass.power + intTagBypass->power * pppm_t +
-                   int_bypass->power * pppm_t;
+    bypass.power =
+        bypass.power + intTagBypass.power * pppm_t + int_bypass.power * pppm_t;
     if (coredynp.num_muls > 0) {
       set_pppm(
           pppm_t,
@@ -476,8 +458,8 @@ void EXECU::computeEnergy(bool is_tdp) {
           2 * coredynp
                   .MUL_cdb_duty_cycle); // 2 means two source operands needs to
                                         // be passed for each int instruction.
-      bypass.power = bypass.power + intTag_mul_Bypass->power * pppm_t +
-                     int_mul_bypass->power * pppm_t;
+      bypass.power = bypass.power + intTag_mul_Bypass.power * pppm_t +
+                     int_mul_bypass.power * pppm_t;
       power = power + mul.power;
     }
     if (coredynp.num_fpus > 0) {
@@ -489,8 +471,8 @@ void EXECU::computeEnergy(bool is_tdp) {
           3 * coredynp
                   .FPU_cdb_duty_cycle); // 3 means three source operands needs
                                         // to be passed for each fp instruction.
-      bypass.power = bypass.power + fp_bypass->power * pppm_t +
-                     fpTagBypass->power * pppm_t;
+      bypass.power =
+          bypass.power + fp_bypass.power * pppm_t + fpTagBypass.power * pppm_t;
       power = power + fp_u.power;
     }
 
@@ -501,8 +483,8 @@ void EXECU::computeEnergy(bool is_tdp) {
              2,
              2,
              XML->sys.core[ithCore].cdb_alu_accesses);
-    bypass.rt_power = bypass.rt_power + intTagBypass->power * pppm_t;
-    bypass.rt_power = bypass.rt_power + int_bypass->power * pppm_t;
+    bypass.rt_power = bypass.rt_power + intTagBypass.power * pppm_t;
+    bypass.rt_power = bypass.rt_power + int_bypass.power * pppm_t;
 
     if (coredynp.num_muls > 0) {
       set_pppm(pppm_t,
@@ -512,8 +494,8 @@ void EXECU::computeEnergy(bool is_tdp) {
                XML->sys.core[ithCore]
                    .cdb_mul_accesses); // 2 means two source operands needs to
                                        // be passed for each int instruction.
-      bypass.rt_power = bypass.rt_power + intTag_mul_Bypass->power * pppm_t +
-                        int_mul_bypass->power * pppm_t;
+      bypass.rt_power = bypass.rt_power + intTag_mul_Bypass.power * pppm_t +
+                        int_mul_bypass.power * pppm_t;
       rt_power = rt_power + mul.rt_power;
     }
 
@@ -523,8 +505,8 @@ void EXECU::computeEnergy(bool is_tdp) {
                3,
                3,
                XML->sys.core[ithCore].cdb_fpu_accesses);
-      bypass.rt_power = bypass.rt_power + fp_bypass->power * pppm_t;
-      bypass.rt_power = bypass.rt_power + fpTagBypass->power * pppm_t;
+      bypass.rt_power = bypass.rt_power + fp_bypass.power * pppm_t;
+      bypass.rt_power = bypass.rt_power + fpTagBypass.power * pppm_t;
       rt_power = rt_power + fp_u.rt_power;
     }
     rt_power = rt_power + rfu->rt_power + exeu.rt_power + bypass.rt_power +
@@ -646,32 +628,8 @@ void EXECU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 }
 
 EXECU ::~EXECU() {
-
-  if (!exist)
+  if (!exist) {
     return;
-  if (int_bypass) {
-    delete int_bypass;
-    int_bypass = 0;
-  }
-  if (intTagBypass) {
-    delete intTagBypass;
-    intTagBypass = 0;
-  }
-  if (int_mul_bypass) {
-    delete int_mul_bypass;
-    int_mul_bypass = 0;
-  }
-  if (intTag_mul_Bypass) {
-    delete intTag_mul_Bypass;
-    intTag_mul_Bypass = 0;
-  }
-  if (fp_bypass) {
-    delete fp_bypass;
-    fp_bypass = 0;
-  }
-  if (fpTagBypass) {
-    delete fpTagBypass;
-    fpTagBypass = 0;
   }
   if (rfu) {
     delete rfu;

@@ -442,8 +442,12 @@ Processor::Processor(ParseXML *XML_interface)
         }
       } else { // Bus based interconnect
         nocs.push_back(new NoC());
-        nocs[i]->set_params(XML, i, &interface_ip, 1,
-                    sqrt(area.get_area() * XML->sys.NoC[i].chip_coverage));
+        nocs[i]->set_params(
+            XML,
+            i,
+            &interface_ip,
+            1,
+            sqrt(area.get_area() * XML->sys.NoC[i].chip_coverage));
         nocs[i]->set_stats(XML);
         nocs[i]->computeArea();
         if (procdynp.homoNOC) {

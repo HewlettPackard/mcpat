@@ -58,12 +58,12 @@ public:
   FunctionalUnit fp_u;
   FunctionalUnit exeu;
   FunctionalUnit mul;
-  interconnect *int_bypass;
-  interconnect *intTagBypass;
-  interconnect *int_mul_bypass;
-  interconnect *intTag_mul_Bypass;
-  interconnect *fp_bypass;
-  interconnect *fpTagBypass;
+  interconnect int_bypass;
+  interconnect intTagBypass;
+  interconnect int_mul_bypass;
+  interconnect intTag_mul_Bypass;
+  interconnect fp_bypass;
+  interconnect fpTagBypass;
 
   Component bypass;
   bool exist;

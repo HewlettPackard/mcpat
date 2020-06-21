@@ -37,30 +37,67 @@
 #include <assert.h>
 #include <iostream>
 
-interconnect::interconnect(string name_,
-                           enum Device_ty device_ty_,
-                           double base_w,
-                           double base_h,
-                           int data_w,
-                           double len,
-                           const InputParameter *configure_interface,
-                           int start_wiring_level_,
-                           bool pipelinable_,
-                           double route_over_perc_,
-                           bool opt_local_,
-                           enum Core_type core_ty_,
-                           enum Wire_type wire_model,
-                           double width_s,
-                           double space_s,
-                           TechnologyParameter::DeviceType *dt)
-    : name(name_), device_ty(device_ty_), in_rise_time(0), out_rise_time(0),
-      base_width(base_w), base_height(base_h), data_width(data_w),
-      wt(wire_model), width_scaling(width_s), space_scaling(space_s),
-      start_wiring_level(start_wiring_level_), length(len),
-      // interconnect_latency(1e-12),
-      // interconnect_throughput(1e-12),
-      opt_local(opt_local_), core_ty(core_ty_), pipelinable(pipelinable_),
-      route_over_perc(route_over_perc_), deviceType(dt) {
+interconnect::interconnect() {
+  name = "";
+  in_rise_time = 0.0;
+  out_rise_time = 0.0;
+  max_unpipelined_link_delay = 0.0;
+  wire_bw = 0.0;
+  init_wire_bw = 0.0; // bus width at root
+  base_width = 0.0;
+  base_height = 0.0;
+  data_width = 0;
+  width_scaling = 0.0;
+  space_scaling = 0.0;
+  start_wiring_level = 0;
+  length = 0.0;
+  min_w_nmos = 0.0;
+  min_w_pmos = 0.0;
+  latency = 0.0;
+  throughput = 0.0;
+  latency_overflow = false;
+  throughput_overflow = false;
+  interconnect_latency = 0.0;
+  interconnect_throughput = 0.0;
+  opt_local = false;
+  pipelinable = false;
+  route_over_perc = 0.0;
+  num_pipe_stages = 0;
+}
+
+void interconnect::init(string name_,
+                        enum Device_ty device_ty_,
+                        double base_w,
+                        double base_h,
+                        int data_w,
+                        double len,
+                        const InputParameter *configure_interface,
+                        int start_wiring_level_,
+                        bool pipelinable_,
+                        double route_over_perc_,
+                        bool opt_local_,
+                        enum Core_type core_ty_,
+                        enum Wire_type wire_model,
+                        double width_s,
+                        double space_s,
+                        TechnologyParameter::DeviceType *dt) {
+  name = name_;
+  device_ty = device_ty_;
+  in_rise_time = 0;
+  out_rise_time = 0;
+  base_width = base_w;
+  base_height = base_h;
+  data_width = data_w;
+  wt = wire_model;
+  width_scaling = width_s;
+  space_scaling = space_s;
+  start_wiring_level = start_wiring_level_;
+  length = len;
+  opt_local = opt_local_;
+  core_ty = core_ty_;
+  pipelinable = pipelinable_;
+  route_over_perc = route_over_perc_;
+  deviceType = dt;
 
   wt = Global;
   l_ip = *configure_interface;
@@ -163,7 +200,6 @@ interconnect::interconnect(string name_,
 }
 
 void interconnect::compute() {
-
   Wire *wtemp1 = 0;
   wtemp1 = new Wire(wt, length, 1, width_scaling, space_scaling);
   delay = wtemp1->delay;
@@ -175,35 +211,36 @@ void interconnect::compute() {
   no_device_under_wire_area.h = (wtemp1->wire_width + wtemp1->wire_spacing);
   no_device_under_wire_area.w = length;
 
-  if (wtemp1)
+  if (wtemp1) {
     delete wtemp1;
+  }
 }
 
-void interconnect::leakage_feedback(
-    double temperature) // TODO: add code for processing power gating
-{
-  l_ip.temp = (unsigned int)round(temperature / 10.0) * 10;
-  uca_org_t init_result = init_interface(&l_ip); // init_result is dummy
-
-  compute();
-
-  power_bit = power;
-  power.readOp.dynamic *= data_width;
-  power.readOp.leakage *= data_width;
-  power.readOp.gate_leakage *= data_width;
-
-  assert(power.readOp.dynamic > 0);
-  assert(power.readOp.leakage > 0);
-  assert(power.readOp.gate_leakage > 0);
-
-  double long_channel_device_reduction =
-      longer_channel_device_reduction(device_ty, core_ty);
-
-  double sckRation = g_tp.sckt_co_eff;
-  power.readOp.dynamic *= sckRation;
-  power.writeOp.dynamic *= sckRation;
-  power.searchOp.dynamic *= sckRation;
-
-  power.readOp.longer_channel_leakage =
-      power.readOp.leakage * long_channel_device_reduction;
-}
+// void interconnect::leakage_feedback(
+//    double temperature) // TODO: add code for processing power gating
+//{
+//  l_ip.temp = (unsigned int)round(temperature / 10.0) * 10;
+//  uca_org_t init_result = init_interface(&l_ip); // init_result is dummy
+//
+//  compute();
+//
+//  power_bit = power;
+//  power.readOp.dynamic *= data_width;
+//  power.readOp.leakage *= data_width;
+//  power.readOp.gate_leakage *= data_width;
+//
+//  assert(power.readOp.dynamic > 0);
+//  assert(power.readOp.leakage > 0);
+//  assert(power.readOp.gate_leakage > 0);
+//
+//  double long_channel_device_reduction =
+//      longer_channel_device_reduction(device_ty, core_ty);
+//
+//  double sckRation = g_tp.sckt_co_eff;
+//  power.readOp.dynamic *= sckRation;
+//  power.writeOp.dynamic *= sckRation;
+//  power.searchOp.dynamic *= sckRation;
+//
+//  power.readOp.longer_channel_leakage =
+//      power.readOp.leakage * long_channel_device_reduction;
+//}
