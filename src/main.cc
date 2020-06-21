@@ -40,14 +40,12 @@
 
 using namespace std;
 
-void print_usage(char *argv0);
-
 int main(int argc, char *argv[]) {
   mcpat::Options opt;
-
   if (!opt.parse(argc, argv)) {
     return 1;
   }
+
   opt_for_clk = opt.opt_for_clk;
 
   cout << "McPAT (version " << VER_MAJOR << "." << VER_MINOR << " of "
@@ -56,7 +54,11 @@ int main(int argc, char *argv[]) {
   // parse XML-based interface
   ParseXML *p1 = new ParseXML();
   p1->parse(opt.input_xml);
-  Processor proc(p1);
+  Processor proc;
+  proc.init(p1);
+  proc.computeArea();
+  proc.computePower();
+  proc.computeRuntimeDynamicPower();
   proc.displayEnergy(2, opt.print_level);
   delete p1;
   return 0;

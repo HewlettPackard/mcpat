@@ -51,7 +51,16 @@
 
 class Processor : public Component {
 public:
-  ParseXML *XML;
+  Processor();
+  void init(const ParseXML* XML);
+  void computeArea();
+  void computePower();
+  void computeRuntimeDynamicPower();
+  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  ~Processor();
+
+private:
+  const ParseXML *XML;
   vector<Core *> cores;
   vector<SharedCache *> l2array;
   vector<SharedCache *> l3array;
@@ -64,18 +73,28 @@ public:
   FlashController flashcontroller;
   InputParameter interface_ip;
   ProcParam procdynp;
-  // wire	globalInterconnect;
-  // clock_network globalClock;
-  Component core, l2, l3, l1dir, l2dir, noc, mcs, cc, nius, pcies,
-      flashcontrollers;
-  int numCore, numL2, numL3, numNOC, numL1Dir, numL2Dir;
-  Processor(ParseXML *XML_interface);
-  void compute();
+
+  // Used for total Area Calcs:
+  Component core;
+  Component l2;
+  Component l3;
+  Component l1dir;
+  Component l2dir;
+  Component noc;
+  Component mcs;
+  Component cc;
+  Component nius;
+  Component pcies;
+  Component flashcontrollers;
+  int numCore;
+  int numL2;
+  int numL3;
+  int numNOC;
+  int numL1Dir;
+  int numL2Dir;
   void set_proc_param();
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   void displayDeviceType(int device_type_, uint32_t indent = 0);
   void displayInterconnectType(int interconnect_type_, uint32_t indent = 0);
-  ~Processor();
 };
 
 #endif /* PROCESSOR_H_ */

@@ -45,13 +45,18 @@
 #include <fstream>
 #include <iostream>
 
-Processor::Processor(ParseXML *XML_interface)
-    : XML(XML_interface) { // TODO: using one global copy may have problems.
+Processor::Processor() {
+
+}
+
+void Processor::init(const ParseXML *XML) { 
+  // TODO: using one global copy may have problems.
   /*
-   *  placement and routing overhead is 10%, core scales worse than cache 40% is
+   * placement and routing overhead is 10%, core scales worse than cache 40% is
    * accumulated from 90 to 22nm There is no point to have heterogeneous memory
    * controller on chip, thus McPAT only support homogeneous memory controllers.
    */
+  this->XML = XML;
   int i;
   double pppm_t[4] = {1, 1, 1, 1};
   set_proc_param();
@@ -971,7 +976,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
 
       for (i = 0; i < numNOC; i++) {
-        nocs[i]->displayEnergy(indent + 4, plevel, is_tdp);
+        nocs[i]->display(indent + 4, plevel, is_tdp);
         cout << "**************************************************************"
                 "***************************"
              << endl;
@@ -979,6 +984,18 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     }
   } else {
   }
+}
+
+void Processor::computeArea() {
+
+}
+
+void Processor::computePower() {
+
+}
+
+void Processor::computeRuntimeDynamicPower() {
+
 }
 
 void Processor::set_proc_param() {
