@@ -78,7 +78,7 @@ RENAMINGU::RENAMINGU() {
  * entries, with each set for a thread. The RAT control logic will determine
  * different sets to use for different threads. But it does not need extra
  * tag bits in the entries. However, CAM-based RAT need extra tag bits to
- * distinguish the architecture register ids for different threads.  
+ * distinguish the architecture register ids for different threads.
  *
  * checkpointing of RAT and RRAT are both for architecture state recovery
  * with events including mis-speculation; Checkpointing is easier to
@@ -114,9 +114,9 @@ void RENAMINGU::set_params(const ParseXML *XML,
   coredynp = dyn_p_;
   long_channel = XML->sys.longer_channel_device;
   power_gating = XML->sys.power_gating;
-  //	interface_ip.wire_is_mat_type = 0;
-  //	interface_ip.wire_os_mat_type = 0;
-  //	interface_ip.wt               = Global_30;
+  // interface_ip.wire_is_mat_type = 0;
+  // interface_ip.wire_os_mat_type = 0;
+  // interface_ip.wt               = Global_30;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
   if (coredynp.core_ty == OOO) {
@@ -149,14 +149,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = 2 * coredynp.decodeW;
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
-        iFRAT = new ArrayST(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
-        area.set_area(area.get_area() + iFRAT->area.get_area());
-
+        iFRAT.set_params(&interface_ip,
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // FRAT floating point
         data = int(ceil(coredynp.phy_freg_width *
                         (1 + coredynp.globalCheckpoint) / 8.0));
@@ -182,14 +179,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = 2 * coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fFRAT = new ArrayST(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
-        area.set_area(area.get_area() + fFRAT->area.get_area());
-
+        fFRAT.set_params(&interface_ip,
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
         tag = coredynp.arch_ireg_width + coredynp.hthread_width;
@@ -221,14 +215,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
-        iFRAT = new ArrayST(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
-        area.set_area(area.get_area() + iFRAT->area.get_area());
-
+        iFRAT.set_params(&interface_ip,
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // FRAT for FP
         tag = coredynp.arch_freg_width + coredynp.hthread_width;
         data = int(
@@ -259,13 +250,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
-        fFRAT = new ArrayST(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
-        area.set_area(area.get_area() + fFRAT->area.get_area());
+        fFRAT.set_params(&interface_ip,
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
 
       // RRAT is always RAM based, does not have GCs, and is used only for
@@ -301,14 +290,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
-        iRRAT = new ArrayST(&interface_ip,
-                            "Int RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iRRAT->area.set_area(iRRAT->area.get_area() + iRRAT->local_result.area);
-        area.set_area(area.get_area() + iRRAT->area.get_area());
-
+        iRRAT.set_params(&interface_ip,
+                         "Int RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // RRAT for FP
         data = int(ceil(coredynp.phy_freg_width / 8.0));
         interface_ip.is_cache = false;
@@ -333,13 +319,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fRRAT = new ArrayST(&interface_ip,
-                            "FP RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fRRAT->area.set_area(fRRAT->area.get_area() + fRRAT->local_result.area);
-        area.set_area(area.get_area() + fRRAT->area.get_area());
+        fRRAT.set_params(&interface_ip,
+                         "FP RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
       // Freelist of renaming unit always RAM based and needed for RAM-based
       // RATs. Although it can be implemented within the CAM-based RAT, Current
@@ -373,14 +357,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
       // every cycle, (coredynp.decodeW -1) inst may need to send back it dest
       // tags, committW insts needs to update freelist buffers
       interface_ip.num_se_rd_ports = 0;
-      ifreeL = new ArrayST(&interface_ip,
-                           "Int Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-      ifreeL->area.set_area(ifreeL->area.get_area() +
-                            ifreeL->local_result.area);
-      area.set_area(area.get_area() + ifreeL->area.get_area());
+      ifreeL.set_params(&interface_ip,
+                        "Int Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
 
       // freelist for FP
       data = int(ceil(coredynp.phy_freg_width / 8.0));
@@ -404,14 +385,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
       interface_ip.num_wr_ports =
           coredynp.fp_decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
-      ffreeL = new ArrayST(&interface_ip,
-                           "FP Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-      ffreeL->area.set_area(ffreeL->area.get_area() +
-                            ffreeL->local_result.area);
-      area.set_area(area.get_area() + ffreeL->area.get_area());
+      ffreeL.set_params(&interface_ip,
+                        "FP Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
 
       idcl = new dep_resource_conflict_check(
           &interface_ip,
@@ -448,19 +426,15 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = 2 * coredynp.decodeW;
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
-        iFRAT = new ArrayST(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iFRAT->local_result.adjust_area();
-        //			iFRAT->local_result.power.readOp.dynamic *=
+        iFRAT.set_params(&interface_ip,
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
+        //   iFRAT.local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
-        //			iFRAT->local_result.power.writeOp.dynamic
+        //   iFRAT.local_result.power.writeOp.dynamic
         //*=1+0.2*0.05;//compensate for GC
-        iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
-        area.set_area(area.get_area() + iFRAT->area.get_area());
-
         // FP
         data = int(ceil(coredynp.phy_freg_width *
                         (1 + coredynp.globalCheckpoint) / 8.0));
@@ -486,18 +460,15 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = 2 * coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fFRAT = new ArrayST(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fFRAT->local_result.adjust_area();
-        //			fFRAT->local_result.power.readOp.dynamic *=
+        fFRAT.set_params(&interface_ip,
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
+        //   fFRAT.local_result.power.readOp.dynamic *=
         // 1+0.2*0.05;//1+mis-speculation% TODO
-        //			fFRAT->local_result.power.writeOp.dynamic
+        //   fFRAT.local_result.power.writeOp.dynamic
         //*=1+0.2*0.05;//compensate for GC
-        fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
-        area.set_area(area.get_area() + fFRAT->area.get_area());
 
       } else if (coredynp.rm_ty == CAMbased) {
         // FRAT
@@ -528,13 +499,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_wr_ports = coredynp.decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.decodeW;
-        iFRAT = new ArrayST(&interface_ip,
-                            "Int FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iFRAT->area.set_area(iFRAT->area.get_area() + iFRAT->local_result.area);
-        area.set_area(area.get_area() + iFRAT->area.get_area());
+        iFRAT.set_params(&interface_ip,
+                         "Int FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
 
         // FRAT
         tag = coredynp.arch_freg_width + coredynp.hthread_width;
@@ -565,13 +534,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
         interface_ip.num_search_ports = 2 * coredynp.fp_decodeW;
-        fFRAT = new ArrayST(&interface_ip,
-                            "FP FrontRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fFRAT->area.set_area(fFRAT->area.get_area() + fFRAT->local_result.area);
-        area.set_area(area.get_area() + fFRAT->area.get_area());
+        fFRAT.set_params(&interface_ip,
+                         "FP FrontRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
       // Although no RRAT for RS based OOO is really needed since the archiRF
       // always holds the non-speculative data, having the RRAT or GC (not both)
@@ -601,14 +568,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_wr_ports = XML->sys.core[ithCore].commit_width;
         interface_ip.num_se_rd_ports = 0;
-        iRRAT = new ArrayST(&interface_ip,
-                            "Int RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        iRRAT->area.set_area(iRRAT->area.get_area() + iRRAT->local_result.area);
-        area.set_area(area.get_area() + iRRAT->area.get_area());
-
+        iRRAT.set_params(&interface_ip,
+                         "Int RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
         // RRAT for FP
         data = int(ceil(coredynp.phy_freg_width / 8.0));
         interface_ip.is_cache = false;
@@ -633,13 +597,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
         interface_ip.num_rd_ports = coredynp.fp_decodeW;
         interface_ip.num_wr_ports = coredynp.fp_decodeW;
         interface_ip.num_se_rd_ports = 0;
-        fRRAT = new ArrayST(&interface_ip,
-                            "FP RetireRAT",
-                            Core_device,
-                            coredynp.opt_local,
-                            coredynp.core_ty);
-        fRRAT->area.set_area(fRRAT->area.get_area() + fRRAT->local_result.area);
-        area.set_area(area.get_area() + fRRAT->area.get_area());
+        fRRAT.set_params(&interface_ip,
+                         "FP RetireRAT",
+                         Core_device,
+                         coredynp.opt_local,
+                         coredynp.core_ty);
       }
 
       // Freelist of renaming unit of RS based OOO is unifed for both int and fp
@@ -665,14 +627,13 @@ void RENAMINGU::set_params(const ParseXML *XML,
       interface_ip.num_wr_ports =
           coredynp.decodeW - 1 + XML->sys.core[ithCore].commit_width;
       interface_ip.num_se_rd_ports = 0;
-      ifreeL = new ArrayST(&interface_ip,
-                           "Unified Free List",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-      // ifreeL->area.set_area(ifreeL->area.get_area()+
-      // ifreeL->local_result.area*XML->sys.core[ithCore].number_hardware_threads);
-      area.set_area(area.get_area() + ifreeL->area.get_area());
+      ifreeL.set_params(&interface_ip,
+                        "Unified Free List",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
+      // ifreeL.area.set_area(ifreeL.area.get_area()+
+      // ifreeL.local_result.area*XML->sys.core[ithCore].number_hardware_threads);
 
       idcl = new dep_resource_conflict_check(
           &interface_ip,
@@ -697,7 +658,7 @@ void RENAMINGU::set_params(const ParseXML *XML,
   init_params = true;
 }
 
-void RENAMINGU::set_stats(const ParseXML* XML) {
+void RENAMINGU::set_stats(const ParseXML *XML) {
   fp_rename_writes = XML->sys.core[ithCore].fp_rename_writes;
   fp_rename_reads = XML->sys.core[ithCore].fp_rename_reads;
   rename_writes = XML->sys.core[ithCore].rename_writes;
@@ -714,6 +675,118 @@ void RENAMINGU::computeArea() {
     exit(1);
   }
   set_area = true;
+  if (coredynp.core_ty == OOO) {
+    if (coredynp.scheu_ty == PhysicalRegFile) {
+      if (coredynp.rm_ty ==
+          RAMbased) { // FRAT with global checkpointing (GCs) please see paper
+                      // tech report for detailed explanation.
+        iFRAT.computeArea();
+        iFRAT.area.set_area(iFRAT.area.get_area() + iFRAT.local_result.area);
+        area.set_area(area.get_area() + iFRAT.area.get_area());
+
+        fFRAT.computeArea();
+        fFRAT.area.set_area(fFRAT.area.get_area() + fFRAT.local_result.area);
+        area.set_area(area.get_area() + fFRAT.area.get_area());
+
+      } else if (coredynp.rm_ty == CAMbased) {
+        iFRAT.computeArea();
+        iFRAT.area.set_area(iFRAT.area.get_area() + iFRAT.local_result.area);
+        area.set_area(area.get_area() + iFRAT.area.get_area());
+
+        fFRAT.computeArea();
+        fFRAT.area.set_area(fFRAT.area.get_area() + fFRAT.local_result.area);
+        area.set_area(area.get_area() + fFRAT.area.get_area());
+      }
+
+      // RRAT is always RAM based, does not have GCs, and is used only for
+      // record latest non-speculative mapping RRAT is not needed for CAM-based
+      // RAT (McPAT assumes CAM-based RAT to have at least 1 checkpoint), it is
+      // not needed for RAM-based RAT with checkpoints McPAT assumes renaming
+      // unit to have RRAT when there is no checkpoints in FRAT, while MIPS
+      // R1000 has 4 GCs, according to Intel Netburst Archi, combine GC with
+      // FRAT is very costly, especially for high issue width and high clock
+      // rate.
+
+      if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
+        iRRAT.computeArea();
+        iRRAT.area.set_area(iRRAT.area.get_area() + iRRAT.local_result.area);
+        area.set_area(area.get_area() + iRRAT.area.get_area());
+
+        fRRAT.computeArea();
+        fRRAT.area.set_area(fRRAT.area.get_area() + fRRAT.local_result.area);
+        area.set_area(area.get_area() + fRRAT.area.get_area());
+      }
+      // Freelist of renaming unit always RAM based and needed for RAM-based
+      // RATs. Although it can be implemented within the CAM-based RAT, Current
+      // McPAT does not have the free bits in the CAM but use the same external
+      // free list as a close approximation for CAM RAT. Recycle happens at two
+      // places: 1)when DCL check there are WAW, the Phy-registers/ROB directly
+      // recycles into freelist
+      // 2)When instruction commits the Phyregisters/ROB needed to be recycled.
+      // therefore num_wr port = decode-1(-1 means at least one phy reg will be
+      // used for the current renaming group) + commit width
+      ifreeL.computeArea();
+      ifreeL.area.set_area(ifreeL.area.get_area() + ifreeL.local_result.area);
+      area.set_area(area.get_area() + ifreeL.area.get_area());
+
+      ffreeL.computeArea();
+      ffreeL.area.set_area(ffreeL.area.get_area() + ffreeL.local_result.area);
+      area.set_area(area.get_area() + ffreeL.area.get_area());
+
+    } else if (coredynp.scheu_ty == ReservationStation) {
+      if (coredynp.rm_ty == RAMbased) {
+        iFRAT.computeArea();
+        iFRAT.local_result.adjust_area();
+        //			iFRAT.local_result.power.readOp.dynamic *=
+        // 1+0.2*0.05;//1+mis-speculation% TODO
+        //			iFRAT.local_result.power.writeOp.dynamic
+        //*=1+0.2*0.05;//compensate for GC
+        iFRAT.area.set_area(iFRAT.area.get_area() + iFRAT.local_result.area);
+        area.set_area(area.get_area() + iFRAT.area.get_area());
+
+        fFRAT.computeArea();
+        fFRAT.local_result.adjust_area();
+        //			fFRAT.local_result.power.readOp.dynamic *=
+        // 1+0.2*0.05;//1+mis-speculation% TODO
+        //			fFRAT.local_result.power.writeOp.dynamic
+        //*=1+0.2*0.05;//compensate for GC
+        fFRAT.area.set_area(fFRAT.area.get_area() + fFRAT.local_result.area);
+        area.set_area(area.get_area() + fFRAT.area.get_area());
+
+      } else if (coredynp.rm_ty == CAMbased) {
+        // FRAT
+        iFRAT.computeArea();
+        iFRAT.area.set_area(iFRAT.area.get_area() + iFRAT.local_result.area);
+        area.set_area(area.get_area() + iFRAT.area.get_area());
+
+        // FRAT
+        fFRAT.computeArea();
+        fFRAT.area.set_area(fFRAT.area.get_area() + fFRAT.local_result.area);
+        area.set_area(area.get_area() + fFRAT.area.get_area());
+      }
+      // Although no RRAT for RS based OOO is really needed since the archiRF
+      // always holds the non-speculative data, having the RRAT or GC (not both)
+      // can help the recovery of mis-speculations.
+
+      if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
+        iRRAT.computeArea();
+        iRRAT.area.set_area(iRRAT.area.get_area() + iRRAT.local_result.area);
+        area.set_area(area.get_area() + iRRAT.area.get_area());
+
+        // RRAT for FP
+        fRRAT.computeArea();
+        fRRAT.area.set_area(fRRAT.area.get_area() + fRRAT.local_result.area);
+        area.set_area(area.get_area() + fRRAT.area.get_area());
+      }
+
+      // Freelist of renaming unit of RS based OOO is unifed for both int and fp
+      // renaming unit since the ROB is unified
+      ifreeL.computeArea();
+      // ifreeL.area.set_area(ifreeL.area.get_area()+
+      // ifreeL.local_result.area*XML->sys.core[ithCore].number_hardware_threads);
+      area.set_area(area.get_area() + ifreeL.area.get_area());
+    }
+  }
 }
 
 void RENAMINGU::computeStaticPower(bool is_tdp) {
@@ -735,78 +808,78 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_rd_ports;
-          iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
-          iFRAT->tdp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = iFRAT.l_ip.num_rd_ports;
+          iFRAT.stats_t.writeAc.access = iFRAT.l_ip.num_wr_ports;
+          iFRAT.tdp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fFRAT->l_ip.num_rd_ports;
-          fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
-          fFRAT->tdp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fFRAT.l_ip.num_rd_ports;
+          fFRAT.stats_t.writeAc.access = fFRAT.l_ip.num_wr_ports;
+          fFRAT.tdp_stats = fFRAT.stats_t;
 
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_search_ports;
-          iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
-          iFRAT->tdp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = iFRAT.l_ip.num_search_ports;
+          iFRAT.stats_t.writeAc.access = iFRAT.l_ip.num_wr_ports;
+          iFRAT.tdp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fFRAT->l_ip.num_search_ports;
-          fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
-          fFRAT->tdp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fFRAT.l_ip.num_search_ports;
+          fFRAT.stats_t.writeAc.access = fFRAT.l_ip.num_wr_ports;
+          fFRAT.tdp_stats = fFRAT.stats_t;
         }
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->stats_t.readAc.access = iRRAT->l_ip.num_rd_ports;
-          iRRAT->stats_t.writeAc.access = iRRAT->l_ip.num_wr_ports;
-          iRRAT->tdp_stats = iRRAT->stats_t;
+          iRRAT.stats_t.readAc.access = iRRAT.l_ip.num_rd_ports;
+          iRRAT.stats_t.writeAc.access = iRRAT.l_ip.num_wr_ports;
+          iRRAT.tdp_stats = iRRAT.stats_t;
 
-          fRRAT->stats_t.readAc.access = fRRAT->l_ip.num_rd_ports;
-          fRRAT->stats_t.writeAc.access = fRRAT->l_ip.num_wr_ports;
-          fRRAT->tdp_stats = fRRAT->stats_t;
+          fRRAT.stats_t.readAc.access = fRRAT.l_ip.num_rd_ports;
+          fRRAT.stats_t.writeAc.access = fRRAT.l_ip.num_wr_ports;
+          fRRAT.tdp_stats = fRRAT.stats_t;
         }
-        ifreeL->stats_t.readAc.access =
-            coredynp.decodeW; // ifreeL->l_ip.num_rd_ports;;
-        ifreeL->stats_t.writeAc.access =
-            coredynp.decodeW; // ifreeL->l_ip.num_wr_ports;
-        ifreeL->tdp_stats = ifreeL->stats_t;
+        ifreeL.stats_t.readAc.access =
+            coredynp.decodeW; // ifreeL.l_ip.num_rd_ports;;
+        ifreeL.stats_t.writeAc.access =
+            coredynp.decodeW; // ifreeL.l_ip.num_wr_ports;
+        ifreeL.tdp_stats = ifreeL.stats_t;
 
-        ffreeL->stats_t.readAc.access =
-            coredynp.decodeW; // ffreeL->l_ip.num_rd_ports;
-        ffreeL->stats_t.writeAc.access =
-            coredynp.decodeW; // ffreeL->l_ip.num_wr_ports;
-        ffreeL->tdp_stats = ffreeL->stats_t;
+        ffreeL.stats_t.readAc.access =
+            coredynp.decodeW; // ffreeL.l_ip.num_rd_ports;
+        ffreeL.stats_t.writeAc.access =
+            coredynp.decodeW; // ffreeL.l_ip.num_wr_ports;
+        ffreeL.tdp_stats = ffreeL.stats_t;
       } else if (coredynp.scheu_ty == ReservationStation) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_rd_ports;
-          iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
-          iFRAT->tdp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = iFRAT.l_ip.num_rd_ports;
+          iFRAT.stats_t.writeAc.access = iFRAT.l_ip.num_wr_ports;
+          iFRAT.tdp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fFRAT->l_ip.num_rd_ports;
-          fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
-          fFRAT->tdp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fFRAT.l_ip.num_rd_ports;
+          fFRAT.stats_t.writeAc.access = fFRAT.l_ip.num_wr_ports;
+          fFRAT.tdp_stats = fFRAT.stats_t;
 
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT->stats_t.readAc.access = iFRAT->l_ip.num_search_ports;
-          iFRAT->stats_t.writeAc.access = iFRAT->l_ip.num_wr_ports;
-          iFRAT->tdp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = iFRAT.l_ip.num_search_ports;
+          iFRAT.stats_t.writeAc.access = iFRAT.l_ip.num_wr_ports;
+          iFRAT.tdp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fFRAT->l_ip.num_search_ports;
-          fFRAT->stats_t.writeAc.access = fFRAT->l_ip.num_wr_ports;
-          fFRAT->tdp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fFRAT.l_ip.num_search_ports;
+          fFRAT.stats_t.writeAc.access = fFRAT.l_ip.num_wr_ports;
+          fFRAT.tdp_stats = fFRAT.stats_t;
         }
 
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->stats_t.readAc.access = iRRAT->l_ip.num_rd_ports;
-          iRRAT->stats_t.writeAc.access = iRRAT->l_ip.num_wr_ports;
-          iRRAT->tdp_stats = iRRAT->stats_t;
+          iRRAT.stats_t.readAc.access = iRRAT.l_ip.num_rd_ports;
+          iRRAT.stats_t.writeAc.access = iRRAT.l_ip.num_wr_ports;
+          iRRAT.tdp_stats = iRRAT.stats_t;
 
-          fRRAT->stats_t.readAc.access = fRRAT->l_ip.num_rd_ports;
-          fRRAT->stats_t.writeAc.access = fRRAT->l_ip.num_wr_ports;
-          fRRAT->tdp_stats = fRRAT->stats_t;
+          fRRAT.stats_t.readAc.access = fRRAT.l_ip.num_rd_ports;
+          fRRAT.stats_t.writeAc.access = fRRAT.l_ip.num_wr_ports;
+          fRRAT.tdp_stats = fRRAT.stats_t;
         }
         // Unified free list for both int and fp
-        ifreeL->stats_t.readAc.access =
-            coredynp.decodeW; // ifreeL->l_ip.num_rd_ports;
-        ifreeL->stats_t.writeAc.access =
-            coredynp.decodeW; // ifreeL->l_ip.num_wr_ports;
-        ifreeL->tdp_stats = ifreeL->stats_t;
+        ifreeL.stats_t.readAc.access =
+            coredynp.decodeW; // ifreeL.l_ip.num_rd_ports;
+        ifreeL.stats_t.writeAc.access =
+            coredynp.decodeW; // ifreeL.l_ip.num_wr_ports;
+        ifreeL.tdp_stats = ifreeL.stats_t;
       }
       idcl->stats_t.readAc.access = coredynp.decodeW;
       fdcl->stats_t.readAc.access = coredynp.decodeW;
@@ -825,84 +898,87 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT->stats_t.readAc.access = rename_reads;
-          iFRAT->stats_t.writeAc.access = rename_writes;
-          iFRAT->rtp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
+          iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fp_rename_reads;
-          fFRAT->stats_t.writeAc.access = fp_rename_writes;
-          fFRAT->rtp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
+          fFRAT.rtp_stats = fFRAT.stats_t;
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT->stats_t.readAc.access = rename_reads;
-          iFRAT->stats_t.writeAc.access = rename_writes;
-          iFRAT->rtp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
+          iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fp_rename_reads;
-          fFRAT->stats_t.writeAc.access = fp_rename_writes;
-          fFRAT->rtp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
+          fFRAT.rtp_stats = fFRAT.stats_t;
         }
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
           // HACK, should be (context switch + branch mispredictions)*16
-          iRRAT->stats_t.readAc.access = rename_writes;
-          iRRAT->stats_t.writeAc.access = rename_writes;
-          iRRAT->rtp_stats = iRRAT->stats_t;
+          iRRAT.stats_t.readAc.access = rename_writes;
+          iRRAT.stats_t.writeAc.access = rename_writes;
+          iRRAT.rtp_stats = iRRAT.stats_t;
 
           // HACK, should be (context switch + branch mispredictions)*16
-          fRRAT->stats_t.readAc.access = fp_rename_writes;
-          fRRAT->stats_t.writeAc.access = fp_rename_writes;
-          fRRAT->rtp_stats = fRRAT->stats_t;
+          fRRAT.stats_t.readAc.access = fp_rename_writes;
+          fRRAT.stats_t.writeAc.access = fp_rename_writes;
+          fRRAT.rtp_stats = fRRAT.stats_t;
         }
-        ifreeL->stats_t.readAc.access = rename_reads;
-        ifreeL->stats_t.writeAc.access = 2*rename_writes;
-        ifreeL->rtp_stats = ifreeL->stats_t;
+        ifreeL.stats_t.readAc.access = rename_reads;
+        ifreeL.stats_t.writeAc.access = 2 * rename_writes;
+        ifreeL.rtp_stats = ifreeL.stats_t;
 
-        ffreeL->stats_t.readAc.access = fp_rename_reads;
-        ffreeL->stats_t.writeAc.access = 2*fp_rename_writes;
-        ffreeL->rtp_stats = ffreeL->stats_t;
+        ffreeL.stats_t.readAc.access = fp_rename_reads;
+        ffreeL.stats_t.writeAc.access = 2 * fp_rename_writes;
+        ffreeL.rtp_stats = ffreeL.stats_t;
       } else if (coredynp.scheu_ty == ReservationStation) {
         if (coredynp.rm_ty == RAMbased) {
-          iFRAT->stats_t.readAc.access = rename_reads;
-          iFRAT->stats_t.writeAc.access = rename_writes;
-          iFRAT->rtp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
+          iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fp_rename_reads;
-          fFRAT->stats_t.writeAc.access = fp_rename_writes;
-          fFRAT->rtp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
+          fFRAT.rtp_stats = fFRAT.stats_t;
         } else if (coredynp.rm_ty == CAMbased) {
-          iFRAT->stats_t.readAc.access = rename_reads;
-          iFRAT->stats_t.writeAc.access = rename_writes;
-          iFRAT->rtp_stats = iFRAT->stats_t;
+          iFRAT.stats_t.readAc.access = rename_reads;
+          iFRAT.stats_t.writeAc.access = rename_writes;
+          iFRAT.rtp_stats = iFRAT.stats_t;
 
-          fFRAT->stats_t.readAc.access = fp_rename_reads;
-          fFRAT->stats_t.writeAc.access = fp_rename_writes;
-          fFRAT->rtp_stats = fFRAT->stats_t;
+          fFRAT.stats_t.readAc.access = fp_rename_reads;
+          fFRAT.stats_t.writeAc.access = fp_rename_writes;
+          fFRAT.rtp_stats = fFRAT.stats_t;
         }
 
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
           // HACK, should be (context switch + branch mispredictions)*16
-          iRRAT->stats_t.readAc.access = rename_writes;
-          iRRAT->stats_t.writeAc.access = rename_writes;
-          iRRAT->rtp_stats = iRRAT->stats_t;
+          iRRAT.stats_t.readAc.access = rename_writes;
+          iRRAT.stats_t.writeAc.access = rename_writes;
+          iRRAT.rtp_stats = iRRAT.stats_t;
 
           // HACK, should be (context switch + branch mispredictions)*16
-          fRRAT->stats_t.readAc.access = fp_rename_writes;
-          fRRAT->stats_t.writeAc.access = fp_rename_writes;
-          fRRAT->rtp_stats = fRRAT->stats_t;
+          fRRAT.stats_t.readAc.access = fp_rename_writes;
+          fRRAT.stats_t.writeAc.access = fp_rename_writes;
+          fRRAT.rtp_stats = fRRAT.stats_t;
         }
         // Unified free list for both int and fp since the ROB act as physcial
         // registers
-        ifreeL->stats_t.readAc.access = rename_reads+fp_rename_reads;
-        // HACK: 2-> since some of renaming in the same group are terminated early
-        ifreeL->stats_t.writeAc.access = 2*(rename_writes+fp_rename_writes);
-        ifreeL->rtp_stats = ifreeL->stats_t;
+        ifreeL.stats_t.readAc.access = rename_reads + fp_rename_reads;
+        // HACK: 2-> since some of renaming in the same group are terminated
+        // early
+        ifreeL.stats_t.writeAc.access = 2 * (rename_writes + fp_rename_writes);
+        ifreeL.rtp_stats = ifreeL.stats_t;
       }
-      idcl->stats_t.readAc.access = 3*coredynp.decodeW*coredynp.decodeW*rename_reads;
-      fdcl->stats_t.readAc.access = 3*coredynp.fp_issueW*coredynp.fp_issueW*fp_rename_writes;
+      idcl->stats_t.readAc.access =
+          3 * coredynp.decodeW * coredynp.decodeW * rename_reads;
+      fdcl->stats_t.readAc.access =
+          3 * coredynp.fp_issueW * coredynp.fp_issueW * fp_rename_writes;
       idcl->rtp_stats = idcl->stats_t;
       fdcl->rtp_stats = fdcl->stats_t;
     } else {
       if (coredynp.issueW > 1) {
-        idcl->stats_t.readAc.access = 2*int_instructions;
+        idcl->stats_t.readAc.access = 2 * int_instructions;
         fdcl->stats_t.readAc.access = fp_instructions;
         idcl->rtp_stats = idcl->stats_t;
         fdcl->rtp_stats = fdcl->stats_t;
@@ -913,122 +989,122 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
   if (coredynp.core_ty == OOO) {
     if (coredynp.scheu_ty == PhysicalRegFile) {
       if (coredynp.rm_ty == RAMbased) {
-        iFRAT->power_t.reset();
-        fFRAT->power_t.reset();
+        iFRAT.power_t.reset();
+        fFRAT.power_t.reset();
 
-        iFRAT->power_t.readOp.dynamic +=
-            (iFRAT->stats_t.readAc.access *
-                 (iFRAT->local_result.power.readOp.dynamic +
+        iFRAT.power_t.readOp.dynamic +=
+            (iFRAT.stats_t.readAc.access *
+                 (iFRAT.local_result.power.readOp.dynamic +
                   idcl->power.readOp.dynamic) +
-             iFRAT->stats_t.writeAc.access *
-                 iFRAT->local_result.power.writeOp.dynamic);
-        fFRAT->power_t.readOp.dynamic +=
-            (fFRAT->stats_t.readAc.access *
-                 (fFRAT->local_result.power.readOp.dynamic +
+             iFRAT.stats_t.writeAc.access *
+                 iFRAT.local_result.power.writeOp.dynamic);
+        fFRAT.power_t.readOp.dynamic +=
+            (fFRAT.stats_t.readAc.access *
+                 (fFRAT.local_result.power.readOp.dynamic +
                   fdcl->power.readOp.dynamic) +
-             fFRAT->stats_t.writeAc.access *
-                 fFRAT->local_result.power.writeOp.dynamic);
+             fFRAT.stats_t.writeAc.access *
+                 fFRAT.local_result.power.writeOp.dynamic);
       } else if (coredynp.rm_ty == CAMbased) {
-        iFRAT->power_t.reset();
-        fFRAT->power_t.reset();
-        iFRAT->power_t.readOp.dynamic +=
-            (iFRAT->stats_t.readAc.access *
-                 (iFRAT->local_result.power.searchOp.dynamic +
+        iFRAT.power_t.reset();
+        fFRAT.power_t.reset();
+        iFRAT.power_t.readOp.dynamic +=
+            (iFRAT.stats_t.readAc.access *
+                 (iFRAT.local_result.power.searchOp.dynamic +
                   idcl->power.readOp.dynamic) +
-             iFRAT->stats_t.writeAc.access *
-                 iFRAT->local_result.power.writeOp.dynamic);
-        fFRAT->power_t.readOp.dynamic +=
-            (fFRAT->stats_t.readAc.access *
-                 (fFRAT->local_result.power.searchOp.dynamic +
+             iFRAT.stats_t.writeAc.access *
+                 iFRAT.local_result.power.writeOp.dynamic);
+        fFRAT.power_t.readOp.dynamic +=
+            (fFRAT.stats_t.readAc.access *
+                 (fFRAT.local_result.power.searchOp.dynamic +
                   fdcl->power.readOp.dynamic) +
-             fFRAT->stats_t.writeAc.access *
-                 fFRAT->local_result.power.writeOp.dynamic);
+             fFRAT.stats_t.writeAc.access *
+                 fFRAT.local_result.power.writeOp.dynamic);
       }
       if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-        iRRAT->power_t.reset();
-        fRRAT->power_t.reset();
+        iRRAT.power_t.reset();
+        fRRAT.power_t.reset();
 
-        iRRAT->power_t.readOp.dynamic +=
-            (iRRAT->stats_t.readAc.access *
-                 iRRAT->local_result.power.readOp.dynamic +
-             iRRAT->stats_t.writeAc.access *
-                 iRRAT->local_result.power.writeOp.dynamic);
-        fRRAT->power_t.readOp.dynamic +=
-            (fRRAT->stats_t.readAc.access *
-                 fRRAT->local_result.power.readOp.dynamic +
-             fRRAT->stats_t.writeAc.access *
-                 fRRAT->local_result.power.writeOp.dynamic);
+        iRRAT.power_t.readOp.dynamic +=
+            (iRRAT.stats_t.readAc.access *
+                 iRRAT.local_result.power.readOp.dynamic +
+             iRRAT.stats_t.writeAc.access *
+                 iRRAT.local_result.power.writeOp.dynamic);
+        fRRAT.power_t.readOp.dynamic +=
+            (fRRAT.stats_t.readAc.access *
+                 fRRAT.local_result.power.readOp.dynamic +
+             fRRAT.stats_t.writeAc.access *
+                 fRRAT.local_result.power.writeOp.dynamic);
       }
 
-      ifreeL->power_t.reset();
-      ffreeL->power_t.reset();
-      ifreeL->power_t.readOp.dynamic +=
-          (ifreeL->stats_t.readAc.access *
-               ifreeL->local_result.power.readOp.dynamic +
-           ifreeL->stats_t.writeAc.access *
-               ifreeL->local_result.power.writeOp.dynamic);
-      ffreeL->power_t.readOp.dynamic +=
-          (ffreeL->stats_t.readAc.access *
-               ffreeL->local_result.power.readOp.dynamic +
-           ffreeL->stats_t.writeAc.access *
-               ffreeL->local_result.power.writeOp.dynamic);
+      ifreeL.power_t.reset();
+      ffreeL.power_t.reset();
+      ifreeL.power_t.readOp.dynamic +=
+          (ifreeL.stats_t.readAc.access *
+               ifreeL.local_result.power.readOp.dynamic +
+           ifreeL.stats_t.writeAc.access *
+               ifreeL.local_result.power.writeOp.dynamic);
+      ffreeL.power_t.readOp.dynamic +=
+          (ffreeL.stats_t.readAc.access *
+               ffreeL.local_result.power.readOp.dynamic +
+           ffreeL.stats_t.writeAc.access *
+               ffreeL.local_result.power.writeOp.dynamic);
 
     } else if (coredynp.scheu_ty == ReservationStation) {
       if (coredynp.rm_ty == RAMbased) {
-        iFRAT->power_t.reset();
-        fFRAT->power_t.reset();
+        iFRAT.power_t.reset();
+        fFRAT.power_t.reset();
 
-        iFRAT->power_t.readOp.dynamic +=
-            (iFRAT->stats_t.readAc.access *
-                 (iFRAT->local_result.power.readOp.dynamic +
+        iFRAT.power_t.readOp.dynamic +=
+            (iFRAT.stats_t.readAc.access *
+                 (iFRAT.local_result.power.readOp.dynamic +
                   idcl->power.readOp.dynamic) +
-             iFRAT->stats_t.writeAc.access *
-                 iFRAT->local_result.power.writeOp.dynamic);
-        fFRAT->power_t.readOp.dynamic +=
-            (fFRAT->stats_t.readAc.access *
-                 (fFRAT->local_result.power.readOp.dynamic +
+             iFRAT.stats_t.writeAc.access *
+                 iFRAT.local_result.power.writeOp.dynamic);
+        fFRAT.power_t.readOp.dynamic +=
+            (fFRAT.stats_t.readAc.access *
+                 (fFRAT.local_result.power.readOp.dynamic +
                   fdcl->power.readOp.dynamic) +
-             fFRAT->stats_t.writeAc.access *
-                 fFRAT->local_result.power.writeOp.dynamic);
+             fFRAT.stats_t.writeAc.access *
+                 fFRAT.local_result.power.writeOp.dynamic);
       } else if (coredynp.rm_ty == CAMbased) {
-        iFRAT->power_t.reset();
-        fFRAT->power_t.reset();
-        iFRAT->power_t.readOp.dynamic +=
-            (iFRAT->stats_t.readAc.access *
-                 (iFRAT->local_result.power.searchOp.dynamic +
+        iFRAT.power_t.reset();
+        fFRAT.power_t.reset();
+        iFRAT.power_t.readOp.dynamic +=
+            (iFRAT.stats_t.readAc.access *
+                 (iFRAT.local_result.power.searchOp.dynamic +
                   idcl->power.readOp.dynamic) +
-             iFRAT->stats_t.writeAc.access *
-                 iFRAT->local_result.power.writeOp.dynamic);
-        fFRAT->power_t.readOp.dynamic +=
-            (fFRAT->stats_t.readAc.access *
-                 (fFRAT->local_result.power.searchOp.dynamic +
+             iFRAT.stats_t.writeAc.access *
+                 iFRAT.local_result.power.writeOp.dynamic);
+        fFRAT.power_t.readOp.dynamic +=
+            (fFRAT.stats_t.readAc.access *
+                 (fFRAT.local_result.power.searchOp.dynamic +
                   fdcl->power.readOp.dynamic) +
-             fFRAT->stats_t.writeAc.access *
-                 fFRAT->local_result.power.writeOp.dynamic);
+             fFRAT.stats_t.writeAc.access *
+                 fFRAT.local_result.power.writeOp.dynamic);
       }
 
       if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-        iRRAT->power_t.reset();
-        fRRAT->power_t.reset();
+        iRRAT.power_t.reset();
+        fRRAT.power_t.reset();
 
-        iRRAT->power_t.readOp.dynamic +=
-            (iRRAT->stats_t.readAc.access *
-                 iRRAT->local_result.power.readOp.dynamic +
-             iRRAT->stats_t.writeAc.access *
-                 iRRAT->local_result.power.writeOp.dynamic);
-        fRRAT->power_t.readOp.dynamic +=
-            (fRRAT->stats_t.readAc.access *
-                 fRRAT->local_result.power.readOp.dynamic +
-             fRRAT->stats_t.writeAc.access *
-                 fRRAT->local_result.power.writeOp.dynamic);
+        iRRAT.power_t.readOp.dynamic +=
+            (iRRAT.stats_t.readAc.access *
+                 iRRAT.local_result.power.readOp.dynamic +
+             iRRAT.stats_t.writeAc.access *
+                 iRRAT.local_result.power.writeOp.dynamic);
+        fRRAT.power_t.readOp.dynamic +=
+            (fRRAT.stats_t.readAc.access *
+                 fRRAT.local_result.power.readOp.dynamic +
+             fRRAT.stats_t.writeAc.access *
+                 fRRAT.local_result.power.writeOp.dynamic);
       }
 
-      ifreeL->power_t.reset();
-      ifreeL->power_t.readOp.dynamic +=
-          (ifreeL->stats_t.readAc.access *
-               ifreeL->local_result.power.readOp.dynamic +
-           ifreeL->stats_t.writeAc.access *
-               ifreeL->local_result.power.writeOp.dynamic);
+      ifreeL.power_t.reset();
+      ifreeL.power_t.readOp.dynamic +=
+          (ifreeL.stats_t.readAc.access *
+               ifreeL.local_result.power.readOp.dynamic +
+           ifreeL.stats_t.writeAc.access *
+               ifreeL.local_result.power.writeOp.dynamic);
     }
 
   } else {
@@ -1054,32 +1130,32 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
   if (is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
-        iFRAT->power =
-            iFRAT->power_t + (iFRAT->local_result.power) + idcl->power_t;
-        fFRAT->power =
-            fFRAT->power_t + (fFRAT->local_result.power) + fdcl->power_t;
-        ifreeL->power = ifreeL->power_t + ifreeL->local_result.power;
-        ffreeL->power = ffreeL->power_t + ffreeL->local_result.power;
+        iFRAT.power =
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+        fFRAT.power =
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+        ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
+        ffreeL.power = ffreeL.power_t + ffreeL.local_result.power;
         power = power +
-                (iFRAT->power + fFRAT->power)
-                //+ (iRRAT->power + fRRAT->power)
-                + (ifreeL->power + ffreeL->power);
+                (iFRAT.power + fFRAT.power)
+                //+ (iRRAT.power + fRRAT.power)
+                + (ifreeL.power + ffreeL.power);
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->power = iRRAT->power_t + iRRAT->local_result.power;
-          fRRAT->power = fRRAT->power_t + fRRAT->local_result.power;
-          power = power + (iRRAT->power + fRRAT->power);
+          iRRAT.power = iRRAT.power_t + iRRAT.local_result.power;
+          fRRAT.power = fRRAT.power_t + fRRAT.local_result.power;
+          power = power + (iRRAT.power + fRRAT.power);
         }
       } else if (coredynp.scheu_ty == ReservationStation) {
-        iFRAT->power =
-            iFRAT->power_t + (iFRAT->local_result.power) + idcl->power_t;
-        fFRAT->power =
-            fFRAT->power_t + (fFRAT->local_result.power) + fdcl->power_t;
-        ifreeL->power = ifreeL->power_t + ifreeL->local_result.power;
-        power = power + (iFRAT->power + fFRAT->power) + ifreeL->power;
+        iFRAT.power =
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+        fFRAT.power =
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+        ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
+        power = power + (iFRAT.power + fFRAT.power) + ifreeL.power;
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->power = iRRAT->power_t + iRRAT->local_result.power;
-          fRRAT->power = fRRAT->power_t + fRRAT->local_result.power;
-          power = power + (iRRAT->power + fRRAT->power);
+          iRRAT.power = iRRAT.power_t + iRRAT.local_result.power;
+          fRRAT.power = fRRAT.power_t + fRRAT.local_result.power;
+          power = power + (iRRAT.power + fRRAT.power);
         }
       }
     } else {
@@ -1089,36 +1165,36 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
   } else {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
-        iFRAT->rt_power =
-            iFRAT->power_t + (iFRAT->local_result.power) + idcl->power_t;
-        fFRAT->rt_power =
-            fFRAT->power_t + (fFRAT->local_result.power) + fdcl->power_t;
+        iFRAT.rt_power =
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+        fFRAT.rt_power =
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
 
-        ifreeL->rt_power = ifreeL->power_t + ifreeL->local_result.power;
-        ffreeL->rt_power = ffreeL->power_t + ffreeL->local_result.power;
+        ifreeL.rt_power = ifreeL.power_t + ifreeL.local_result.power;
+        ffreeL.rt_power = ffreeL.power_t + ffreeL.local_result.power;
         rt_power = rt_power +
-                   (iFRAT->rt_power + fFRAT->rt_power)
-                   //			                   + (iRRAT->rt_power +
-                   // fRRAT->rt_power)
-                   + (ifreeL->rt_power + ffreeL->rt_power);
+                   (iFRAT.rt_power + fFRAT.rt_power)
+                   //			                   + (iRRAT.rt_power +
+                   // fRRAT.rt_power)
+                   + (ifreeL.rt_power + ffreeL.rt_power);
 
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->rt_power = iRRAT->power_t + iRRAT->local_result.power;
-          fRRAT->rt_power = fRRAT->power_t + fRRAT->local_result.power;
-          rt_power = rt_power + (iRRAT->rt_power + fRRAT->rt_power);
+          iRRAT.rt_power = iRRAT.power_t + iRRAT.local_result.power;
+          fRRAT.rt_power = fRRAT.power_t + fRRAT.local_result.power;
+          rt_power = rt_power + (iRRAT.rt_power + fRRAT.rt_power);
         }
       } else if (coredynp.scheu_ty == ReservationStation) {
-        iFRAT->rt_power =
-            iFRAT->power_t + (iFRAT->local_result.power) + idcl->power_t;
-        fFRAT->rt_power =
-            fFRAT->power_t + (fFRAT->local_result.power) + fdcl->power_t;
-        ifreeL->rt_power = ifreeL->power_t + ifreeL->local_result.power;
+        iFRAT.rt_power =
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+        fFRAT.rt_power =
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+        ifreeL.rt_power = ifreeL.power_t + ifreeL.local_result.power;
         rt_power =
-            rt_power + (iFRAT->rt_power + fFRAT->rt_power) + ifreeL->rt_power;
+            rt_power + (iFRAT.rt_power + fFRAT.rt_power) + ifreeL.rt_power;
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
-          iRRAT->rt_power = iRRAT->power_t + iRRAT->local_result.power;
-          fRRAT->rt_power = fRRAT->power_t + fRRAT->local_result.power;
-          rt_power = rt_power + (iRRAT->rt_power + fRRAT->rt_power);
+          iRRAT.rt_power = iRRAT.power_t + iRRAT.local_result.power;
+          fRRAT.rt_power = fRRAT.power_t + fRRAT.local_result.power;
+          rt_power = rt_power + (iRRAT.rt_power + fRRAT.rt_power);
         }
       }
     } else {
@@ -1139,147 +1215,148 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       cout << indent_str << "Int Front End RAT with "
            << coredynp.globalCheckpoint << " internal checkpoints:" << endl;
-      cout << indent_str_next << "Area = " << iFRAT->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << iFRAT.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << iFRAT->power.readOp.dynamic * clockRate
+           << "Peak Dynamic = " << iFRAT.power.readOp.dynamic * clockRate
            << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? iFRAT->power.readOp.longer_channel_leakage
-                            : iFRAT->power.readOp.leakage)
+           << (long_channel ? iFRAT.power.readOp.longer_channel_leakage
+                            : iFRAT.power.readOp.leakage)
            << " W" << endl;
       if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? iFRAT->power.readOp.power_gated_with_long_channel_leakage
-                     : iFRAT->power.readOp.power_gated_leakage)
+                     ? iFRAT.power.readOp.power_gated_with_long_channel_leakage
+                     : iFRAT.power.readOp.power_gated_leakage)
              << " W" << endl;
       }
       cout << indent_str_next
-           << "Gate Leakage = " << iFRAT->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << iFRAT.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << iFRAT->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << iFRAT.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
       cout << indent_str << "FP Front End RAT with "
            << coredynp.globalCheckpoint << " internal checkpoints:" << endl;
-      cout << indent_str_next << "Area = " << fFRAT->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << fFRAT.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << fFRAT->power.readOp.dynamic * clockRate
+           << "Peak Dynamic = " << fFRAT.power.readOp.dynamic * clockRate
            << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? fFRAT->power.readOp.longer_channel_leakage
-                            : fFRAT->power.readOp.leakage)
+           << (long_channel ? fFRAT.power.readOp.longer_channel_leakage
+                            : fFRAT.power.readOp.leakage)
            << " W" << endl;
       if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? fFRAT->power.readOp.power_gated_with_long_channel_leakage
-                     : fFRAT->power.readOp.power_gated_leakage)
+                     ? fFRAT.power.readOp.power_gated_with_long_channel_leakage
+                     : fFRAT.power.readOp.power_gated_leakage)
              << " W" << endl;
       }
       cout << indent_str_next
-           << "Gate Leakage = " << fFRAT->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << fFRAT.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << fFRAT->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << fFRAT.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
       cout << indent_str << "Free List:" << endl;
-      cout << indent_str_next << "Area = " << ifreeL->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << ifreeL.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << ifreeL->power.readOp.dynamic * clockRate
+           << "Peak Dynamic = " << ifreeL.power.readOp.dynamic * clockRate
            << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? ifreeL->power.readOp.longer_channel_leakage
-                            : ifreeL->power.readOp.leakage)
+           << (long_channel ? ifreeL.power.readOp.longer_channel_leakage
+                            : ifreeL.power.readOp.leakage)
            << " W" << endl;
       if (power_gating) {
-        cout
-            << indent_str_next << "Subthreshold Leakage with power gating = "
-            << (long_channel
-                    ? ifreeL->power.readOp.power_gated_with_long_channel_leakage
-                    : ifreeL->power.readOp.power_gated_leakage)
-            << " W" << endl;
+        cout << indent_str_next << "Subthreshold Leakage with power gating = "
+             << (long_channel
+                     ? ifreeL.power.readOp.power_gated_with_long_channel_leakage
+                     : ifreeL.power.readOp.power_gated_leakage)
+             << " W" << endl;
       }
       cout << indent_str_next
-           << "Gate Leakage = " << ifreeL->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << ifreeL.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << ifreeL->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << ifreeL.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
       if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
         cout << indent_str << "Int Retire RAT: " << endl;
-        cout << indent_str_next << "Area = " << iRRAT->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << iRRAT.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << iRRAT->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << iRRAT.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? iRRAT->power.readOp.longer_channel_leakage
-                              : iRRAT->power.readOp.leakage)
+             << (long_channel ? iRRAT.power.readOp.longer_channel_leakage
+                              : iRRAT.power.readOp.leakage)
              << " W" << endl;
         if (power_gating) {
-          cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? iRRAT->power.readOp
-                                      .power_gated_with_long_channel_leakage
-                                : iRRAT->power.readOp.power_gated_leakage)
-               << " W" << endl;
+          cout
+              << indent_str_next << "Subthreshold Leakage with power gating = "
+              << (long_channel
+                      ? iRRAT.power.readOp.power_gated_with_long_channel_leakage
+                      : iRRAT.power.readOp.power_gated_leakage)
+              << " W" << endl;
         }
         cout << indent_str_next
-             << "Gate Leakage = " << iRRAT->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << iRRAT.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << iRRAT->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << iRRAT.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
         cout << indent_str << "FP Retire RAT:" << endl;
-        cout << indent_str_next << "Area = " << fRRAT->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << fRRAT.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << fRRAT->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << fRRAT.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? fRRAT->power.readOp.longer_channel_leakage
-                              : fRRAT->power.readOp.leakage)
+             << (long_channel ? fRRAT.power.readOp.longer_channel_leakage
+                              : fRRAT.power.readOp.leakage)
              << " W" << endl;
         if (power_gating) {
-          cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? fRRAT->power.readOp
-                                      .power_gated_with_long_channel_leakage
-                                : fRRAT->power.readOp.power_gated_leakage)
-               << " W" << endl;
+          cout
+              << indent_str_next << "Subthreshold Leakage with power gating = "
+              << (long_channel
+                      ? fRRAT.power.readOp.power_gated_with_long_channel_leakage
+                      : fRRAT.power.readOp.power_gated_leakage)
+              << " W" << endl;
         }
         cout << indent_str_next
-             << "Gate Leakage = " << fRRAT->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << fRRAT.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << fRRAT->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << fRRAT.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
       }
       if (coredynp.scheu_ty == PhysicalRegFile) {
         cout << indent_str << "FP Free List:" << endl;
-        cout << indent_str_next << "Area = " << ffreeL->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << ffreeL.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << ffreeL->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << ffreeL.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? ffreeL->power.readOp.longer_channel_leakage
-                              : ffreeL->power.readOp.leakage)
+             << (long_channel ? ffreeL.power.readOp.longer_channel_leakage
+                              : ffreeL.power.readOp.leakage)
              << " W" << endl;
         if (power_gating) {
           cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? ffreeL->power.readOp
+               << (long_channel ? ffreeL.power.readOp
                                       .power_gated_with_long_channel_leakage
-                                : ffreeL->power.readOp.power_gated_leakage)
+                                : ffreeL.power.readOp.power_gated_leakage)
                << " W" << endl;
         }
         cout << indent_str_next
-             << "Gate Leakage = " << ffreeL->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << ffreeL.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << ffreeL->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << ffreeL.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
       }
     } else {
@@ -1327,44 +1404,44 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
   } else {
     if (coredynp.core_ty == OOO) {
       cout << indent_str_next << "Int Front End RAT    Peak Dynamic = "
-           << iFRAT->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << iFRAT.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "Int Front End RAT    Subthreshold Leakage = "
-           << iFRAT->rt_power.readOp.leakage << " W" << endl;
+           << iFRAT.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next << "Int Front End RAT    Gate Leakage = "
-           << iFRAT->rt_power.readOp.gate_leakage << " W" << endl;
+           << iFRAT.rt_power.readOp.gate_leakage << " W" << endl;
       cout << indent_str_next << "FP Front End RAT   Peak Dynamic = "
-           << fFRAT->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << fFRAT.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "FP Front End RAT   Subthreshold Leakage = "
-           << fFRAT->rt_power.readOp.leakage << " W" << endl;
+           << fFRAT.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next << "FP Front End RAT   Gate Leakage = "
-           << fFRAT->rt_power.readOp.gate_leakage << " W" << endl;
+           << fFRAT.rt_power.readOp.gate_leakage << " W" << endl;
       cout << indent_str_next << "Free List   Peak Dynamic = "
-           << ifreeL->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << ifreeL.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "Free List   Subthreshold Leakage = "
-           << ifreeL->rt_power.readOp.leakage << " W" << endl;
+           << ifreeL.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next << "Free List   Gate Leakage = "
-           << fFRAT->rt_power.readOp.gate_leakage << " W" << endl;
+           << fFRAT.rt_power.readOp.gate_leakage << " W" << endl;
       if (coredynp.scheu_ty == PhysicalRegFile) {
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
           cout << indent_str_next << "Int Retire RAT   Peak Dynamic = "
-               << iRRAT->rt_power.readOp.dynamic * clockRate << " W" << endl;
+               << iRRAT.rt_power.readOp.dynamic * clockRate << " W" << endl;
           cout << indent_str_next << "Int Retire RAT   Subthreshold Leakage = "
-               << iRRAT->rt_power.readOp.leakage << " W" << endl;
+               << iRRAT.rt_power.readOp.leakage << " W" << endl;
           cout << indent_str_next << "Int Retire RAT   Gate Leakage = "
-               << iRRAT->rt_power.readOp.gate_leakage << " W" << endl;
+               << iRRAT.rt_power.readOp.gate_leakage << " W" << endl;
           cout << indent_str_next << "FP Retire RAT   Peak Dynamic = "
-               << fRRAT->rt_power.readOp.dynamic * clockRate << " W" << endl;
+               << fRRAT.rt_power.readOp.dynamic * clockRate << " W" << endl;
           cout << indent_str_next << "FP Retire RAT   Subthreshold Leakage = "
-               << fRRAT->rt_power.readOp.leakage << " W" << endl;
+               << fRRAT.rt_power.readOp.leakage << " W" << endl;
           cout << indent_str_next << "FP Retire RAT   Gate Leakage = "
-               << fRRAT->rt_power.readOp.gate_leakage << " W" << endl;
+               << fRRAT.rt_power.readOp.gate_leakage << " W" << endl;
         }
         cout << indent_str_next << "FP Free List   Peak Dynamic = "
-             << ffreeL->rt_power.readOp.dynamic * clockRate << " W" << endl;
+             << ffreeL.rt_power.readOp.dynamic * clockRate << " W" << endl;
         cout << indent_str_next << "FP Free List   Subthreshold Leakage = "
-             << ffreeL->rt_power.readOp.leakage << " W" << endl;
+             << ffreeL.rt_power.readOp.leakage << " W" << endl;
         cout << indent_str_next << "FP Free List   Gate Leakage = "
-             << fFRAT->rt_power.readOp.gate_leakage << " W" << endl;
+             << fFRAT.rt_power.readOp.gate_leakage << " W" << endl;
       }
     } else {
       cout << indent_str_next << "Int DCL   Peak Dynamic = "
@@ -1386,47 +1463,15 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
 }
 
 RENAMINGU ::~RENAMINGU() {
-
-  if (!exist)
+  if (!exist) {
     return;
-  if (iFRAT) {
-    delete iFRAT;
-    iFRAT = 0;
-  }
-  if (iRRAT) {
-    delete iRRAT;
-    iRRAT = 0;
-  }
-  if (iFRAT) {
-    delete iFRAT;
-    iFRAT = 0;
-  }
-  if (ifreeL) {
-    delete ifreeL;
-    ifreeL = 0;
   }
   if (idcl) {
     delete idcl;
     idcl = 0;
   }
-  if (fFRAT) {
-    delete fFRAT;
-    fFRAT = 0;
-  }
-  if (fRRAT) {
-    delete fRRAT;
-    fRRAT = 0;
-  }
   if (fdcl) {
     delete fdcl;
     fdcl = 0;
-  }
-  if (ffreeL) {
-    delete ffreeL;
-    ffreeL = 0;
-  }
-  if (RAHT) {
-    delete RAHT;
-    RAHT = 0;
   }
 }

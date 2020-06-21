@@ -35,8 +35,8 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "interconnect.h"
 #include "dep_resource_conflict_check.h"
+#include "interconnect.h"
 #include "parameter.h"
 
 class RENAMINGU : public Component {
@@ -46,15 +46,14 @@ public:
   double clockRate;
   double executionTime;
   CoreDynParam coredynp;
-  ArrayST *iFRAT;
-  ArrayST *fFRAT;
-  ArrayST *iRRAT;
-  ArrayST *fRRAT;
-  ArrayST *ifreeL;
-  ArrayST *ffreeL;
+  ArrayST iFRAT;
+  ArrayST fFRAT;
+  ArrayST iRRAT;
+  ArrayST fRRAT;
+  ArrayST ifreeL;
+  ArrayST ffreeL;
   dep_resource_conflict_check *idcl;
   dep_resource_conflict_check *fdcl;
-  ArrayST *RAHT; // register alias history table Used to store GC
   bool exist;
 
   RENAMINGU();
@@ -69,6 +68,7 @@ public:
   void computeDynamicPower(); // TODO; add this
   void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~RENAMINGU();
+
 private:
   bool init_stats;
   bool init_params;
