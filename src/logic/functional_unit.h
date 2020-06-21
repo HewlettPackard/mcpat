@@ -53,7 +53,8 @@ public:
   InputParameter interface_ip;
   CoreDynParam coredynp;
   double FU_height;
-  double clockRate, executionTime;
+  double clockRate;
+  double executionTime;
   double num_fu;
   double energy;
   double base_energy;
@@ -88,10 +89,16 @@ private:
   bool power_gating;
   bool embedded;
 
+  // Power:
+  double area_t;
+
   // Stats:
   unsigned int mul_accesses;
   unsigned int ialu_accesses;
   unsigned int fpu_accesses;
+
+  // Private Methods:
+  void computeLeakage();
 };
 
 #endif // __FUNCTIONAL_UNIT_H__
