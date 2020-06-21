@@ -28,65 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
+#ifndef __SELECTION_LOGIC_H__
+#define __SELECTION_LOGIC_H__
 
-#ifndef SHAREDCACHE_H_
-#define SHAREDCACHE_H_
 #include "XML_Parse.h"
-#include "area.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "logic.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
+#include "xmlParser.h"
 
-#include <vector>
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
 
-class SharedCache : public Component {
+class selection_logic : public Component {
 public:
-  ParseXML *XML;
-  int ithCache;
-  InputParameter interface_ip;
-  enum cache_level cacheL;
-  DataCache unicache; // Shared cache
-  CacheDynParam cachep;
-  statsDef homenode_tdp_stats;
-  statsDef homenode_rtp_stats;
-  statsDef homenode_stats_t;
-  double dir_overhead;
-  //	cache_processor llCache,directory, directory1, inv_dir;
+  selection_logic(
+      bool _is_default,
+      int win_entries_,
+      int issue_width_,
+      const InputParameter *configure_interface,
+      enum Device_ty device_ty_ = Core_device,
+      enum Core_type core_ty_ = Inorder); //, const ParseXML *_XML_interface);
+  bool is_default;
+  InputParameter l_ip;
+  uca_org_t local_result;
+  const ParseXML *XML_interface;
+  int win_entries;
+  int issue_width;
+  int num_threads;
+  enum Device_ty device_ty;
+  enum Core_type core_ty;
 
-  // pipeline pipeLogicCache, pipeLogicDirectory;
-  // clock_network				clockNetwork;
-  double scktRatio, executionTime;
-  //   Component L2Tot, cc, cc1, ccTot;
-
-  SharedCache(ParseXML *XML_interface,
-              int ithCache_,
-              InputParameter *interface_ip_,
-              enum cache_level cacheL_ = L2);
-  void set_cache_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
-  ~SharedCache(){};
+  void selection_power();
+  void leakage_feedback(double temperature); // TODO
 };
 
-class CCdir : public Component {
-public:
-  ParseXML *XML;
-  int ithCache;
-  InputParameter interface_ip;
-  DataCache dc; // Shared cache
-  ArrayST *shadow_dir;
-  //	cache_processor llCache,directory, directory1, inv_dir;
-
-  // pipeline pipeLogicCache, pipeLogicDirectory;
-  // clock_network				clockNetwork;
-  double scktRatio, clockRate, executionTime;
-  Component L2Tot, cc, cc1, ccTot;
-
-  CCdir(ParseXML *XML_interface, int ithCache_, InputParameter *interface_ip_);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, bool is_tdp = true);
-  ~CCdir();
-};
-
-#endif /* SHAREDCACHE_H_ */
+#endif //__SELECTION_LOGIC_H__

@@ -29,52 +29,28 @@
  *
  ***************************************************************************/
 
-#ifndef NOC_H_
-#define NOC_H_
+#ifndef __INSTCACHE_H__
+#define __INSTCACHE_H__
 
-#include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "interconnect.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
 #include "parameter.h"
-#include "router.h"
 
-class NoC : public Component {
+#include <iostream>
+#include <string>
+
+class InstCache : public Component {
 public:
-  const ParseXML *XML;
-  int ithNoC;
-  InputParameter interface_ip;
-  double link_len;
-  double executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  Router *router;
-  interconnect *link_bus;
-  NoCParam nocdynp;
-  uca_org_t local_result;
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-  Component link_bus_tot_per_Router;
-  bool link_bus_exist;
-  bool router_exist;
-  string name, link_name;
-  double M_traffic_pattern;
-  NoC(const ParseXML *XML_interface,
-      int ithNoC_,
-      InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6,
-      double link_len_ = 0);
-  void set_noc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  void init_link_bus(double link_len_);
-  void init_router();
-  void computeEnergy_link_bus(bool is_tdp = true);
-  void displayEnergy_link_bus(uint32_t indent = 0,
-                              int plevel = 100,
-                              bool is_tdp = true);
-  ~NoC();
+  ArrayST *caches;
+  ArrayST *missb;
+  ArrayST *ifb;
+  ArrayST *prefetchb;
+  powerDef power_t; // temp value holder for both (max) power and runtime power
+  InstCache();
+  ~InstCache();
 };
 
-#endif /* NOC_H_ */
+#endif // __INSTCACHE_H__

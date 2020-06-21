@@ -45,8 +45,6 @@ enum Renaming_type { RAMbased, CAMbased };
 
 enum Scheduler_type { PhysicalRegFile, ReservationStation };
 
-enum cache_level { L2, L3, L1Directory, L2Directory };
-
 enum MemoryCtrl_type {
   MC,    // memory controller
   FLASHC // flash controller
@@ -161,23 +159,6 @@ public:
   double vdd;
   double power_gating_vcc;
   ~CoreDynParam(){};
-};
-
-class CacheDynParam {
-public:
-  CacheDynParam(){};
-  CacheDynParam(ParseXML *XML_interface, int ithCache_);
-  string name;
-  enum Dir_type dir_ty;
-  double clockRate, executionTime;
-  double capacity, blockW, assoc, nbanks;
-  double throughput, latency;
-  double duty_cycle, dir_duty_cycle;
-  // double duty_cycle;
-  int missb_size, fu_size, prefetchb_size, wbb_size;
-  double vdd;
-  double power_gating_vcc;
-  ~CacheDynParam(){};
 };
 
 class MCParam {

@@ -29,52 +29,63 @@
  *
  ***************************************************************************/
 
-#ifndef NOC_H_
-#define NOC_H_
+#ifndef __SHAREDCACHE_H__
+#define __SHAREDCACHE_H__
 
 #include "XML_Parse.h"
+#include "area.h"
 #include "array.h"
 #include "basic_components.h"
-#include "interconnect.h"
+#include "cache_param.h"
+#include "datacache.h"
 #include "parameter.h"
-#include "router.h"
 
-class NoC : public Component {
+#include <vector>
+
+class SharedCache : public Component {
 public:
-  const ParseXML *XML;
-  int ithNoC;
   InputParameter interface_ip;
-  double link_len;
+  DataCache unicache; // Shared cache
+  CacheDynParam cachep;
+  statsDef homenode_tdp_stats;
+  statsDef homenode_rtp_stats;
+  statsDef homenode_stats_t;
+
+  SharedCache();
+  void set_params(const ParseXML *XML,
+                  const int ithCache_,
+                  InputParameter *interface_ip_,
+                  const enum cache_level cacheL_ = L2);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower(bool is_tdp = false);
+  void computeDynamicPower();
+  void display(uint32_t indent = 0, bool enable = true);
+  ~SharedCache(){};
+
+private:
+  const ParseXML *XML;
+  int ithCache;
+  enum cache_level cacheL;
+  double dir_overhead;
+  double scktRatio;
   double executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  Router *router;
-  interconnect *link_bus;
-  NoCParam nocdynp;
-  uca_org_t local_result;
-  statsDef tdp_stats;
-  statsDef rtp_stats;
-  statsDef stats_t;
-  powerDef power_t;
-  Component link_bus_tot_per_Router;
-  bool link_bus_exist;
-  bool router_exist;
-  string name, link_name;
-  double M_traffic_pattern;
-  NoC(const ParseXML *XML_interface,
-      int ithNoC_,
-      InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6,
-      double link_len_ = 0);
-  void set_noc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  void init_link_bus(double link_len_);
-  void init_router();
-  void computeEnergy_link_bus(bool is_tdp = true);
-  void displayEnergy_link_bus(uint32_t indent = 0,
-                              int plevel = 100,
-                              bool is_tdp = true);
-  ~NoC();
+
+  bool long_channel;
+  bool power_gating;
+  bool init_params;
+  bool init_stats;
+  bool set_area;
+  bool debug;
+  bool is_default;
+
+  double size;
+  double line;
+  double assoc;
+  double banks;
+
+  enum Device_ty device_t;
+  enum Core_type core_t;
 };
 
-#endif /* NOC_H_ */
+#endif /* SHAREDCACHE_H_ */

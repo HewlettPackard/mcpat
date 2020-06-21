@@ -81,49 +81,4 @@ protected:
   void leakage_feedback(double temperature);
 };
 
-class InstCache : public Component {
-public:
-  ArrayST *caches;
-  ArrayST *missb;
-  ArrayST *ifb;
-  ArrayST *prefetchb;
-  powerDef power_t; // temp value holder for both (max) power and runtime power
-  InstCache() {
-    caches = 0;
-    missb = 0;
-    ifb = 0;
-    prefetchb = 0;
-  };
-  ~InstCache() {
-    if (caches) { // caches->local_result.cleanup();
-      delete caches;
-      caches = 0;
-    }
-    if (missb) { // missb->local_result.cleanup();
-      delete missb;
-      missb = 0;
-    }
-    if (ifb) { // ifb->local_result.cleanup();
-      delete ifb;
-      ifb = 0;
-    }
-    if (prefetchb) { // prefetchb->local_result.cleanup();
-      delete prefetchb;
-      prefetchb = 0;
-    }
-  };
-};
-
-class DataCache : public InstCache {
-public:
-  ArrayST *wbb;
-  DataCache() { wbb = 0; };
-  ~DataCache() {
-    if (wbb) { // wbb->local_result.cleanup();
-      delete wbb;
-      wbb = 0;
-    }
-  };
-};
-
 #endif /* __ARRAY_H__ */

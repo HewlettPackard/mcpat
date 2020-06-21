@@ -28,53 +28,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-
-#ifndef NOC_H_
-#define NOC_H_
+#ifndef __FUNCTIONAL_UNIT_H__
+#define __FUNCTIONAL_UNIT_H__
 
 #include "XML_Parse.h"
-#include "array.h"
+#include "arch_const.h"
+#include "basic_circuit.h"
 #include "basic_components.h"
-#include "interconnect.h"
+#include "cacti_interface.h"
+#include "component.h"
+#include "const.h"
+#include "decoder.h"
 #include "parameter.h"
-#include "router.h"
+#include "xmlParser.h"
 
-class NoC : public Component {
+#include <cassert>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+
+class FunctionalUnit : public Component {
 public:
-  const ParseXML *XML;
-  int ithNoC;
+  int ithCore;
   InputParameter interface_ip;
-  double link_len;
-  double executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  Router *router;
-  interconnect *link_bus;
-  NoCParam nocdynp;
-  uca_org_t local_result;
+  CoreDynParam coredynp;
+  double FU_height;
+  double clockRate, executionTime;
+  double num_fu;
+  double energy, base_energy, per_access_energy, leakage, gate_leakage;
+  bool is_default;
+  enum FU_type fu_type;
   statsDef tdp_stats;
   statsDef rtp_stats;
   statsDef stats_t;
   powerDef power_t;
-  Component link_bus_tot_per_Router;
-  bool link_bus_exist;
-  bool router_exist;
-  string name, link_name;
-  double M_traffic_pattern;
-  NoC(const ParseXML *XML_interface,
-      int ithNoC_,
-      InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6,
-      double link_len_ = 0);
-  void set_noc_param();
+
+  FunctionalUnit(const ParseXML *XML_interface,
+                 int ithCore_,
+                 InputParameter *interface_ip_,
+                 const CoreDynParam &dyn_p_,
+                 enum FU_type fu_type);
+  void set_stats(const ParseXML *XML);
   void computeEnergy(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  void init_link_bus(double link_len_);
-  void init_router();
-  void computeEnergy_link_bus(bool is_tdp = true);
-  void displayEnergy_link_bus(uint32_t indent = 0,
-                              int plevel = 100,
-                              bool is_tdp = true);
-  ~NoC();
+  void leakage_feedback(double temperature);
+
+private:
+  bool long_channel;
+  bool power_gating;
+  bool embedded;
+
+  // Stats:
+  unsigned int mul_accesses;
+  unsigned int ialu_accesses;
+  unsigned int fpu_accesses;
 };
 
-#endif /* NOC_H_ */
+#endif // __FUNCTIONAL_UNIT_H__
