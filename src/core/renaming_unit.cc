@@ -704,7 +704,7 @@ void RENAMINGU::computeArea(){
         iRRAT.area.set_area(iRRAT.area.get_area() + iRRAT.local_result.area);
         area.set_area(area.get_area() + iRRAT.area.get_area());
 
-        fFRAT.computeArea();
+        fRRAT.computeArea();
         fRRAT.area.set_area(fRRAT.area.get_area() + fRRAT.local_result.area);
         area.set_area(area.get_area() + fRRAT.area.get_area());
       }
