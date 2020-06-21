@@ -52,21 +52,18 @@
 class Processor : public Component {
 public:
   Processor();
-  void init(const ParseXML* XML);
-  void computeArea();
-  void computePower();
-  void computeRuntimeDynamicPower();
+  void init(const ParseXML *XML, bool cp = false);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~Processor();
 
 private:
   const ParseXML *XML;
   vector<Core *> cores;
-  vector<SharedCache *> l2array;
-  vector<SharedCache *> l3array;
-  vector<SharedCache *> l1dirarray;
-  vector<SharedCache *> l2dirarray;
-  vector<NoC *> nocs;
+  vector<SharedCache> l2array;
+  vector<SharedCache> l3array;
+  vector<SharedCache> l1dirarray;
+  vector<SharedCache> l2dirarray;
+  vector<NoC> nocs;
   MemoryController mc;
   NIUController niu;
   PCIeController pcie;

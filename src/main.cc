@@ -54,11 +54,16 @@ int main(int argc, char *argv[]) {
   // parse XML-based interface
   ParseXML *p1 = new ParseXML();
   p1->parse(opt.input_xml);
+  // if(!opt.serialization_restore) {
   Processor proc;
   proc.init(p1);
-  proc.computeArea();
-  proc.computePower();
-  proc.computeRuntimeDynamicPower();
+  //  save(proc, opt.serialization_path+"mp_checkpoint.txt");
+  //}
+  // else {
+  //  Processor proc;
+  //  restore(proc, opt.serialization_path+"mp_checkpoint.txt");
+  //  proc.init(p1, true);
+  //}
   proc.displayEnergy(2, opt.print_level);
   delete p1;
   return 0;
