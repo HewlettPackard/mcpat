@@ -428,7 +428,10 @@ Processor::Processor(ParseXML *XML_interface)
   if (numNOC > 0) {
     for (i = 0; i < numNOC; i++) {
       if (XML->sys.NoC[i].type) { // First add up area of routers if NoC is used
-        nocs.push_back(new NoC(XML, i, &interface_ip, 1));
+        nocs.push_back(new NoC());
+        nocs[i]->set_params(XML, i, &interface_ip, 1);
+        nocs[i]->set_stats(XML);
+        nocs[i]->computeArea();
         if (procdynp.homoNOC) {
           noc.area.set_area(noc.area.get_area() +
                             nocs[i]->area.get_area() * procdynp.numNOC);
@@ -438,12 +441,11 @@ Processor::Processor(ParseXML *XML_interface)
           area.set_area(area.get_area() + nocs[i]->area.get_area());
         }
       } else { // Bus based interconnect
-        nocs.push_back(
-            new NoC(XML,
-                    i,
-                    &interface_ip,
-                    1,
-                    sqrt(area.get_area() * XML->sys.NoC[i].chip_coverage)));
+        nocs.push_back(new NoC());
+        nocs[i]->set_params(XML, i, &interface_ip, 1,
+                    sqrt(area.get_area() * XML->sys.NoC[i].chip_coverage));
+        nocs[i]->set_stats(XML);
+        nocs[i]->computeArea();
         if (procdynp.homoNOC) {
           noc.area.set_area(noc.area.get_area() +
                             nocs[i]->area.get_area() * procdynp.numNOC);
@@ -484,8 +486,8 @@ Processor::Processor(ParseXML *XML_interface)
     }
     // Compute energy of NoC (w or w/o links) or buses
     for (i = 0; i < numNOC; i++) {
-      nocs[i]->computeEnergy();
-      nocs[i]->computeEnergy(false);
+      nocs[i]->computePower();
+      nocs[i]->computeRuntimeDynamicPower();
       if (procdynp.homoNOC) {
         set_pppm(pppm_t,
                  procdynp.numNOC * nocs[i]->nocdynp.clockRate,
