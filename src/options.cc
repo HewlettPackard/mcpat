@@ -53,8 +53,9 @@ bool mcpat::Options::parse(int argc, char **argv) {
   po::options_description serialization("Serialization Options");
   serialization.add_options()
     ("serial_path", po::value<std::string>(&serialization_path), "Path/to/serialization")
-    ("serial_create", po::value<bool>(&serialization_create)->default_value(true), "Create A Serialization Checkpoint") 
-    ("serial_restore", po::value<bool>(&serialization_restore)->default_value(true), "Restore from a Serialization Checkpoint")
+    ("serial_name", po::value<std::string>(&serialization_name)->default_value("mcpat_cp.txt"), "file name to serialize to")
+    ("serial_create", po::value<bool>(&serialization_create)->default_value(false), "Create A Serialization Checkpoint") 
+    ("serial_restore", po::value<bool>(&serialization_restore)->default_value(false), "Restore from a Serialization Checkpoint")
   ;
 
   po::options_description optimization("Optimization Options");

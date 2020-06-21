@@ -153,12 +153,12 @@ void Processor::init(const ParseXML *XML, bool cp) {
   if (!XML->sys.Private_L2) {
     if (numL2 > 0) {
       for (i = 0; i < numL2; i++) {
-        for (!cp) {
+        if (!cp) {
           l2array.push_back(SharedCache());
         }
         l2array[i].set_params(XML, i, &interface_ip);
         l2array[i].set_stats(XML);
-        for (!cp) {
+        if (!cp) {
           l2array[i].computeArea();
         }
         l2array[i].computeStaticPower(true);
@@ -207,12 +207,12 @@ void Processor::init(const ParseXML *XML, bool cp) {
 
   if (numL3 > 0) {
     for (i = 0; i < numL3; i++) {
-      for (!cp) {
+      if (!cp) {
         l3array.push_back(SharedCache());
       }
       l3array[i].set_params(XML, i, &interface_ip, L3);
       l3array[i].set_stats(XML);
-      for (!cp) {
+      if (!cp) {
         l3array[i].computeArea();
       }
       l3array[i].computeStaticPower(true);
@@ -257,12 +257,12 @@ void Processor::init(const ParseXML *XML, bool cp) {
   }
   if (numL1Dir > 0) {
     for (i = 0; i < numL1Dir; i++) {
-      for (!cp) {
+      if (!cp) {
         l1dirarray.push_back(SharedCache());
       }
       l1dirarray[i].set_params(XML, i, &interface_ip, L1Directory);
       l1dirarray[i].set_stats(XML);
-      for (!cp) {
+      if (!cp) {
         l1dirarray[i].computeArea();
       }
       l1dirarray[i].computeStaticPower(true);
@@ -305,12 +305,12 @@ void Processor::init(const ParseXML *XML, bool cp) {
   }
   if (numL2Dir > 0) {
     for (i = 0; i < numL2Dir; i++) {
-      for (!cp) {
+      if (!cp) {
         l2dirarray.push_back(SharedCache());
       }
       l2dirarray[i].set_params(XML, i, &interface_ip, L2Directory);
       l2dirarray[i].set_stats(XML);
-      for (!cp) {
+      if (!cp) {
         l2dirarray[i].computeArea();
       }
       l2dirarray[i].computeStaticPower(true);

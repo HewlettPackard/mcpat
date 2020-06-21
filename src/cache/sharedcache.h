@@ -40,6 +40,10 @@
 #include "datacache.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 class SharedCache : public Component {
@@ -86,6 +90,19 @@ private:
 
   enum Device_ty device_t;
   enum Core_type core_t;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &unicache;
+    ar &homenode_tdp_stats;
+    ar &homenode_rtp_stats;
+    ar &homenode_stats_t;
+    ar &set_area;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif /* SHAREDCACHE_H_ */

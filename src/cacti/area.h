@@ -35,6 +35,11 @@
 #include "basic_circuit.h"
 #include "cacti_interface.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 using namespace std;
 
 class Area {
@@ -58,6 +63,16 @@ public:
 
 private:
   double area;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &w;
+    ar &h;
+    ar &area;
+  }
 };
 
 #endif

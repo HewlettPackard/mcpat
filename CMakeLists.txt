@@ -8,7 +8,8 @@ project(mcpat DESCRIPTION "Power Timing Area Calculator"
               LANGUAGES CXX)
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
-             program_options)
+             program_options
+             serialization)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 

@@ -39,6 +39,11 @@
 #include "parameter.h"
 #include "router.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class NoC : public Component {
 public:
   int ithNoC;
@@ -92,6 +97,18 @@ private:
 
   void set_noc_param(const ParseXML *XML);
   void init_router();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &name;
+    ar &link_name;
+    ar &router;
+    ar &link_bus;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif /* NOC_H_ */

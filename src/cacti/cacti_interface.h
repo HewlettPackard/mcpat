@@ -34,6 +34,10 @@
 
 #include "const.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <iostream>
 #include <list>
 #include <map>
@@ -86,6 +90,19 @@ public:
                                    const powerComponents &y);
   friend powerComponents operator*(const powerComponents &x,
                                    double const *const y);
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &dynamic;
+    ar &leakage;
+    ar &gate_leakage;
+    ar &short_circuit;
+    ar &longer_channel_leakage;
+    ar &power_gated_leakage;
+    ar &power_gated_with_long_channel_leakage;
+  }
 };
 
 class powerDef {
@@ -103,6 +120,16 @@ public:
 
   friend powerDef operator+(const powerDef &x, const powerDef &y);
   friend powerDef operator*(const powerDef &x, double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &readOp;
+    ar &writeOp;
+    ar &searchOp;
+  }
 };
 
 enum Wire_type {

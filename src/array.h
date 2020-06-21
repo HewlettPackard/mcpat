@@ -38,6 +38,10 @@
 #include "const.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <iostream>
 #include <string>
 
@@ -79,6 +83,23 @@ protected:
   virtual void optimize_array();
   virtual void compute_base_power();
   void leakage_feedback(double temperature);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &name;
+    ar &device_ty;
+    ar &opt_local;
+    ar &core_ty;
+    ar &is_default;
+    ar &tdp_stats;
+    ar &rtp_stats;
+    ar &stats_t;
+    ar &power_t;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif /* __ARRAY_H__ */

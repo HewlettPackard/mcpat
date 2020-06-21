@@ -54,6 +54,7 @@ public:
 
   // Serialization Options
   std::string serialization_path = "";
+  std::string serialization_name = "";
   bool serialization_create = false;
   bool serialization_restore = false;
 

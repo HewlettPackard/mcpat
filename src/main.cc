@@ -36,7 +36,24 @@
 #include "version.h"
 #include "xmlParser.h"
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <fstream>
 #include <iostream>
+
+void save(const Processor &s, std::string name) {
+  // Make an archive
+  std::ofstream ofs(name.c_str());
+  boost::archive::text_oarchive oa(ofs);
+  oa << s;
+}
+
+void restore(Processor &s, std::string name) {
+  // Restore from the Archive
+  std::ifstream ifs(name.c_str());
+  boost::archive::text_iarchive ia(ifs);
+  ia >> s;
+}
 
 using namespace std;
 
@@ -53,17 +70,14 @@ int main(int argc, char *argv[]) {
 
   // parse XML-based interface
   ParseXML *p1 = new ParseXML();
-  p1->parse(opt.input_xml);
-  // if(!opt.serialization_restore) {
   Processor proc;
+  Processor proc2;
+  p1->parse(opt.input_xml);
   proc.init(p1);
-  //  save(proc, opt.serialization_path+"mp_checkpoint.txt");
-  //}
-  // else {
-  //  Processor proc;
-  //  restore(proc, opt.serialization_path+"mp_checkpoint.txt");
-  //  proc.init(p1, true);
-  //}
+  // save(proc, opt.serialization_name);
+  // restore(proc2, opt.serialization_name);
+  // proc2.init(p1, true);
+  // proc2.displayEnergy(2, opt.print_level);
   proc.displayEnergy(2, opt.print_level);
   delete p1;
   return 0;

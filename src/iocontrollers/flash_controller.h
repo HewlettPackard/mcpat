@@ -38,6 +38,10 @@
 #include "basic_components.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 class FlashController : public Component {
@@ -66,6 +70,15 @@ private:
   double SerDer_gates;
   double NMOS_sizing;
   double PMOS_sizing;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power_t;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __FLASHCONTROLLER_H__

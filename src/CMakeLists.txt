@@ -42,7 +42,8 @@ target_link_libraries(mcpat
                       LINK_PUBLIC
                       top
                       Threads::Threads
-                      Boost::program_options)
+                      Boost::program_options
+                      Boost::serialization)
 
 add_custom_command(TARGET mcpat POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mcpat> ${PROJECT_BINARY_DIR}/mcpat

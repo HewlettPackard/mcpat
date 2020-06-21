@@ -47,6 +47,11 @@
 #include "router.h"
 #include "sharedcache.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 #include <vector>
 
 class Processor : public Component {
@@ -92,6 +97,23 @@ private:
   void set_proc_param();
   void displayDeviceType(int device_type_, uint32_t indent = 0);
   void displayInterconnectType(int interconnect_type_, uint32_t indent = 0);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &l2array;
+    ar &l3array;
+    ar &l1dirarray;
+    ar &l2dirarray;
+    ar &nocs;
+    ar &mc;
+    ar &niu;
+    ar &pcie;
+    ar &flashcontroller;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif /* PROCESSOR_H_ */
