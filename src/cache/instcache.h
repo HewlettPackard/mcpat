@@ -39,18 +39,36 @@
 #include "const.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 
 class InstCache : public Component {
 public:
-  ArrayST *caches;
-  ArrayST *missb;
-  ArrayST *ifb;
-  ArrayST *prefetchb;
+  ArrayST caches;
+  ArrayST missb;
+  ArrayST ifb;
+  ArrayST prefetchb;
   powerDef power_t; // temp value holder for both (max) power and runtime power
   InstCache();
   ~InstCache();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &caches;
+    ar &missb;
+    ar &ifb;
+    ar &prefetchb;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __INSTCACHE_H__

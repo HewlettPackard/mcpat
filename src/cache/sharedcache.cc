@@ -278,18 +278,14 @@ void SharedCache::set_params(const ParseXML *XML,
   //  interface_ip.ndcm =1 ;
   //  interface_ip.ndsam1 =1;
   //  interface_ip.ndsam2 =1;
-  unicache.caches =
-      new ArrayST(&interface_ip, cachep.name + "cache", device_t, true, core_t);
-  unicache.area.set_area(unicache.area.get_area() +
-                         unicache.caches->local_result.area);
-  area.set_area(area.get_area() + unicache.caches->local_result.area);
-  interface_ip.force_cache_config = false;
+  unicache.caches.set_params(
+      &interface_ip, cachep.name + "cache", device_t, true, core_t);
 
   if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
         (cachep.dir_ty == ST && cacheL == L2Directory))) {
     tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
     data = (XML->sys.physical_address_width) + int(ceil(log2(size / line))) +
-           unicache.caches->l_ip.line_sz;
+           unicache.caches.l_ip.line_sz;
     interface_ip.specific_tag = 1;
     interface_ip.tag_w = tag;
     interface_ip.line_sz =
@@ -313,14 +309,12 @@ void SharedCache::set_params(const ParseXML *XML,
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = 1;
-    unicache.missb = new ArrayST(
+    unicache.missb.set_params(
         &interface_ip, cachep.name + "MissB", device_t, true, core_t);
-    unicache.area.set_area(unicache.area.get_area() +
-                           unicache.missb->local_result.area);
-    area.set_area(area.get_area() + unicache.missb->local_result.area);
+
     // fill buffer
     tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-    data = unicache.caches->l_ip.line_sz;
+    data = unicache.caches.l_ip.line_sz;
     interface_ip.specific_tag = 1;
     interface_ip.tag_w = tag;
     interface_ip.line_sz = data; // int(pow(2.0,ceil(log2(data))));
@@ -339,16 +333,14 @@ void SharedCache::set_params(const ParseXML *XML,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    unicache.ifb = new ArrayST(
+    unicache.ifb.set_params(
         &interface_ip, cachep.name + "FillB", device_t, true, core_t);
-    unicache.area.set_area(unicache.area.get_area() +
-                           unicache.ifb->local_result.area);
-    area.set_area(area.get_area() + unicache.ifb->local_result.area);
+
     // prefetch buffer
     tag = XML->sys.physical_address_width +
           EXTRA_TAG_BITS; // check with previous entries to decide wthether to
                           // merge.
-    data = unicache.caches->l_ip
+    data = unicache.caches.l_ip
                .line_sz; // separate queue to prevent from cache polution.
     interface_ip.specific_tag = 1;
     interface_ip.tag_w = tag;
@@ -368,14 +360,12 @@ void SharedCache::set_params(const ParseXML *XML,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    unicache.prefetchb = new ArrayST(
+    unicache.prefetchb.set_params(
         &interface_ip, cachep.name + "PrefetchB", device_t, true, core_t);
-    unicache.area.set_area(unicache.area.get_area() +
-                           unicache.prefetchb->local_result.area);
-    area.set_area(area.get_area() + unicache.prefetchb->local_result.area);
+
     // WBB
     tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-    data = unicache.caches->l_ip.line_sz;
+    data = unicache.caches.l_ip.line_sz;
     interface_ip.specific_tag = 1;
     interface_ip.tag_w = tag;
     interface_ip.line_sz = data;
@@ -394,11 +384,8 @@ void SharedCache::set_params(const ParseXML *XML,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    unicache.wbb =
-        new ArrayST(&interface_ip, cachep.name + "WBB", device_t, true, core_t);
-    unicache.area.set_area(unicache.area.get_area() +
-                           unicache.wbb->local_result.area);
-    area.set_area(area.get_area() + unicache.wbb->local_result.area);
+    unicache.wbb.set_params(
+        &interface_ip, cachep.name + "WBB", device_t, true, core_t);
   }
   init_params = true;
 }
@@ -413,6 +400,38 @@ void SharedCache::computeArea() {
     std::cerr << "[ SharedCache ] Error: must set params before calling "
                  "computeArea()\n";
     exit(1);
+  }
+
+  unicache.caches.computeArea();
+  unicache.area.set_area(unicache.area.get_area() +
+                         unicache.caches.local_result.area);
+  area.set_area(area.get_area() + unicache.caches.local_result.area);
+  interface_ip.force_cache_config = false;
+
+  if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
+        (cachep.dir_ty == ST && cacheL == L2Directory))) {
+    unicache.missb.computeArea();
+    unicache.area.set_area(unicache.area.get_area() +
+                           unicache.missb.local_result.area);
+    area.set_area(area.get_area() + unicache.missb.local_result.area);
+
+    // Fill Buffer:
+    unicache.ifb.computeArea();
+    unicache.area.set_area(unicache.area.get_area() +
+                           unicache.ifb.local_result.area);
+    area.set_area(area.get_area() + unicache.ifb.local_result.area);
+
+    // Prefetch Buffer:
+    unicache.prefetchb.computeArea();
+    unicache.area.set_area(unicache.area.get_area() +
+                           unicache.prefetchb.local_result.area);
+    area.set_area(area.get_area() + unicache.prefetchb.local_result.area);
+
+    // WBB:
+    unicache.wbb.computeArea();
+    unicache.area.set_area(unicache.area.get_area() +
+                           unicache.wbb.local_result.area);
+    area.set_area(area.get_area() + unicache.wbb.local_result.area);
   }
   set_area = true;
 }
@@ -433,31 +452,31 @@ void SharedCache::computeStaticPower(bool is_tdp) {
     if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
           (cachep.dir_ty == ST && cacheL == L2Directory))) {
       // init stats for Peak
-      unicache.caches->stats_t.readAc.access =
-          .67 * unicache.caches->l_ip.num_rw_ports * cachep.duty_cycle *
+      unicache.caches.stats_t.readAc.access =
+          .67 * unicache.caches.l_ip.num_rw_ports * cachep.duty_cycle *
           homenode_data_access;
-      unicache.caches->stats_t.readAc.miss = 0;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access =
-          .33 * unicache.caches->l_ip.num_rw_ports * cachep.duty_cycle *
+      unicache.caches.stats_t.readAc.miss = 0;
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access =
+          .33 * unicache.caches.l_ip.num_rw_ports * cachep.duty_cycle *
           homenode_data_access;
-      unicache.caches->stats_t.writeAc.miss = 0;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->tdp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.writeAc.miss = 0;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.tdp_stats = unicache.caches.stats_t;
 
       if (cachep.dir_ty == SBT) {
         homenode_stats_t.readAc.access =
-            .67 * unicache.caches->l_ip.num_rw_ports * cachep.dir_duty_cycle *
+            .67 * unicache.caches.l_ip.num_rw_ports * cachep.dir_duty_cycle *
             (1 - homenode_data_access);
         homenode_stats_t.readAc.miss = 0;
         homenode_stats_t.readAc.hit =
             homenode_stats_t.readAc.access - homenode_stats_t.readAc.miss;
         homenode_stats_t.writeAc.access =
-            .67 * unicache.caches->l_ip.num_rw_ports * cachep.dir_duty_cycle *
+            .67 * unicache.caches.l_ip.num_rw_ports * cachep.dir_duty_cycle *
             (1 - homenode_data_access);
         homenode_stats_t.writeAc.miss = 0;
         homenode_stats_t.writeAc.hit =
@@ -465,61 +484,60 @@ void SharedCache::computeStaticPower(bool is_tdp) {
         homenode_tdp_stats = homenode_stats_t;
       }
 
-      unicache.missb->stats_t.readAc.access =
-          unicache.missb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.missb->stats_t.writeAc.access =
-          unicache.missb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.missb->tdp_stats = unicache.missb->stats_t;
+      unicache.missb.stats_t.readAc.access =
+          unicache.missb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.missb.stats_t.writeAc.access =
+          unicache.missb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.missb.tdp_stats = unicache.missb.stats_t;
 
-      unicache.ifb->stats_t.readAc.access =
-          unicache.ifb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.ifb->stats_t.writeAc.access =
-          unicache.ifb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.ifb->tdp_stats = unicache.ifb->stats_t;
+      unicache.ifb.stats_t.readAc.access =
+          unicache.ifb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.ifb.stats_t.writeAc.access =
+          unicache.ifb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.ifb.tdp_stats = unicache.ifb.stats_t;
 
-      unicache.prefetchb->stats_t.readAc.access =
-          unicache.prefetchb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.prefetchb->stats_t.writeAc.access =
-          unicache.ifb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.prefetchb->tdp_stats = unicache.prefetchb->stats_t;
+      unicache.prefetchb.stats_t.readAc.access =
+          unicache.prefetchb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.prefetchb.stats_t.writeAc.access =
+          unicache.ifb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.prefetchb.tdp_stats = unicache.prefetchb.stats_t;
 
-      unicache.wbb->stats_t.readAc.access =
-          unicache.wbb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.wbb->stats_t.writeAc.access =
-          unicache.wbb->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.wbb->tdp_stats = unicache.wbb->stats_t;
+      unicache.wbb.stats_t.readAc.access =
+          unicache.wbb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.wbb.stats_t.writeAc.access =
+          unicache.wbb.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.wbb.tdp_stats = unicache.wbb.stats_t;
     } else {
-      unicache.caches->stats_t.readAc.access =
-          unicache.caches->l_ip.num_search_ports * cachep.duty_cycle;
-      unicache.caches->stats_t.readAc.miss = 0;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access = 0;
-      unicache.caches->stats_t.writeAc.miss = 0;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->tdp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.readAc.access =
+          unicache.caches.l_ip.num_search_ports * cachep.duty_cycle;
+      unicache.caches.stats_t.readAc.miss = 0;
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access = 0;
+      unicache.caches.stats_t.writeAc.miss = 0;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.tdp_stats = unicache.caches.stats_t;
     }
 
   } else {
     // init stats for runtime power (RTP)
     if (cacheL == L2) {
-      unicache.caches->stats_t.readAc.access =
+      unicache.caches.stats_t.readAc.access =
           XML->sys.L2[ithCache].read_accesses;
-      unicache.caches->stats_t.readAc.miss = XML->sys.L2[ithCache].read_misses;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access =
+      unicache.caches.stats_t.readAc.miss = XML->sys.L2[ithCache].read_misses;
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access =
           XML->sys.L2[ithCache].write_accesses;
-      unicache.caches->stats_t.writeAc.miss =
-          XML->sys.L2[ithCache].write_misses;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->rtp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.writeAc.miss = XML->sys.L2[ithCache].write_misses;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.rtp_stats = unicache.caches.stats_t;
 
       if (cachep.dir_ty == SBT) {
         homenode_rtp_stats.readAc.access =
@@ -536,20 +554,19 @@ void SharedCache::computeStaticPower(bool is_tdp) {
             homenode_rtp_stats.writeAc.access - homenode_rtp_stats.writeAc.miss;
       }
     } else if (cacheL == L3) {
-      unicache.caches->stats_t.readAc.access =
+      unicache.caches.stats_t.readAc.access =
           XML->sys.L3[ithCache].read_accesses;
-      unicache.caches->stats_t.readAc.miss = XML->sys.L3[ithCache].read_misses;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access =
+      unicache.caches.stats_t.readAc.miss = XML->sys.L3[ithCache].read_misses;
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access =
           XML->sys.L3[ithCache].write_accesses;
-      unicache.caches->stats_t.writeAc.miss =
-          XML->sys.L3[ithCache].write_misses;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->rtp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.writeAc.miss = XML->sys.L3[ithCache].write_misses;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.rtp_stats = unicache.caches.stats_t;
 
       if (cachep.dir_ty == SBT) {
         homenode_rtp_stats.readAc.access =
@@ -566,92 +583,88 @@ void SharedCache::computeStaticPower(bool is_tdp) {
             homenode_rtp_stats.writeAc.access - homenode_rtp_stats.writeAc.miss;
       }
     } else if (cacheL == L1Directory) {
-      unicache.caches->stats_t.readAc.access =
+      unicache.caches.stats_t.readAc.access =
           XML->sys.L1Directory[ithCache].read_accesses;
-      unicache.caches->stats_t.readAc.miss =
+      unicache.caches.stats_t.readAc.miss =
           XML->sys.L1Directory[ithCache].read_misses;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access =
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access =
           XML->sys.L1Directory[ithCache].write_accesses;
-      unicache.caches->stats_t.writeAc.miss =
+      unicache.caches.stats_t.writeAc.miss =
           XML->sys.L1Directory[ithCache].write_misses;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->rtp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.rtp_stats = unicache.caches.stats_t;
     } else if (cacheL == L2Directory) {
-      unicache.caches->stats_t.readAc.access =
+      unicache.caches.stats_t.readAc.access =
           XML->sys.L2Directory[ithCache].read_accesses;
-      unicache.caches->stats_t.readAc.miss =
+      unicache.caches.stats_t.readAc.miss =
           XML->sys.L2Directory[ithCache].read_misses;
-      unicache.caches->stats_t.readAc.hit =
-          unicache.caches->stats_t.readAc.access -
-          unicache.caches->stats_t.readAc.miss;
-      unicache.caches->stats_t.writeAc.access =
+      unicache.caches.stats_t.readAc.hit =
+          unicache.caches.stats_t.readAc.access -
+          unicache.caches.stats_t.readAc.miss;
+      unicache.caches.stats_t.writeAc.access =
           XML->sys.L2Directory[ithCache].write_accesses;
-      unicache.caches->stats_t.writeAc.miss =
+      unicache.caches.stats_t.writeAc.miss =
           XML->sys.L2Directory[ithCache].write_misses;
-      unicache.caches->stats_t.writeAc.hit =
-          unicache.caches->stats_t.writeAc.access -
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.caches->rtp_stats = unicache.caches->stats_t;
+      unicache.caches.stats_t.writeAc.hit =
+          unicache.caches.stats_t.writeAc.access -
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.caches.rtp_stats = unicache.caches.stats_t;
     }
     if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
           (cachep.dir_ty == ST &&
            cacheL ==
                L2Directory))) { // Assuming write back and write-allocate cache
 
-      unicache.missb->stats_t.readAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.missb->stats_t.writeAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.missb->rtp_stats = unicache.missb->stats_t;
+      unicache.missb.stats_t.readAc.access =
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.missb.stats_t.writeAc.access =
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.missb.rtp_stats = unicache.missb.stats_t;
 
-      unicache.ifb->stats_t.readAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.ifb->stats_t.writeAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.ifb->rtp_stats = unicache.ifb->stats_t;
+      unicache.ifb.stats_t.readAc.access = unicache.caches.stats_t.writeAc.miss;
+      unicache.ifb.stats_t.writeAc.access =
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.ifb.rtp_stats = unicache.ifb.stats_t;
 
-      unicache.prefetchb->stats_t.readAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.prefetchb->stats_t.writeAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.prefetchb->rtp_stats = unicache.prefetchb->stats_t;
+      unicache.prefetchb.stats_t.readAc.access =
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.prefetchb.stats_t.writeAc.access =
+          unicache.caches.stats_t.writeAc.miss;
+      unicache.prefetchb.rtp_stats = unicache.prefetchb.stats_t;
 
-      unicache.wbb->stats_t.readAc.access =
-          unicache.caches->stats_t.writeAc.miss;
-      unicache.wbb->stats_t.writeAc.access =
-          unicache.caches->stats_t.writeAc.miss;
+      unicache.wbb.stats_t.readAc.access = unicache.caches.stats_t.writeAc.miss;
+      unicache.wbb.stats_t.writeAc.access =
+          unicache.caches.stats_t.writeAc.miss;
       if (cachep.dir_ty == SBT) {
-        unicache.missb->stats_t.readAc.access +=
+        unicache.missb.stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.missb.stats_t.writeAc.access +=
             homenode_rtp_stats.writeAc.miss;
-        unicache.missb->stats_t.writeAc.access +=
-            homenode_rtp_stats.writeAc.miss;
-        unicache.missb->rtp_stats = unicache.missb->stats_t;
+        unicache.missb.rtp_stats = unicache.missb.stats_t;
 
-        unicache.missb->stats_t.readAc.access +=
+        unicache.missb.stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.missb.stats_t.writeAc.access +=
             homenode_rtp_stats.writeAc.miss;
-        unicache.missb->stats_t.writeAc.access +=
-            homenode_rtp_stats.writeAc.miss;
-        unicache.missb->rtp_stats = unicache.missb->stats_t;
+        unicache.missb.rtp_stats = unicache.missb.stats_t;
 
-        unicache.ifb->stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
-        unicache.ifb->stats_t.writeAc.access += homenode_rtp_stats.writeAc.miss;
-        unicache.ifb->rtp_stats = unicache.ifb->stats_t;
+        unicache.ifb.stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.ifb.stats_t.writeAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.ifb.rtp_stats = unicache.ifb.stats_t;
 
-        unicache.prefetchb->stats_t.readAc.access +=
+        unicache.prefetchb.stats_t.readAc.access +=
             homenode_rtp_stats.writeAc.miss;
-        unicache.prefetchb->stats_t.writeAc.access +=
+        unicache.prefetchb.stats_t.writeAc.access +=
             homenode_rtp_stats.writeAc.miss;
-        unicache.prefetchb->rtp_stats = unicache.prefetchb->stats_t;
+        unicache.prefetchb.rtp_stats = unicache.prefetchb.stats_t;
 
-        unicache.wbb->stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
-        unicache.wbb->stats_t.writeAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.wbb.stats_t.readAc.access += homenode_rtp_stats.writeAc.miss;
+        unicache.wbb.stats_t.writeAc.access += homenode_rtp_stats.writeAc.miss;
       }
-      unicache.wbb->rtp_stats = unicache.wbb->stats_t;
+      unicache.wbb.rtp_stats = unicache.wbb.stats_t;
     }
   }
 
@@ -659,93 +672,91 @@ void SharedCache::computeStaticPower(bool is_tdp) {
   if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
         (cachep.dir_ty == ST && cacheL == L2Directory))) {
     unicache.power_t.readOp.dynamic +=
-        (unicache.caches->stats_t.readAc.hit *
-             unicache.caches->local_result.power.readOp.dynamic +
-         unicache.caches->stats_t.readAc.miss *
-             unicache.caches->local_result.tag_array2->power.readOp.dynamic +
-         unicache.caches->stats_t.writeAc.miss *
-             unicache.caches->local_result.tag_array2->power.writeOp.dynamic +
-         unicache.caches->stats_t.writeAc.access *
-             unicache.caches->local_result.power.writeOp
+        (unicache.caches.stats_t.readAc.hit *
+             unicache.caches.local_result.power.readOp.dynamic +
+         unicache.caches.stats_t.readAc.miss *
+             unicache.caches.local_result.tag_array2->power.readOp.dynamic +
+         unicache.caches.stats_t.writeAc.miss *
+             unicache.caches.local_result.tag_array2->power.writeOp.dynamic +
+         unicache.caches.stats_t.writeAc.access *
+             unicache.caches.local_result.power.writeOp
                  .dynamic); // write miss will also generate a write later
 
     if (cachep.dir_ty == SBT) {
       unicache.power_t.readOp.dynamic +=
           homenode_stats_t.readAc.hit *
-              (unicache.caches->local_result.data_array2->power.readOp.dynamic *
+              (unicache.caches.local_result.data_array2->power.readOp.dynamic *
                    dir_overhead +
-               unicache.caches->local_result.tag_array2->power.readOp.dynamic) +
+               unicache.caches.local_result.tag_array2->power.readOp.dynamic) +
           homenode_stats_t.readAc.miss *
-              unicache.caches->local_result.tag_array2->power.readOp.dynamic +
+              unicache.caches.local_result.tag_array2->power.readOp.dynamic +
           homenode_stats_t.writeAc.miss *
-              unicache.caches->local_result.tag_array2->power.readOp.dynamic +
+              unicache.caches.local_result.tag_array2->power.readOp.dynamic +
           homenode_stats_t.writeAc.hit *
-              (unicache.caches->local_result.data_array2->power.writeOp
-                       .dynamic *
+              (unicache.caches.local_result.data_array2->power.writeOp.dynamic *
                    dir_overhead +
-               unicache.caches->local_result.tag_array2->power.readOp.dynamic +
+               unicache.caches.local_result.tag_array2->power.readOp.dynamic +
                homenode_stats_t.writeAc.miss *
-                   unicache.caches->local_result.power.writeOp
+                   unicache.caches.local_result.power.writeOp
                        .dynamic); // write miss on dynamic home node will
                                   // generate a replacement write on whole cache
                                   // block
     }
 
     unicache.power_t.readOp.dynamic +=
-        unicache.missb->stats_t.readAc.access *
-            unicache.missb->local_result.power.searchOp.dynamic +
-        unicache.missb->stats_t.writeAc.access *
-            unicache.missb->local_result.power.writeOp
+        unicache.missb.stats_t.readAc.access *
+            unicache.missb.local_result.power.searchOp.dynamic +
+        unicache.missb.stats_t.writeAc.access *
+            unicache.missb.local_result.power.writeOp
                 .dynamic; // each access to missb involves a CAM and a write
     unicache.power_t.readOp.dynamic +=
-        unicache.ifb->stats_t.readAc.access *
-            unicache.ifb->local_result.power.searchOp.dynamic +
-        unicache.ifb->stats_t.writeAc.access *
-            unicache.ifb->local_result.power.writeOp.dynamic;
+        unicache.ifb.stats_t.readAc.access *
+            unicache.ifb.local_result.power.searchOp.dynamic +
+        unicache.ifb.stats_t.writeAc.access *
+            unicache.ifb.local_result.power.writeOp.dynamic;
     unicache.power_t.readOp.dynamic +=
-        unicache.prefetchb->stats_t.readAc.access *
-            unicache.prefetchb->local_result.power.searchOp.dynamic +
-        unicache.prefetchb->stats_t.writeAc.access *
-            unicache.prefetchb->local_result.power.writeOp.dynamic;
+        unicache.prefetchb.stats_t.readAc.access *
+            unicache.prefetchb.local_result.power.searchOp.dynamic +
+        unicache.prefetchb.stats_t.writeAc.access *
+            unicache.prefetchb.local_result.power.writeOp.dynamic;
     unicache.power_t.readOp.dynamic +=
-        unicache.wbb->stats_t.readAc.access *
-            unicache.wbb->local_result.power.searchOp.dynamic +
-        unicache.wbb->stats_t.writeAc.access *
-            unicache.wbb->local_result.power.writeOp.dynamic;
+        unicache.wbb.stats_t.readAc.access *
+            unicache.wbb.local_result.power.searchOp.dynamic +
+        unicache.wbb.stats_t.writeAc.access *
+            unicache.wbb.local_result.power.writeOp.dynamic;
   } else {
     unicache.power_t.readOp.dynamic +=
-        (unicache.caches->stats_t.readAc.access *
-             unicache.caches->local_result.power.searchOp.dynamic +
-         unicache.caches->stats_t.writeAc.access *
-             unicache.caches->local_result.power.writeOp.dynamic);
+        (unicache.caches.stats_t.readAc.access *
+             unicache.caches.local_result.power.searchOp.dynamic +
+         unicache.caches.stats_t.writeAc.access *
+             unicache.caches.local_result.power.writeOp.dynamic);
   }
 
   if (is_tdp) {
     unicache.power =
-        unicache.power_t + (unicache.caches->local_result.power) * pppm_lkg;
+        unicache.power_t + (unicache.caches.local_result.power) * pppm_lkg;
     if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
           (cachep.dir_ty == ST && cacheL == L2Directory))) {
-      unicache.power =
-          unicache.power + (unicache.missb->local_result.power +
-                            unicache.ifb->local_result.power +
-                            unicache.prefetchb->local_result.power +
-                            unicache.wbb->local_result.power) *
-                               pppm_lkg;
+      unicache.power = unicache.power + (unicache.missb.local_result.power +
+                                         unicache.ifb.local_result.power +
+                                         unicache.prefetchb.local_result.power +
+                                         unicache.wbb.local_result.power) *
+                                            pppm_lkg;
     }
     power = power + unicache.power;
-    //		cout<<"unicache.caches->local_result.power.readOp.dynamic"<<unicache.caches->local_result.power.readOp.dynamic<<endl;
-    //		cout<<"unicache.caches->local_result.power.writeOp.dynamic"<<unicache.caches->local_result.power.writeOp.dynamic<<endl;
+    //		cout<<"unicache.caches.local_result.power.readOp.dynamic"<<unicache.caches.local_result.power.readOp.dynamic<<endl;
+    //		cout<<"unicache.caches.local_result.power.writeOp.dynamic"<<unicache.caches.local_result.power.writeOp.dynamic<<endl;
   } else {
     unicache.rt_power =
-        unicache.power_t + (unicache.caches->local_result.power) * pppm_lkg;
+        unicache.power_t + (unicache.caches.local_result.power) * pppm_lkg;
     if (!((cachep.dir_ty == ST && cacheL == L1Directory) ||
           (cachep.dir_ty == ST && cacheL == L2Directory))) {
       unicache.rt_power =
-          unicache.rt_power + (unicache.missb->local_result.power +
-                               unicache.ifb->local_result.power +
-                               unicache.prefetchb->local_result.power +
-                               unicache.wbb->local_result.power) *
-                                  pppm_lkg;
+          unicache.rt_power +
+          (unicache.missb.local_result.power + unicache.ifb.local_result.power +
+           unicache.prefetchb.local_result.power +
+           unicache.wbb.local_result.power) *
+              pppm_lkg;
     }
     rt_power = rt_power + unicache.rt_power;
   }

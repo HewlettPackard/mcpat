@@ -397,7 +397,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                           ? router.crossbar.power.readOp.longer_channel_leakage
                           : router.crossbar.power.readOp.leakage)
                   << " W" << std::endl;
-        if (power_gating)
+        if (power_gating) {
           std::cout << indent_str << indent_str_next
                     << "Subthreshold Leakage with power gating = "
                     << (long_channel
@@ -405,6 +405,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                                   .power_gated_with_long_channel_leakage
                             : router.crossbar.power.readOp.power_gated_leakage)
                     << " W" << std::endl;
+        }
         std::cout << indent_str << indent_str_next << "Gate Leakage = "
                   << router.crossbar.power.readOp.gate_leakage << " W"
                   << std::endl;
@@ -423,7 +424,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                           ? router.arbiter.power.readOp.longer_channel_leakage
                           : router.arbiter.power.readOp.leakage)
                   << " W" << std::endl;
-        if (power_gating)
+        if (power_gating) {
           std::cout << indent_str << indent_str_next
                     << "Subthreshold Leakage with power gating = "
                     << (long_channel
@@ -431,6 +432,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                                   .power_gated_with_long_channel_leakage
                             : router.arbiter.power.readOp.power_gated_leakage)
                     << " W" << std::endl;
+        }
         std::cout << indent_str << indent_str_next << "Gate Leakage = "
                   << router.arbiter.power.readOp.gate_leakage << " W"
                   << std::endl;
@@ -457,7 +459,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                   ? link_bus_tot_per_Router.power.readOp.longer_channel_leakage
                   : link_bus_tot_per_Router.power.readOp.leakage)
           << " W" << std::endl;
-      if (power_gating)
+      if (power_gating) {
         std::cout
             << indent_str_next << "Subthreshold Leakage with power gating = "
             << (long_channel
@@ -465,6 +467,7 @@ void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
                           .power_gated_with_long_channel_leakage
                     : link_bus_tot_per_Router.power.readOp.power_gated_leakage)
             << " W" << std::endl;
+      }
       std::cout << indent_str_next << "Gate Leakage = "
                 << link_bus_tot_per_Router.power.readOp.gate_leakage << " W"
                 << std::endl;
@@ -521,10 +524,11 @@ void NoC::set_noc_param(const ParseXML *XML) {
   assert(nocdynp.chip_coverage <= 1);
   assert(nocdynp.route_over_perc <= 1);
 
-  if (nocdynp.type)
+  if (nocdynp.type) {
     name = "NOC";
-  else
+  } else {
     name = "BUSES";
+  }
 
   if (XML->sys.NoC[ithNoC].vdd > 0) {
     interface_ip.specific_hp_vdd = true;

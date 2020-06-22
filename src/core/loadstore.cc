@@ -105,21 +105,22 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.caches = new ArrayST(&interface_ip,
-                              "dcache",
-                              Core_device,
-                              coredynp.opt_local,
-                              coredynp.core_ty);
+  dcache.caches.set_params(&interface_ip,
+                           "dcache",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
+  dcache.caches.computeArea();
   dcache.area.set_area(dcache.area.get_area() +
-                       dcache.caches->local_result.area);
-  area.set_area(area.get_area() + dcache.caches->local_result.area);
+                       dcache.caches.local_result.area);
+  area.set_area(area.get_area() + dcache.caches.local_result.area);
   // output_data_csv(dcache.caches.local_result);
 
   // dCache controllers
   // miss buffer
   tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
   data = (XML->sys.physical_address_width) + int(ceil(log2(size / line))) +
-         dcache.caches->l_ip.line_sz * 8;
+         dcache.caches.l_ip.line_sz * 8;
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
   interface_ip.line_sz =
@@ -145,19 +146,19 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.missb = new ArrayST(&interface_ip,
-                             "dcacheMissBuffer",
-                             Core_device,
-                             coredynp.opt_local,
-                             coredynp.core_ty);
-  dcache.area.set_area(dcache.area.get_area() +
-                       dcache.missb->local_result.area);
-  area.set_area(area.get_area() + dcache.missb->local_result.area);
+  dcache.missb.set_params(&interface_ip,
+                          "dcacheMissBuffer",
+                          Core_device,
+                          coredynp.opt_local,
+                          coredynp.core_ty);
+  dcache.missb.computeArea();
+  dcache.area.set_area(dcache.area.get_area() + dcache.missb.local_result.area);
+  area.set_area(area.get_area() + dcache.missb.local_result.area);
   // output_data_csv(dcache.missb.local_result);
 
   // fill buffer
   tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-  data = dcache.caches->l_ip.line_sz;
+  data = dcache.caches.l_ip.line_sz;
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
   interface_ip.line_sz = data; // int(pow(2.0,ceil(log2(data))));
@@ -181,20 +182,21 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.ifb = new ArrayST(&interface_ip,
-                           "dcacheFillBuffer",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-  dcache.area.set_area(dcache.area.get_area() + dcache.ifb->local_result.area);
-  area.set_area(area.get_area() + dcache.ifb->local_result.area);
+  dcache.ifb.set_params(&interface_ip,
+                        "dcacheFillBuffer",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
+  dcache.ifb.computeArea();
+  dcache.area.set_area(dcache.area.get_area() + dcache.ifb.local_result.area);
+  area.set_area(area.get_area() + dcache.ifb.local_result.area);
   // output_data_csv(dcache.ifb.local_result);
 
   // prefetch buffer
   tag = XML->sys.physical_address_width +
         EXTRA_TAG_BITS; // check with previous entries to decide wthether to
                         // merge.
-  data = dcache.caches->l_ip
+  data = dcache.caches.l_ip
              .line_sz; // separate queue to prevent from cache polution.
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
@@ -220,21 +222,22 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  dcache.prefetchb = new ArrayST(&interface_ip,
-                                 "dcacheprefetchBuffer",
-                                 Core_device,
-                                 coredynp.opt_local,
-                                 coredynp.core_ty);
+  dcache.prefetchb.set_params(&interface_ip,
+                              "dcacheprefetchBuffer",
+                              Core_device,
+                              coredynp.opt_local,
+                              coredynp.core_ty);
+  dcache.prefetchb.computeArea();
   dcache.area.set_area(dcache.area.get_area() +
-                       dcache.prefetchb->local_result.area);
-  area.set_area(area.get_area() + dcache.prefetchb->local_result.area);
+                       dcache.prefetchb.local_result.area);
+  area.set_area(area.get_area() + dcache.prefetchb.local_result.area);
   // output_data_csv(dcache.prefetchb.local_result);
 
   // WBB
 
   if (cache_p == Write_back) {
     tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-    data = dcache.caches->l_ip.line_sz;
+    data = dcache.caches.l_ip.line_sz;
     interface_ip.specific_tag = 1;
     interface_ip.tag_w = tag;
     interface_ip.line_sz = data;
@@ -258,14 +261,14 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
     interface_ip.num_rd_ports = 0;
     interface_ip.num_wr_ports = 0;
     interface_ip.num_se_rd_ports = 0;
-    dcache.wbb = new ArrayST(&interface_ip,
-                             "dcacheWBB",
-                             Core_device,
-                             coredynp.opt_local,
-                             coredynp.core_ty);
-    dcache.area.set_area(dcache.area.get_area() +
-                         dcache.wbb->local_result.area);
-    area.set_area(area.get_area() + dcache.wbb->local_result.area);
+    dcache.wbb.set_params(&interface_ip,
+                          "dcacheWBB",
+                          Core_device,
+                          coredynp.opt_local,
+                          coredynp.core_ty);
+    dcache.wbb.computeArea();
+    dcache.area.set_area(dcache.area.get_area() + dcache.wbb.local_result.area);
+    area.set_area(area.get_area() + dcache.wbb.local_result.area);
     // output_data_csv(dcache.wbb.local_result);
   }
 
@@ -354,39 +357,39 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
     return;
   if (is_tdp) {
     // init stats for Peak
-    dcache.caches->stats_t.readAc.access =
-        0.67 * dcache.caches->l_ip.num_rw_ports * coredynp.LSU_duty_cycle;
-    dcache.caches->stats_t.readAc.miss = 0;
-    dcache.caches->stats_t.readAc.hit = dcache.caches->stats_t.readAc.access -
-                                        dcache.caches->stats_t.readAc.miss;
-    dcache.caches->stats_t.writeAc.access =
-        0.33 * dcache.caches->l_ip.num_rw_ports * coredynp.LSU_duty_cycle;
-    dcache.caches->stats_t.writeAc.miss = 0;
-    dcache.caches->stats_t.writeAc.hit = dcache.caches->stats_t.writeAc.access -
-                                         dcache.caches->stats_t.writeAc.miss;
-    dcache.caches->tdp_stats = dcache.caches->stats_t;
+    dcache.caches.stats_t.readAc.access =
+        0.67 * dcache.caches.l_ip.num_rw_ports * coredynp.LSU_duty_cycle;
+    dcache.caches.stats_t.readAc.miss = 0;
+    dcache.caches.stats_t.readAc.hit =
+        dcache.caches.stats_t.readAc.access - dcache.caches.stats_t.readAc.miss;
+    dcache.caches.stats_t.writeAc.access =
+        0.33 * dcache.caches.l_ip.num_rw_ports * coredynp.LSU_duty_cycle;
+    dcache.caches.stats_t.writeAc.miss = 0;
+    dcache.caches.stats_t.writeAc.hit = dcache.caches.stats_t.writeAc.access -
+                                        dcache.caches.stats_t.writeAc.miss;
+    dcache.caches.tdp_stats = dcache.caches.stats_t;
 
-    dcache.missb->stats_t.readAc.access =
-        dcache.missb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.missb->stats_t.writeAc.access =
-        dcache.missb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.missb->tdp_stats = dcache.missb->stats_t;
+    dcache.missb.stats_t.readAc.access =
+        dcache.missb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.missb.stats_t.writeAc.access =
+        dcache.missb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.missb.tdp_stats = dcache.missb.stats_t;
 
-    dcache.ifb->stats_t.readAc.access =
-        dcache.ifb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.ifb->stats_t.writeAc.access =
-        dcache.ifb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.ifb->tdp_stats = dcache.ifb->stats_t;
+    dcache.ifb.stats_t.readAc.access =
+        dcache.ifb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.ifb.stats_t.writeAc.access =
+        dcache.ifb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.ifb.tdp_stats = dcache.ifb.stats_t;
 
-    dcache.prefetchb->stats_t.readAc.access =
-        dcache.prefetchb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.prefetchb->stats_t.writeAc.access =
-        dcache.ifb->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    dcache.prefetchb->tdp_stats = dcache.prefetchb->stats_t;
+    dcache.prefetchb.stats_t.readAc.access =
+        dcache.prefetchb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.prefetchb.stats_t.writeAc.access =
+        dcache.ifb.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    dcache.prefetchb.tdp_stats = dcache.prefetchb.stats_t;
     if (cache_p == Write_back) {
-      dcache.wbb->stats_t.readAc.access = dcache.wbb->l_ip.num_search_ports;
-      dcache.wbb->stats_t.writeAc.access = dcache.wbb->l_ip.num_search_ports;
-      dcache.wbb->tdp_stats = dcache.wbb->stats_t;
+      dcache.wbb.stats_t.readAc.access = dcache.wbb.l_ip.num_search_ports;
+      dcache.wbb.stats_t.writeAc.access = dcache.wbb.l_ip.num_search_ports;
+      dcache.wbb.tdp_stats = dcache.wbb.stats_t;
     }
 
     LSQ->stats_t.readAc.access = LSQ->stats_t.writeAc.access =
@@ -400,53 +403,52 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
     }
   } else {
     // init stats for Runtime Dynamic (RTP)
-    dcache.caches->stats_t.readAc.access =
+    dcache.caches.stats_t.readAc.access =
         XML->sys.core[ithCore].dcache.read_accesses;
-    dcache.caches->stats_t.readAc.miss =
+    dcache.caches.stats_t.readAc.miss =
         XML->sys.core[ithCore].dcache.read_misses;
-    dcache.caches->stats_t.readAc.hit = dcache.caches->stats_t.readAc.access -
-                                        dcache.caches->stats_t.readAc.miss;
-    dcache.caches->stats_t.writeAc.access =
+    dcache.caches.stats_t.readAc.hit =
+        dcache.caches.stats_t.readAc.access - dcache.caches.stats_t.readAc.miss;
+    dcache.caches.stats_t.writeAc.access =
         XML->sys.core[ithCore].dcache.write_accesses;
-    dcache.caches->stats_t.writeAc.miss =
+    dcache.caches.stats_t.writeAc.miss =
         XML->sys.core[ithCore].dcache.write_misses;
-    dcache.caches->stats_t.writeAc.hit = dcache.caches->stats_t.writeAc.access -
-                                         dcache.caches->stats_t.writeAc.miss;
-    dcache.caches->rtp_stats = dcache.caches->stats_t;
+    dcache.caches.stats_t.writeAc.hit = dcache.caches.stats_t.writeAc.access -
+                                        dcache.caches.stats_t.writeAc.miss;
+    dcache.caches.rtp_stats = dcache.caches.stats_t;
 
     if (cache_p == Write_back) {
-      dcache.missb->stats_t.readAc.access = dcache.caches->stats_t.writeAc.miss;
-      dcache.missb->stats_t.writeAc.access =
-          dcache.caches->stats_t.writeAc.miss;
-      dcache.missb->rtp_stats = dcache.missb->stats_t;
+      dcache.missb.stats_t.readAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.missb.stats_t.writeAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.missb.rtp_stats = dcache.missb.stats_t;
 
-      dcache.ifb->stats_t.readAc.access = dcache.caches->stats_t.writeAc.miss;
-      dcache.ifb->stats_t.writeAc.access = dcache.caches->stats_t.writeAc.miss;
-      dcache.ifb->rtp_stats = dcache.ifb->stats_t;
+      dcache.ifb.stats_t.readAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.ifb.stats_t.writeAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.ifb.rtp_stats = dcache.ifb.stats_t;
 
-      dcache.prefetchb->stats_t.readAc.access =
-          dcache.caches->stats_t.writeAc.miss;
-      dcache.prefetchb->stats_t.writeAc.access =
-          dcache.caches->stats_t.writeAc.miss;
-      dcache.prefetchb->rtp_stats = dcache.prefetchb->stats_t;
+      dcache.prefetchb.stats_t.readAc.access =
+          dcache.caches.stats_t.writeAc.miss;
+      dcache.prefetchb.stats_t.writeAc.access =
+          dcache.caches.stats_t.writeAc.miss;
+      dcache.prefetchb.rtp_stats = dcache.prefetchb.stats_t;
 
-      dcache.wbb->stats_t.readAc.access = dcache.caches->stats_t.writeAc.miss;
-      dcache.wbb->stats_t.writeAc.access = dcache.caches->stats_t.writeAc.miss;
-      dcache.wbb->rtp_stats = dcache.wbb->stats_t;
+      dcache.wbb.stats_t.readAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.wbb.stats_t.writeAc.access = dcache.caches.stats_t.writeAc.miss;
+      dcache.wbb.rtp_stats = dcache.wbb.stats_t;
     } else {
-      dcache.missb->stats_t.readAc.access = dcache.caches->stats_t.readAc.miss;
-      dcache.missb->stats_t.writeAc.access = dcache.caches->stats_t.readAc.miss;
-      dcache.missb->rtp_stats = dcache.missb->stats_t;
+      dcache.missb.stats_t.readAc.access = dcache.caches.stats_t.readAc.miss;
+      dcache.missb.stats_t.writeAc.access = dcache.caches.stats_t.readAc.miss;
+      dcache.missb.rtp_stats = dcache.missb.stats_t;
 
-      dcache.ifb->stats_t.readAc.access = dcache.caches->stats_t.readAc.miss;
-      dcache.ifb->stats_t.writeAc.access = dcache.caches->stats_t.readAc.miss;
-      dcache.ifb->rtp_stats = dcache.ifb->stats_t;
+      dcache.ifb.stats_t.readAc.access = dcache.caches.stats_t.readAc.miss;
+      dcache.ifb.stats_t.writeAc.access = dcache.caches.stats_t.readAc.miss;
+      dcache.ifb.rtp_stats = dcache.ifb.stats_t;
 
-      dcache.prefetchb->stats_t.readAc.access =
-          dcache.caches->stats_t.readAc.miss;
-      dcache.prefetchb->stats_t.writeAc.access =
-          dcache.caches->stats_t.readAc.miss;
-      dcache.prefetchb->rtp_stats = dcache.prefetchb->stats_t;
+      dcache.prefetchb.stats_t.readAc.access =
+          dcache.caches.stats_t.readAc.miss;
+      dcache.prefetchb.stats_t.writeAc.access =
+          dcache.caches.stats_t.readAc.miss;
+      dcache.prefetchb.rtp_stats = dcache.prefetchb.stats_t;
     }
 
     LSQ->stats_t.readAc.access = (XML->sys.core[ithCore].load_instructions +
@@ -470,45 +472,45 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
   dcache.power_t.reset();
   LSQ->power_t.reset();
   dcache.power_t.readOp.dynamic +=
-      (dcache.caches->stats_t.readAc.hit *
-           dcache.caches->local_result.power.readOp.dynamic +
-       dcache.caches->stats_t.readAc.miss *
-           dcache.caches->local_result.power.readOp
+      (dcache.caches.stats_t.readAc.hit *
+           dcache.caches.local_result.power.readOp.dynamic +
+       dcache.caches.stats_t.readAc.miss *
+           dcache.caches.local_result.power.readOp
                .dynamic + // assuming D cache is in the fast model which read
                           // tag and data together
-       dcache.caches->stats_t.writeAc.miss *
-           dcache.caches->local_result.tag_array2->power.readOp.dynamic +
-       dcache.caches->stats_t.writeAc.access *
-           dcache.caches->local_result.power.writeOp.dynamic);
+       dcache.caches.stats_t.writeAc.miss *
+           dcache.caches.local_result.tag_array2->power.readOp.dynamic +
+       dcache.caches.stats_t.writeAc.access *
+           dcache.caches.local_result.power.writeOp.dynamic);
 
   if (cache_p == Write_back) { // write miss will generate a write later
     dcache.power_t.readOp.dynamic +=
-        dcache.caches->stats_t.writeAc.miss *
-        dcache.caches->local_result.power.writeOp.dynamic;
+        dcache.caches.stats_t.writeAc.miss *
+        dcache.caches.local_result.power.writeOp.dynamic;
   }
 
   dcache.power_t.readOp.dynamic +=
-      dcache.missb->stats_t.readAc.access *
-          dcache.missb->local_result.power.searchOp.dynamic +
-      dcache.missb->stats_t.writeAc.access *
-          dcache.missb->local_result.power.writeOp
+      dcache.missb.stats_t.readAc.access *
+          dcache.missb.local_result.power.searchOp.dynamic +
+      dcache.missb.stats_t.writeAc.access *
+          dcache.missb.local_result.power.writeOp
               .dynamic; // each access to missb involves a CAM and a write
   dcache.power_t.readOp.dynamic +=
-      dcache.ifb->stats_t.readAc.access *
-          dcache.ifb->local_result.power.searchOp.dynamic +
-      dcache.ifb->stats_t.writeAc.access *
-          dcache.ifb->local_result.power.writeOp.dynamic;
+      dcache.ifb.stats_t.readAc.access *
+          dcache.ifb.local_result.power.searchOp.dynamic +
+      dcache.ifb.stats_t.writeAc.access *
+          dcache.ifb.local_result.power.writeOp.dynamic;
   dcache.power_t.readOp.dynamic +=
-      dcache.prefetchb->stats_t.readAc.access *
-          dcache.prefetchb->local_result.power.searchOp.dynamic +
-      dcache.prefetchb->stats_t.writeAc.access *
-          dcache.prefetchb->local_result.power.writeOp.dynamic;
+      dcache.prefetchb.stats_t.readAc.access *
+          dcache.prefetchb.local_result.power.searchOp.dynamic +
+      dcache.prefetchb.stats_t.writeAc.access *
+          dcache.prefetchb.local_result.power.writeOp.dynamic;
   if (cache_p == Write_back) {
     dcache.power_t.readOp.dynamic +=
-        dcache.wbb->stats_t.readAc.access *
-            dcache.wbb->local_result.power.searchOp.dynamic +
-        dcache.wbb->stats_t.writeAc.access *
-            dcache.wbb->local_result.power.writeOp.dynamic;
+        dcache.wbb.stats_t.readAc.access *
+            dcache.wbb.local_result.power.searchOp.dynamic +
+        dcache.wbb.stats_t.writeAc.access *
+            dcache.wbb.local_result.power.writeOp.dynamic;
   }
 
   if ((coredynp.core_ty == OOO) &&
@@ -543,18 +545,18 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
 
   if (is_tdp) {
     //    	dcache.power = dcache.power_t +
-    //    (dcache.caches->local_result.power)*pppm_lkg +
-    //    			(dcache.missb->local_result.power +
-    //    			dcache.ifb->local_result.power +
-    //    			dcache.prefetchb->local_result.power +
-    //    			dcache.wbb->local_result.power)*pppm_Isub;
-    dcache.power = dcache.power_t + (dcache.caches->local_result.power +
-                                     dcache.missb->local_result.power +
-                                     dcache.ifb->local_result.power +
-                                     dcache.prefetchb->local_result.power) *
-                                        pppm_lkg;
+    //    (dcache.caches.local_result.power)*pppm_lkg +
+    //    			(dcache.missb.local_result.power +
+    //    			dcache.ifb.local_result.power +
+    //    			dcache.prefetchb.local_result.power +
+    //    			dcache.wbb.local_result.power)*pppm_Isub;
+    dcache.power =
+        dcache.power_t +
+        (dcache.caches.local_result.power + dcache.missb.local_result.power +
+         dcache.ifb.local_result.power + dcache.prefetchb.local_result.power) *
+            pppm_lkg;
     if (cache_p == Write_back) {
-      dcache.power = dcache.power + dcache.wbb->local_result.power * pppm_lkg;
+      dcache.power = dcache.power + dcache.wbb.local_result.power * pppm_lkg;
     }
 
     LSQ->power = LSQ->power_t + LSQ->local_result.power * pppm_lkg;
@@ -567,20 +569,20 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
     }
   } else {
     //    	dcache.rt_power = dcache.power_t +
-    //    (dcache.caches->local_result.power +
-    //    dcache.missb->local_result.power
-    //    + 			dcache.ifb->local_result.power +
-    //    			dcache.prefetchb->local_result.power +
-    //    			dcache.wbb->local_result.power)*pppm_lkg;
-    dcache.rt_power = dcache.power_t + (dcache.caches->local_result.power +
-                                        dcache.missb->local_result.power +
-                                        dcache.ifb->local_result.power +
-                                        dcache.prefetchb->local_result.power) *
-                                           pppm_lkg;
+    //    (dcache.caches.local_result.power +
+    //    dcache.missb.local_result.power
+    //    + 			dcache.ifb.local_result.power +
+    //    			dcache.prefetchb.local_result.power +
+    //    			dcache.wbb.local_result.power)*pppm_lkg;
+    dcache.rt_power =
+        dcache.power_t +
+        (dcache.caches.local_result.power + dcache.missb.local_result.power +
+         dcache.ifb.local_result.power + dcache.prefetchb.local_result.power) *
+            pppm_lkg;
 
     if (cache_p == Write_back) {
       dcache.rt_power =
-          dcache.rt_power + dcache.wbb->local_result.power * pppm_lkg;
+          dcache.rt_power + dcache.wbb.local_result.power * pppm_lkg;
     }
 
     LSQ->rt_power = LSQ->power_t + LSQ->local_result.power * pppm_lkg;

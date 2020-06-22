@@ -84,6 +84,7 @@ private:
     ar &frontend;
     ar &transecEngine;
     ar &PHY;
+    ar &set_area;
     Component::serialize(ar, version);
   }
 };

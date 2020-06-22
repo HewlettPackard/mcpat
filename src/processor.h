@@ -112,7 +112,7 @@ private:
     ar &niu;
     ar &pcie;
     ar &flashcontroller;
-    Component::serialize(ar, version);
+    // Component::serialize(ar, version);
   }
 };
 

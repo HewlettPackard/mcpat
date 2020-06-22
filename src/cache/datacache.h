@@ -40,14 +40,29 @@
 #include "instcache.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 
 class DataCache : public InstCache {
 public:
-  ArrayST *wbb;
+  ArrayST wbb;
   DataCache();
   ~DataCache();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &wbb;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __DATACACHE_H__

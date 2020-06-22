@@ -107,7 +107,11 @@ private:
     ar &link_name;
     ar &router;
     ar &link_bus;
-    Component::serialize(ar, version);
+    ar &router_exist;
+    ar &link_bus_exist;
+    ar &link_bus_tot_per_Router;
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

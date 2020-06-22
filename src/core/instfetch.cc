@@ -101,17 +101,18 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  icache.caches = new ArrayST(&interface_ip,
-                              "icache",
-                              Core_device,
-                              coredynp.opt_local,
-                              coredynp.core_ty);
+  icache.caches.set_params(&interface_ip,
+                           "icache",
+                           Core_device,
+                           coredynp.opt_local,
+                           coredynp.core_ty);
+  icache.caches.computeArea();
   scktRatio = g_tp.sckt_co_eff;
   chip_PR_overhead = g_tp.chip_layout_overhead;
   macro_PR_overhead = g_tp.macro_layout_overhead;
   icache.area.set_area(icache.area.get_area() +
-                       icache.caches->local_result.area);
-  area.set_area(area.get_area() + icache.caches->local_result.area);
+                       icache.caches.local_result.area);
+  area.set_area(area.get_area() + icache.caches.local_result.area);
   // output_data_csv(icache.caches.local_result);
 
   /*
@@ -127,7 +128,7 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
       debug ? 1 : XML->sys.core[ithCore].number_instruction_fetch_ports;
   tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
   data = (XML->sys.physical_address_width) + int(ceil(log2(size / line))) +
-         icache.caches->l_ip.line_sz * 8;
+         icache.caches.l_ip.line_sz * 8;
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
   interface_ip.line_sz =
@@ -157,19 +158,19 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.missb = new ArrayST(&interface_ip,
-                             "icacheMissBuffer",
-                             Core_device,
-                             coredynp.opt_local,
-                             coredynp.core_ty);
-  icache.area.set_area(icache.area.get_area() +
-                       icache.missb->local_result.area);
-  area.set_area(area.get_area() + icache.missb->local_result.area);
+  icache.missb.set_params(&interface_ip,
+                          "icacheMissBuffer",
+                          Core_device,
+                          coredynp.opt_local,
+                          coredynp.core_ty);
+  icache.missb.computeArea();
+  icache.area.set_area(icache.area.get_area() + icache.missb.local_result.area);
+  area.set_area(area.get_area() + icache.missb.local_result.area);
   // output_data_csv(icache.missb.local_result);
 
   // fill buffer
   tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
-  data = icache.caches->l_ip.line_sz;
+  data = icache.caches.l_ip.line_sz;
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
   interface_ip.line_sz = data; // int(pow(2.0,ceil(log2(data))));
@@ -195,20 +196,21 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.ifb = new ArrayST(&interface_ip,
-                           "icacheFillBuffer",
-                           Core_device,
-                           coredynp.opt_local,
-                           coredynp.core_ty);
-  icache.area.set_area(icache.area.get_area() + icache.ifb->local_result.area);
-  area.set_area(area.get_area() + icache.ifb->local_result.area);
+  icache.ifb.set_params(&interface_ip,
+                        "icacheFillBuffer",
+                        Core_device,
+                        coredynp.opt_local,
+                        coredynp.core_ty);
+  icache.ifb.computeArea();
+  icache.area.set_area(icache.area.get_area() + icache.ifb.local_result.area);
+  area.set_area(area.get_area() + icache.ifb.local_result.area);
   // output_data_csv(icache.ifb.local_result);
 
   // prefetch buffer
   tag = XML->sys.physical_address_width +
         EXTRA_TAG_BITS; // check with previous entries to decide wthether to
                         // merge.
-  data = icache.caches->l_ip
+  data = icache.caches.l_ip
              .line_sz; // separate queue to prevent from cache polution.
   interface_ip.specific_tag = 1;
   interface_ip.tag_w = tag;
@@ -236,14 +238,15 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports =
       XML->sys.core[ithCore].number_instruction_fetch_ports;
-  icache.prefetchb = new ArrayST(&interface_ip,
-                                 "icacheprefetchBuffer",
-                                 Core_device,
-                                 coredynp.opt_local,
-                                 coredynp.core_ty);
+  icache.prefetchb.set_params(&interface_ip,
+                              "icacheprefetchBuffer",
+                              Core_device,
+                              coredynp.opt_local,
+                              coredynp.core_ty);
+  icache.prefetchb.computeArea();
   icache.area.set_area(icache.area.get_area() +
-                       icache.prefetchb->local_result.area);
-  area.set_area(area.get_area() + icache.prefetchb->local_result.area);
+                       icache.prefetchb.local_result.area);
+  area.set_area(area.get_area() + icache.prefetchb.local_result.area);
   // output_data_csv(icache.prefetchb.local_result);
 
   // Instruction buffer
@@ -404,31 +407,31 @@ void InstFetchU::computeEnergy(bool is_tdp) {
     return;
   if (is_tdp) {
     // init stats for Peak
-    icache.caches->stats_t.readAc.access =
-        icache.caches->l_ip.num_rw_ports * coredynp.IFU_duty_cycle;
-    icache.caches->stats_t.readAc.miss = 0;
-    icache.caches->stats_t.readAc.hit = icache.caches->stats_t.readAc.access -
-                                        icache.caches->stats_t.readAc.miss;
-    icache.caches->tdp_stats = icache.caches->stats_t;
+    icache.caches.stats_t.readAc.access =
+        icache.caches.l_ip.num_rw_ports * coredynp.IFU_duty_cycle;
+    icache.caches.stats_t.readAc.miss = 0;
+    icache.caches.stats_t.readAc.hit =
+        icache.caches.stats_t.readAc.access - icache.caches.stats_t.readAc.miss;
+    icache.caches.tdp_stats = icache.caches.stats_t;
 
-    icache.missb->stats_t.readAc.access = icache.missb->stats_t.readAc.hit =
-        icache.missb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.missb->stats_t.writeAc.access = icache.missb->stats_t.writeAc.hit =
-        icache.missb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.missb->tdp_stats = icache.missb->stats_t;
+    icache.missb.stats_t.readAc.access = icache.missb.stats_t.readAc.hit =
+        icache.missb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.missb.stats_t.writeAc.access = icache.missb.stats_t.writeAc.hit =
+        icache.missb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.missb.tdp_stats = icache.missb.stats_t;
 
-    icache.ifb->stats_t.readAc.access = icache.ifb->stats_t.readAc.hit =
-        icache.ifb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.ifb->stats_t.writeAc.access = icache.ifb->stats_t.writeAc.hit =
-        icache.ifb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.ifb->tdp_stats = icache.ifb->stats_t;
+    icache.ifb.stats_t.readAc.access = icache.ifb.stats_t.readAc.hit =
+        icache.ifb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.ifb.stats_t.writeAc.access = icache.ifb.stats_t.writeAc.hit =
+        icache.ifb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.ifb.tdp_stats = icache.ifb.stats_t;
 
-    icache.prefetchb->stats_t.readAc.access =
-        icache.prefetchb->stats_t.readAc.hit =
-            icache.prefetchb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.prefetchb->stats_t.writeAc.access = icache.ifb->stats_t.writeAc.hit =
-        icache.ifb->l_ip.num_search_ports * coredynp.IFU_duty_cycle;
-    icache.prefetchb->tdp_stats = icache.prefetchb->stats_t;
+    icache.prefetchb.stats_t.readAc.access =
+        icache.prefetchb.stats_t.readAc.hit =
+            icache.prefetchb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.prefetchb.stats_t.writeAc.access = icache.ifb.stats_t.writeAc.hit =
+        icache.ifb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
+    icache.prefetchb.tdp_stats = icache.prefetchb.stats_t;
 
     IB->stats_t.readAc.access = IB->stats_t.writeAc.access =
         XML->sys.core[ithCore].peak_issue_width;
@@ -450,27 +453,25 @@ void InstFetchU::computeEnergy(bool is_tdp) {
 
   } else {
     // init stats for Runtime Dynamic (RTP)
-    icache.caches->stats_t.readAc.access =
+    icache.caches.stats_t.readAc.access =
         XML->sys.core[ithCore].icache.read_accesses;
-    icache.caches->stats_t.readAc.miss =
+    icache.caches.stats_t.readAc.miss =
         XML->sys.core[ithCore].icache.read_misses;
-    icache.caches->stats_t.readAc.hit = icache.caches->stats_t.readAc.access -
-                                        icache.caches->stats_t.readAc.miss;
-    icache.caches->rtp_stats = icache.caches->stats_t;
+    icache.caches.stats_t.readAc.hit =
+        icache.caches.stats_t.readAc.access - icache.caches.stats_t.readAc.miss;
+    icache.caches.rtp_stats = icache.caches.stats_t;
 
-    icache.missb->stats_t.readAc.access = icache.caches->stats_t.readAc.miss;
-    icache.missb->stats_t.writeAc.access = icache.caches->stats_t.readAc.miss;
-    icache.missb->rtp_stats = icache.missb->stats_t;
+    icache.missb.stats_t.readAc.access = icache.caches.stats_t.readAc.miss;
+    icache.missb.stats_t.writeAc.access = icache.caches.stats_t.readAc.miss;
+    icache.missb.rtp_stats = icache.missb.stats_t;
 
-    icache.ifb->stats_t.readAc.access = icache.caches->stats_t.readAc.miss;
-    icache.ifb->stats_t.writeAc.access = icache.caches->stats_t.readAc.miss;
-    icache.ifb->rtp_stats = icache.ifb->stats_t;
+    icache.ifb.stats_t.readAc.access = icache.caches.stats_t.readAc.miss;
+    icache.ifb.stats_t.writeAc.access = icache.caches.stats_t.readAc.miss;
+    icache.ifb.rtp_stats = icache.ifb.stats_t;
 
-    icache.prefetchb->stats_t.readAc.access =
-        icache.caches->stats_t.readAc.miss;
-    icache.prefetchb->stats_t.writeAc.access =
-        icache.caches->stats_t.readAc.miss;
-    icache.prefetchb->rtp_stats = icache.prefetchb->stats_t;
+    icache.prefetchb.stats_t.readAc.access = icache.caches.stats_t.readAc.miss;
+    icache.prefetchb.stats_t.writeAc.access = icache.caches.stats_t.readAc.miss;
+    icache.prefetchb.rtp_stats = icache.prefetchb.stats_t;
 
     IB->stats_t.readAc.access = IB->stats_t.writeAc.access =
         XML->sys.core[ithCore].total_instructions;
@@ -506,31 +507,31 @@ void InstFetchU::computeEnergy(bool is_tdp) {
   }
 
   icache.power_t.readOp.dynamic +=
-      (icache.caches->stats_t.readAc.hit *
-           icache.caches->local_result.power.readOp.dynamic +
-       // icache.caches->stats_t.readAc.miss*icache.caches->local_result.tag_array2->power.readOp.dynamic+
-       icache.caches->stats_t.readAc.miss *
-           icache.caches->local_result.power.readOp
+      (icache.caches.stats_t.readAc.hit *
+           icache.caches.local_result.power.readOp.dynamic +
+       // icache.caches.stats_t.readAc.miss*icache.caches.local_result.tag_array2->power.readOp.dynamic+
+       icache.caches.stats_t.readAc.miss *
+           icache.caches.local_result.power.readOp
                .dynamic + // assume tag data accessed in parallel
-       icache.caches->stats_t.readAc.miss *
-           icache.caches->local_result.power.writeOp
+       icache.caches.stats_t.readAc.miss *
+           icache.caches.local_result.power.writeOp
                .dynamic); // read miss in Icache cause a write to Icache
   icache.power_t.readOp.dynamic +=
-      icache.missb->stats_t.readAc.access *
-          icache.missb->local_result.power.searchOp.dynamic +
-      icache.missb->stats_t.writeAc.access *
-          icache.missb->local_result.power.writeOp
+      icache.missb.stats_t.readAc.access *
+          icache.missb.local_result.power.searchOp.dynamic +
+      icache.missb.stats_t.writeAc.access *
+          icache.missb.local_result.power.writeOp
               .dynamic; // each access to missb involves a CAM and a write
   icache.power_t.readOp.dynamic +=
-      icache.ifb->stats_t.readAc.access *
-          icache.ifb->local_result.power.searchOp.dynamic +
-      icache.ifb->stats_t.writeAc.access *
-          icache.ifb->local_result.power.writeOp.dynamic;
+      icache.ifb.stats_t.readAc.access *
+          icache.ifb.local_result.power.searchOp.dynamic +
+      icache.ifb.stats_t.writeAc.access *
+          icache.ifb.local_result.power.writeOp.dynamic;
   icache.power_t.readOp.dynamic +=
-      icache.prefetchb->stats_t.readAc.access *
-          icache.prefetchb->local_result.power.searchOp.dynamic +
-      icache.prefetchb->stats_t.writeAc.access *
-          icache.prefetchb->local_result.power.writeOp.dynamic;
+      icache.prefetchb.stats_t.readAc.access *
+          icache.prefetchb.local_result.power.searchOp.dynamic +
+      icache.prefetchb.stats_t.writeAc.access *
+          icache.prefetchb.local_result.power.writeOp.dynamic;
 
   IB->power_t.readOp.dynamic +=
       IB->local_result.power.readOp.dynamic * IB->stats_t.readAc.access +
@@ -546,15 +547,15 @@ void InstFetchU::computeEnergy(bool is_tdp) {
 
   if (is_tdp) {
     //    	icache.power = icache.power_t +
-    //    	        (icache.caches->local_result.power)*pppm_lkg +
-    //    			(icache.missb->local_result.power +
-    //    			icache.ifb->local_result.power +
-    //    			icache.prefetchb->local_result.power)*pppm_Isub;
-    icache.power = icache.power_t + (icache.caches->local_result.power +
-                                     icache.missb->local_result.power +
-                                     icache.ifb->local_result.power +
-                                     icache.prefetchb->local_result.power) *
-                                        pppm_lkg;
+    //    	        (icache.caches.local_result.power)*pppm_lkg +
+    //    			(icache.missb.local_result.power +
+    //    			icache.ifb.local_result.power +
+    //    			icache.prefetchb.local_result.power)*pppm_Isub;
+    icache.power =
+        icache.power_t +
+        (icache.caches.local_result.power + icache.missb.local_result.power +
+         icache.ifb.local_result.power + icache.prefetchb.local_result.power) *
+            pppm_lkg;
 
     IB->power = IB->power_t + IB->local_result.power * pppm_lkg;
     power = power + icache.power + IB->power;
@@ -574,16 +575,16 @@ void InstFetchU::computeEnergy(bool is_tdp) {
     power = power + (ID_inst->power + ID_operand->power + ID_misc->power);
   } else {
     //    	icache.rt_power = icache.power_t +
-    //    	        (icache.caches->local_result.power)*pppm_lkg +
-    //    			(icache.missb->local_result.power +
-    //    			icache.ifb->local_result.power +
-    //    			icache.prefetchb->local_result.power)*pppm_Isub;
+    //    	        (icache.caches.local_result.power)*pppm_lkg +
+    //    			(icache.missb.local_result.power +
+    //    			icache.ifb.local_result.power +
+    //    			icache.prefetchb.local_result.power)*pppm_Isub;
 
-    icache.rt_power = icache.power_t + (icache.caches->local_result.power +
-                                        icache.missb->local_result.power +
-                                        icache.ifb->local_result.power +
-                                        icache.prefetchb->local_result.power) *
-                                           pppm_lkg;
+    icache.rt_power =
+        icache.power_t +
+        (icache.caches.local_result.power + icache.missb.local_result.power +
+         icache.ifb.local_result.power + icache.prefetchb.local_result.power) *
+            pppm_lkg;
 
     IB->rt_power = IB->power_t + IB->local_result.power * pppm_lkg;
     rt_power = rt_power + icache.rt_power + IB->rt_power;
