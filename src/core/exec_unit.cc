@@ -42,45 +42,99 @@
 #include <iostream>
 #include <string>
 
-EXECU::EXECU(const ParseXML *XML_interface,
+EXECU::EXECU(){
+  init_params = false;
+  init_stats = false;
+}
+
+void EXECU::set_params(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              double lsq_height_,
              const CoreDynParam &dyn_p_,
-             bool exist_)
-    : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      lsq_height(lsq_height_), coredynp(dyn_p_), rfu(0), scheu(0),
-      exist(exist_) {
+             bool exist_){
+
+  XML = XML_interface;
+  ithCore = ithCore_;
+  interface_ip = *interface_ip_;
+  coredynp = dyn_p_;
+  lsq_height = lsq_height_;
+  exist = exist_;
   bool exist_flag = true;
   if (!exist) {
     return;
   }
-  double fu_height = 0.0;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
-  rfu = new RegFU();
-  rfu->set_params(XML, ithCore, &interface_ip, coredynp);
-  rfu->computeArea();
-  rfu->set_stats(XML);
-  scheu = new SchedulerU();
-  scheu->set_params(XML, ithCore, &interface_ip, coredynp);
-  scheu->computeArea();
-  scheu->set_stats(XML);
+  rfu.set_params(XML, ithCore, &interface_ip, coredynp);
+  scheu.set_params(XML, ithCore, &interface_ip, coredynp);
   exeu.set_params(XML, ithCore, &interface_ip, coredynp, ALU);
-  exeu.set_stats(XML);
-  exeu.computeArea();
-  area.set_area(area.get_area() + exeu.area.get_area() + rfu->area.get_area() +
-                scheu->area.get_area());
-  fu_height = exeu.FU_height;
+
+
   if (coredynp.num_fpus > 0) {
     fp_u.set_params(XML, ithCore, &interface_ip, coredynp, FPU);
+  }
+  if (coredynp.num_muls > 0) {
+    mul.set_params(XML, ithCore, &interface_ip, coredynp, MUL);
+
+  }
+  /*
+   * broadcast logic, including int-broadcast; int_tag-broadcast; fp-broadcast;
+   * fp_tag-broadcast integer by pass has two paths and fp has 3 paths. on the
+   * same bus there are multiple tri-state drivers and muxes that go to
+   * different components on the same bus
+   */
+
+  init_params = true;
+}
+
+void EXECU::computeStaticPower(){
+  //Doing nothing as of now, everything seems to be hapening inside set area itself
+}
+
+void EXECU::set_stats(const ParseXML *XML){
+    rfu.set_stats(XML);
+    scheu.set_stats(XML);
+    exeu.set_stats(XML);
+    if (coredynp.num_fpus > 0) {
     fp_u.set_stats(XML);
+  }
+  if (coredynp.num_muls > 0) {
+    mul.set_stats(XML);
+  }
+  init_stats = true;
+}
+
+// void EXECU::computeArea(){
+
+// }
+
+void EXECU::computeArea(){
+    if (!init_params) {
+    std::cerr << "[ EXECU ] Error: must set params before calling "
+                 "computeArea()\n";
+    exit(1);
+  }
+  rfu.computeArea();
+
+  scheu.computeArea();
+
+  exeu.computeArea();
+
+  //all of the below interconnects depend ont he stats being set
+    rfu.set_stats(XML);
+    scheu.set_stats(XML);
+    exeu.set_stats(XML);
+  double fu_height = 0.0;
+
+  area.set_area(area.get_area() + exeu.area.get_area() + rfu.area.get_area() +
+                scheu.area.get_area());
+  fu_height = exeu.FU_height;
+  if (coredynp.num_fpus > 0) {
     fp_u.computeArea();
     area.set_area(area.get_area() + fp_u.area.get_area());
   }
   if (coredynp.num_muls > 0) {
-    mul.set_params(XML, ithCore, &interface_ip, coredynp, MUL);
-    mul.set_stats(XML);
     mul.computeArea();
     area.set_area(area.get_area() + mul.area.get_area());
     fu_height += mul.FU_height;
@@ -112,7 +166,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                     1,
                     1,
                     int(ceil(XML->sys.machine_bits / 32.0) * 32),
-                    rfu->int_regfile_height + exeu.FU_height + lsq_height,
+                    rfu.int_regfile_height + exeu.FU_height + lsq_height,
                     &interface_ip,
                     3,
                     false,
@@ -125,8 +179,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                       1,
                       1,
                       coredynp.perThreadState,
-                      rfu->int_regfile_height + exeu.FU_height + lsq_height +
-                          scheu->Iw_height,
+                      rfu.int_regfile_height + exeu.FU_height + lsq_height +
+                          scheu.Iw_height,
                       &interface_ip,
                       3,
                       false,
@@ -141,7 +195,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                           1,
                           1,
                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                          rfu->fp_regfile_height + exeu.FU_height +
+                          rfu.fp_regfile_height + exeu.FU_height +
                               mul.FU_height + lsq_height,
                           &interface_ip,
                           3,
@@ -156,8 +210,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                              1,
                              1,
                              coredynp.perThreadState,
-                             rfu->fp_regfile_height + exeu.FU_height +
-                                 mul.FU_height + lsq_height + scheu->Iw_height,
+                             rfu.fp_regfile_height + exeu.FU_height +
+                                 mul.FU_height + lsq_height + scheu.Iw_height,
                              &interface_ip,
                              3,
                              false,
@@ -174,7 +228,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                      1,
                      1,
                      int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
-                     rfu->fp_regfile_height + fp_u.FU_height,
+                     rfu.fp_regfile_height + fp_u.FU_height,
                      &interface_ip,
                      3,
                      false,
@@ -187,8 +241,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                        1,
                        1,
                        coredynp.perThreadState,
-                       rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                           scheu->Iw_height,
+                       rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+                           scheu.Iw_height,
                        &interface_ip,
                        3,
                        false,
@@ -210,7 +264,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                       1,
                       1,
                       int(ceil(coredynp.int_data_width)),
-                      rfu->int_regfile_height + exeu.FU_height + lsq_height,
+                      rfu.int_regfile_height + exeu.FU_height + lsq_height,
                       &interface_ip,
                       3,
                       false,
@@ -223,8 +277,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                         1,
                         1,
                         coredynp.phy_ireg_width,
-                        rfu->int_regfile_height + exeu.FU_height + lsq_height +
-                            scheu->Iw_height + scheu->ROB_height,
+                        rfu.int_regfile_height + exeu.FU_height + lsq_height +
+                            scheu.Iw_height + scheu.ROB_height,
                         &interface_ip,
                         3,
                         false,
@@ -240,7 +294,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                             1,
                             1,
                             int(ceil(coredynp.int_data_width)),
-                            rfu->int_regfile_height + exeu.FU_height +
+                            rfu.int_regfile_height + exeu.FU_height +
                                 mul.FU_height + lsq_height,
                             &interface_ip,
                             3,
@@ -253,9 +307,9 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                1,
                                1,
                                coredynp.phy_ireg_width,
-                               rfu->int_regfile_height + exeu.FU_height +
+                               rfu.int_regfile_height + exeu.FU_height +
                                    mul.FU_height + lsq_height +
-                                   scheu->Iw_height + scheu->ROB_height,
+                                   scheu.Iw_height + scheu.ROB_height,
                                &interface_ip,
                                3,
                                false,
@@ -274,7 +328,7 @@ EXECU::EXECU(const ParseXML *XML_interface,
                        1,
                        1,
                        int(ceil(coredynp.fp_data_width)),
-                       rfu->fp_regfile_height + fp_u.FU_height,
+                       rfu.fp_regfile_height + fp_u.FU_height,
                        &interface_ip,
                        3,
                        false,
@@ -286,8 +340,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                          1,
                          1,
                          coredynp.phy_freg_width,
-                         rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                             scheu->fp_Iw_height + scheu->ROB_height,
+                         rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+                             scheu.fp_Iw_height + scheu.ROB_height,
                          &interface_ip,
                          3,
                          false,
@@ -309,8 +363,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                       1,
                       1,
                       int(ceil(coredynp.int_data_width)),
-                      rfu->int_regfile_height + exeu.FU_height + lsq_height +
-                          scheu->Iw_height + scheu->ROB_height,
+                      rfu.int_regfile_height + exeu.FU_height + lsq_height +
+                          scheu.Iw_height + scheu.ROB_height,
                       &interface_ip,
                       3,
                       false,
@@ -322,8 +376,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                         1,
                         1,
                         coredynp.phy_ireg_width,
-                        rfu->int_regfile_height + exeu.FU_height + lsq_height +
-                            scheu->Iw_height + scheu->ROB_height,
+                        rfu.int_regfile_height + exeu.FU_height + lsq_height +
+                            scheu.Iw_height + scheu.ROB_height,
                         &interface_ip,
                         3,
                         false,
@@ -339,9 +393,9 @@ EXECU::EXECU(const ParseXML *XML_interface,
                             1,
                             1,
                             int(ceil(coredynp.int_data_width)),
-                            rfu->int_regfile_height + exeu.FU_height +
-                                mul.FU_height + lsq_height + scheu->Iw_height +
-                                scheu->ROB_height,
+                            rfu.int_regfile_height + exeu.FU_height +
+                                mul.FU_height + lsq_height + scheu.Iw_height +
+                                scheu.ROB_height,
                             &interface_ip,
                             3,
                             false,
@@ -353,9 +407,9 @@ EXECU::EXECU(const ParseXML *XML_interface,
                                1,
                                1,
                                coredynp.phy_ireg_width,
-                               rfu->int_regfile_height + exeu.FU_height +
+                               rfu.int_regfile_height + exeu.FU_height +
                                    mul.FU_height + lsq_height +
-                                   scheu->Iw_height + scheu->ROB_height,
+                                   scheu.Iw_height + scheu.ROB_height,
                                &interface_ip,
                                3,
                                false,
@@ -374,8 +428,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                        1,
                        1,
                        int(ceil(coredynp.fp_data_width)),
-                       rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                           scheu->fp_Iw_height + scheu->ROB_height,
+                       rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+                           scheu.fp_Iw_height + scheu.ROB_height,
                        &interface_ip,
                        3,
                        false,
@@ -387,8 +441,8 @@ EXECU::EXECU(const ParseXML *XML_interface,
                          1,
                          1,
                          coredynp.phy_freg_width,
-                         rfu->fp_regfile_height + fp_u.FU_height + lsq_height +
-                             scheu->fp_Iw_height + scheu->ROB_height,
+                         rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+                             scheu.fp_Iw_height + scheu.ROB_height,
                          &interface_ip,
                          3,
                          false,
@@ -405,19 +459,25 @@ EXECU::EXECU(const ParseXML *XML_interface,
   area.set_area(area.get_area() + bypass.area.get_area());
 }
 
-void EXECU::computeEnergy(bool is_tdp) {
+
+void EXECU::computeDynamicPower(bool is_tdp) {
+    if (!init_params) {
+    std::cerr << "[ EXECU ] Error: must set params before calling "
+                 "computeStaticPower()\n";
+    exit(1);
+  }
   if (!exist)
     return;
   double pppm_t[4] = {1, 1, 1, 1};
-  //	rfu->power.reset();
-  //	rfu->rt_power.reset();
-  //	scheu->power.reset();
-  //	scheu->rt_power.reset();
+  //	rfu.power.reset();
+  //	rfu.rt_power.reset();
+  //	scheu.power.reset();
+  //	scheu.rt_power.reset();
   //	exeu.power.reset();
   //	exeu.rt_power.reset();
 
-  rfu->computeDynamicPower(is_tdp);
-  scheu->computeDynamicPower(is_tdp);
+  rfu.computeDynamicPower(is_tdp);
+  scheu.computeDynamicPower(is_tdp);
   if (is_tdp) {
     exeu.computePower();
   } else {
@@ -476,7 +536,7 @@ void EXECU::computeEnergy(bool is_tdp) {
       power = power + fp_u.power;
     }
 
-    power = power + rfu->power + exeu.power + bypass.power + scheu->power;
+    power = power + rfu.power + exeu.power + bypass.power + scheu.power;
   } else {
     set_pppm(pppm_t,
              XML->sys.core[ithCore].cdb_alu_accesses,
@@ -509,8 +569,8 @@ void EXECU::computeEnergy(bool is_tdp) {
       bypass.rt_power = bypass.rt_power + fpTagBypass.power * pppm_t;
       rt_power = rt_power + fp_u.rt_power;
     }
-    rt_power = rt_power + rfu->rt_power + exeu.rt_power + bypass.rt_power +
-               scheu->rt_power;
+    rt_power = rt_power + rfu.rt_power + exeu.rt_power + bypass.rt_power +
+               scheu.rt_power;
   }
 }
 
@@ -526,54 +586,54 @@ void EXECU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   // bypass->area.get_area() *1e-6 << " mm^2" << endl;
   if (is_tdp) {
     cout << indent_str << "Register Files:" << endl;
-    cout << indent_str_next << "Area = " << rfu->area.get_area() * 1e-6
+    cout << indent_str_next << "Area = " << rfu.area.get_area() * 1e-6
          << " mm^2" << endl;
     cout << indent_str_next
-         << "Peak Dynamic = " << rfu->power.readOp.dynamic * clockRate << " W"
+         << "Peak Dynamic = " << rfu.power.readOp.dynamic * clockRate << " W"
          << endl;
     cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? rfu->power.readOp.longer_channel_leakage
-                          : rfu->power.readOp.leakage)
+         << (long_channel ? rfu.power.readOp.longer_channel_leakage
+                          : rfu.power.readOp.leakage)
          << " W" << endl;
     if (power_gating)
       cout << indent_str_next << "Subthreshold Leakage with power gating = "
            << (long_channel
-                   ? rfu->power.readOp.power_gated_with_long_channel_leakage
-                   : rfu->power.readOp.power_gated_leakage)
+                   ? rfu.power.readOp.power_gated_with_long_channel_leakage
+                   : rfu.power.readOp.power_gated_leakage)
            << " W" << endl;
     cout << indent_str_next
-         << "Gate Leakage = " << rfu->power.readOp.gate_leakage << " W" << endl;
+         << "Gate Leakage = " << rfu.power.readOp.gate_leakage << " W" << endl;
     cout << indent_str_next
-         << "Runtime Dynamic = " << rfu->rt_power.readOp.dynamic / executionTime
+         << "Runtime Dynamic = " << rfu.rt_power.readOp.dynamic / executionTime
          << " W" << endl;
     cout << endl;
     if (plevel > 3) {
-      rfu->displayEnergy(indent + 4, is_tdp);
+      rfu.displayEnergy(indent + 4, is_tdp);
     }
     cout << indent_str << "Instruction Scheduler:" << endl;
-    cout << indent_str_next << "Area = " << scheu->area.get_area() * 1e-6
+    cout << indent_str_next << "Area = " << scheu.area.get_area() * 1e-6
          << " mm^2" << endl;
     cout << indent_str_next
-         << "Peak Dynamic = " << scheu->power.readOp.dynamic * clockRate << " W"
+         << "Peak Dynamic = " << scheu.power.readOp.dynamic * clockRate << " W"
          << endl;
     cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? scheu->power.readOp.longer_channel_leakage
-                          : scheu->power.readOp.leakage)
+         << (long_channel ? scheu.power.readOp.longer_channel_leakage
+                          : scheu.power.readOp.leakage)
          << " W" << endl;
     if (power_gating)
       cout << indent_str_next << "Subthreshold Leakage with power gating = "
            << (long_channel
-                   ? scheu->power.readOp.power_gated_with_long_channel_leakage
-                   : scheu->power.readOp.power_gated_leakage)
+                   ? scheu.power.readOp.power_gated_with_long_channel_leakage
+                   : scheu.power.readOp.power_gated_leakage)
            << " W" << endl;
     cout << indent_str_next
-         << "Gate Leakage = " << scheu->power.readOp.gate_leakage << " W"
+         << "Gate Leakage = " << scheu.power.readOp.gate_leakage << " W"
          << endl;
     cout << indent_str_next << "Runtime Dynamic = "
-         << scheu->rt_power.readOp.dynamic / executionTime << " W" << endl;
+         << scheu.rt_power.readOp.dynamic / executionTime << " W" << endl;
     cout << endl;
     if (plevel > 3) {
-      scheu->displayEnergy(indent + 4, is_tdp);
+      scheu.displayEnergy(indent + 4, is_tdp);
     }
     exeu.display(indent, is_tdp);
     if (coredynp.num_fpus > 0) {
@@ -607,17 +667,17 @@ void EXECU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     cout << endl;
   } else {
     cout << indent_str_next << "Register Files    Peak Dynamic = "
-         << rfu->rt_power.readOp.dynamic * clockRate << " W" << endl;
+         << rfu.rt_power.readOp.dynamic * clockRate << " W" << endl;
     cout << indent_str_next << "Register Files    Subthreshold Leakage = "
-         << rfu->rt_power.readOp.leakage << " W" << endl;
+         << rfu.rt_power.readOp.leakage << " W" << endl;
     cout << indent_str_next << "Register Files    Gate Leakage = "
-         << rfu->rt_power.readOp.gate_leakage << " W" << endl;
+         << rfu.rt_power.readOp.gate_leakage << " W" << endl;
     cout << indent_str_next << "Instruction Sheduler   Peak Dynamic = "
-         << scheu->rt_power.readOp.dynamic * clockRate << " W" << endl;
+         << scheu.rt_power.readOp.dynamic * clockRate << " W" << endl;
     cout << indent_str_next << "Instruction Sheduler   Subthreshold Leakage = "
-         << scheu->rt_power.readOp.leakage << " W" << endl;
+         << scheu.rt_power.readOp.leakage << " W" << endl;
     cout << indent_str_next << "Instruction Sheduler   Gate Leakage = "
-         << scheu->rt_power.readOp.gate_leakage << " W" << endl;
+         << scheu.rt_power.readOp.gate_leakage << " W" << endl;
     cout << indent_str_next << "Results Broadcast Bus   Peak Dynamic = "
          << bypass.rt_power.readOp.dynamic * clockRate << " W" << endl;
     cout << indent_str_next << "Results Broadcast Bus   Subthreshold Leakage = "
@@ -631,12 +691,372 @@ EXECU ::~EXECU() {
   if (!exist) {
     return;
   }
-  if (rfu) {
-    delete rfu;
-    rfu = 0;
-  }
-  if (scheu) {
-    delete scheu;
-    scheu = 0;
-  }
 }
+
+// void EXECU::set_params(const ParseXML *XML_interface,
+//              int ithCore_,
+//              InputParameter *interface_ip_,
+//              double lsq_height_,
+//              const CoreDynParam &dyn_p_,
+//              bool exist_){
+
+//   XML = XML_interface;
+//   ithCore = ithCore_;
+//   interface_ip = *interface_ip_;
+//   coredynp = dyn_p_;
+//   lsq_height = lsq_height_;
+//   exist = exist_;
+
+//   bool exist_flag = true;
+//   if (!exist) {
+//     return;
+//   }
+//   double fu_height = 0.0;
+//   clockRate = coredynp.clockRate;
+//   executionTime = coredynp.executionTime;
+//   rfu.set_params(XML, ithCore, &interface_ip, coredynp);
+//   rfu.computeArea();
+//   rfu.set_stats(XML);
+//   scheu.set_params(XML, ithCore, &interface_ip, coredynp);
+//   scheu.computeArea();
+//   scheu.set_stats(XML);
+//   exeu.set_params(XML, ithCore, &interface_ip, coredynp, ALU);
+//   exeu.set_stats(XML);
+//   exeu.computeArea();
+//   area.set_area(area.get_area() + exeu.area.get_area() + rfu.area.get_area() +
+//                 scheu.area.get_area());
+//   fu_height = exeu.FU_height;
+//   if (coredynp.num_fpus > 0) {
+//     fp_u.set_params(XML, ithCore, &interface_ip, coredynp, FPU);
+//     fp_u.set_stats(XML);
+//     fp_u.computeArea();
+//     area.set_area(area.get_area() + fp_u.area.get_area());
+//   }
+//   if (coredynp.num_muls > 0) {
+//     mul.set_params(XML, ithCore, &interface_ip, coredynp, MUL);
+//     mul.set_stats(XML);
+//     mul.computeArea();
+//     area.set_area(area.get_area() + mul.area.get_area());
+//     fu_height += mul.FU_height;
+//   }
+//   /*
+//    * broadcast logic, including int-broadcast; int_tag-broadcast; fp-broadcast;
+//    * fp_tag-broadcast integer by pass has two paths and fp has 3 paths. on the
+//    * same bus there are multiple tri-state drivers and muxes that go to
+//    * different components on the same bus
+//    */
+//   if (XML->sys.Embedded) {
+//     interface_ip.wt = Global_30;
+//     interface_ip.wire_is_mat_type = 0;
+//     interface_ip.wire_os_mat_type = 0;
+//     interface_ip.throughput = 1.0 / clockRate;
+//     interface_ip.latency = 1.0 / clockRate;
+//   } else {
+//     interface_ip.wt = Global;
+//     interface_ip.wire_is_mat_type =
+//         2; // start from semi-global since local wires are already used
+//     interface_ip.wire_os_mat_type = 2;
+//     interface_ip.throughput = 10.0 / clockRate; // Do not care
+//     interface_ip.latency = 10.0 / clockRate;
+//   }
+
+//   if (coredynp.core_ty == Inorder) {
+//     int_bypass.init("Int Bypass Data",
+//                     Core_device,
+//                     1,
+//                     1,
+//                     int(ceil(XML->sys.machine_bits / 32.0) * 32),
+//                     rfu.int_regfile_height + exeu.FU_height + lsq_height,
+//                     &interface_ip,
+//                     3,
+//                     false,
+//                     1.0,
+//                     coredynp.opt_local,
+//                     coredynp.core_ty);
+//     bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
+//     intTagBypass.init("Int Bypass tag",
+//                       Core_device,
+//                       1,
+//                       1,
+//                       coredynp.perThreadState,
+//                       rfu.int_regfile_height + exeu.FU_height + lsq_height +
+//                           scheu.Iw_height,
+//                       &interface_ip,
+//                       3,
+//                       false,
+//                       1.0,
+//                       coredynp.opt_local,
+//                       coredynp.core_ty);
+//     bypass.area.set_area(bypass.area.get_area() + intTagBypass.area.get_area());
+
+//     if (coredynp.num_muls > 0) {
+//       int_mul_bypass.init("Mul Bypass Data",
+//                           Core_device,
+//                           1,
+//                           1,
+//                           int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+//                           rfu.fp_regfile_height + exeu.FU_height +
+//                               mul.FU_height + lsq_height,
+//                           &interface_ip,
+//                           3,
+//                           false,
+//                           1.0,
+//                           coredynp.opt_local,
+//                           coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() +
+//                            int_mul_bypass.area.get_area());
+//       intTag_mul_Bypass.init("Mul Bypass tag",
+//                              Core_device,
+//                              1,
+//                              1,
+//                              coredynp.perThreadState,
+//                              rfu.fp_regfile_height + exeu.FU_height +
+//                                  mul.FU_height + lsq_height + scheu.Iw_height,
+//                              &interface_ip,
+//                              3,
+//                              false,
+//                              1.0,
+//                              coredynp.opt_local,
+//                              coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() +
+//                            intTag_mul_Bypass.area.get_area());
+//     }
+
+//     if (coredynp.num_fpus > 0) {
+//       fp_bypass.init("FP Bypass Data",
+//                      Core_device,
+//                      1,
+//                      1,
+//                      int(ceil(XML->sys.machine_bits / 32.0) * 32 * 1.5),
+//                      rfu.fp_regfile_height + fp_u.FU_height,
+//                      &interface_ip,
+//                      3,
+//                      false,
+//                      1.0,
+//                      coredynp.opt_local,
+//                      coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() + fp_bypass.area.get_area());
+//       fpTagBypass.init("FP Bypass tag",
+//                        Core_device,
+//                        1,
+//                        1,
+//                        coredynp.perThreadState,
+//                        rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+//                            scheu.Iw_height,
+//                        &interface_ip,
+//                        3,
+//                        false,
+//                        1.0,
+//                        coredynp.opt_local,
+//                        coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() +
+//                            fpTagBypass.area.get_area());
+//     }
+//   } else { // OOO
+//     if (coredynp.scheu_ty == PhysicalRegFile) {
+//       /* For physical register based OOO,
+//        * data broadcast interconnects cover across functional units, lsq, inst
+//        * windows and register files, while tag broadcast interconnects also
+//        * cover across ROB
+//        */
+//       int_bypass.init("Int Bypass Data",
+//                       Core_device,
+//                       1,
+//                       1,
+//                       int(ceil(coredynp.int_data_width)),
+//                       rfu.int_regfile_height + exeu.FU_height + lsq_height,
+//                       &interface_ip,
+//                       3,
+//                       false,
+//                       1.0,
+//                       coredynp.opt_local,
+//                       coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
+//       intTagBypass.init("Int Bypass tag",
+//                         Core_device,
+//                         1,
+//                         1,
+//                         coredynp.phy_ireg_width,
+//                         rfu.int_regfile_height + exeu.FU_height + lsq_height +
+//                             scheu.Iw_height + scheu.ROB_height,
+//                         &interface_ip,
+//                         3,
+//                         false,
+//                         1.0,
+//                         coredynp.opt_local,
+//                         coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() +
+//                            intTagBypass.area.get_area());
+
+//       if (coredynp.num_muls > 0) {
+//         int_mul_bypass.init("Mul Bypass Data",
+//                             Core_device,
+//                             1,
+//                             1,
+//                             int(ceil(coredynp.int_data_width)),
+//                             rfu.int_regfile_height + exeu.FU_height +
+//                                 mul.FU_height + lsq_height,
+//                             &interface_ip,
+//                             3,
+//                             false,
+//                             1.0,
+//                             coredynp.opt_local,
+//                             coredynp.core_ty);
+//         intTag_mul_Bypass.init("Mul Bypass tag",
+//                                Core_device,
+//                                1,
+//                                1,
+//                                coredynp.phy_ireg_width,
+//                                rfu.int_regfile_height + exeu.FU_height +
+//                                    mul.FU_height + lsq_height +
+//                                    scheu.Iw_height + scheu.ROB_height,
+//                                &interface_ip,
+//                                3,
+//                                false,
+//                                1.0,
+//                                coredynp.opt_local,
+//                                coredynp.core_ty);
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              int_mul_bypass.area.get_area());
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              intTag_mul_Bypass.area.get_area());
+//       }
+
+//       if (coredynp.num_fpus > 0) {
+//         fp_bypass.init("FP Bypass Data",
+//                        Core_device,
+//                        1,
+//                        1,
+//                        int(ceil(coredynp.fp_data_width)),
+//                        rfu.fp_regfile_height + fp_u.FU_height,
+//                        &interface_ip,
+//                        3,
+//                        false,
+//                        1.0,
+//                        coredynp.opt_local,
+//                        coredynp.core_ty);
+//         fpTagBypass.init("FP Bypass tag",
+//                          Core_device,
+//                          1,
+//                          1,
+//                          coredynp.phy_freg_width,
+//                          rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+//                              scheu.fp_Iw_height + scheu.ROB_height,
+//                          &interface_ip,
+//                          3,
+//                          false,
+//                          1.0,
+//                          coredynp.opt_local,
+//                          coredynp.core_ty);
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              fp_bypass.area.get_area());
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              fpTagBypass.area.get_area());
+//       }
+//     } else {
+//       /*
+//        * In RS based processor both data and tag are broadcast together,
+//        * covering functional units, lsq, nst windows, register files, and ROBs
+//        */
+//       int_bypass.init("Int Bypass Data",
+//                       Core_device,
+//                       1,
+//                       1,
+//                       int(ceil(coredynp.int_data_width)),
+//                       rfu.int_regfile_height + exeu.FU_height + lsq_height +
+//                           scheu.Iw_height + scheu.ROB_height,
+//                       &interface_ip,
+//                       3,
+//                       false,
+//                       1.0,
+//                       coredynp.opt_local,
+//                       coredynp.core_ty);
+//       intTagBypass.init("Int Bypass tag",
+//                         Core_device,
+//                         1,
+//                         1,
+//                         coredynp.phy_ireg_width,
+//                         rfu.int_regfile_height + exeu.FU_height + lsq_height +
+//                             scheu.Iw_height + scheu.ROB_height,
+//                         &interface_ip,
+//                         3,
+//                         false,
+//                         1.0,
+//                         coredynp.opt_local,
+//                         coredynp.core_ty);
+//       bypass.area.set_area(bypass.area.get_area() + int_bypass.area.get_area());
+//       bypass.area.set_area(bypass.area.get_area() +
+//                            intTagBypass.area.get_area());
+//       if (coredynp.num_muls > 0) {
+//         int_mul_bypass.init("Mul Bypass Data",
+//                             Core_device,
+//                             1,
+//                             1,
+//                             int(ceil(coredynp.int_data_width)),
+//                             rfu.int_regfile_height + exeu.FU_height +
+//                                 mul.FU_height + lsq_height + scheu.Iw_height +
+//                                 scheu.ROB_height,
+//                             &interface_ip,
+//                             3,
+//                             false,
+//                             1.0,
+//                             coredynp.opt_local,
+//                             coredynp.core_ty);
+//         intTag_mul_Bypass.init("Mul Bypass tag",
+//                                Core_device,
+//                                1,
+//                                1,
+//                                coredynp.phy_ireg_width,
+//                                rfu.int_regfile_height + exeu.FU_height +
+//                                    mul.FU_height + lsq_height +
+//                                    scheu.Iw_height + scheu.ROB_height,
+//                                &interface_ip,
+//                                3,
+//                                false,
+//                                1.0,
+//                                coredynp.opt_local,
+//                                coredynp.core_ty);
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              int_mul_bypass.area.get_area());
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              intTag_mul_Bypass.area.get_area());
+//       }
+
+//       if (coredynp.num_fpus > 0) {
+//         fp_bypass.init("FP Bypass Data",
+//                        Core_device,
+//                        1,
+//                        1,
+//                        int(ceil(coredynp.fp_data_width)),
+//                        rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+//                            scheu.fp_Iw_height + scheu.ROB_height,
+//                        &interface_ip,
+//                        3,
+//                        false,
+//                        1.0,
+//                        coredynp.opt_local,
+//                        coredynp.core_ty);
+//         fpTagBypass.init("FP Bypass tag",
+//                          Core_device,
+//                          1,
+//                          1,
+//                          coredynp.phy_freg_width,
+//                          rfu.fp_regfile_height + fp_u.FU_height + lsq_height +
+//                              scheu.fp_Iw_height + scheu.ROB_height,
+//                          &interface_ip,
+//                          3,
+//                          false,
+//                          1.0,
+//                          coredynp.opt_local,
+//                          coredynp.core_ty);
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              fp_bypass.area.get_area());
+//         bypass.area.set_area(bypass.area.get_area() +
+//                              fpTagBypass.area.get_area());
+//       }
+//     }
+//   }
+//   area.set_area(area.get_area() + bypass.area.get_area());
+
+//   init_params = true;
+//              }
