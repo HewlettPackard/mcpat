@@ -79,8 +79,8 @@ Core::Core(const ParseXML *XML_interface,
   mmu->set_stats(XML);
   exu.set_params(
       XML, ithCore, &interface_ip, lsu->lsq_height, coredynp, exit_flag);
-  exu.set_stats(XML);
   exu.computeArea();
+  exu.set_stats(XML);
   exu.computeStaticPower();
   undiffCore = new UndiffCore(XML, ithCore, &interface_ip, coredynp, exit_flag);
   if (coredynp.core_ty == OOO) {
