@@ -49,6 +49,8 @@
 
 class dep_resource_conflict_check : public Component {
 public:
+  dep_resource_conflict_check(){};
+
   dep_resource_conflict_check(const InputParameter *configure_interface,
                               const CoreDynParam &dyn_p_,
                               int compare_bits_,
@@ -63,6 +65,11 @@ public:
   statsDef rtp_stats;
   statsDef stats_t;
   powerDef power_t;
+
+  void set_params(const InputParameter *configure_interface,
+                              const CoreDynParam &dyn_p_,
+                              int compare_bits_,
+                              bool _is_default = true);
 
   void conflict_check_power();
   double compare_cap();

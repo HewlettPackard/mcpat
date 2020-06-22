@@ -57,7 +57,7 @@ public:
   InstFetchU *ifu;
   LoadStoreU *lsu;
   MemManU *mmu;
-  EXECU *exu;
+  EXECU exu;
   RENAMINGU *rnu;
   Pipeline *corepipe;
   UndiffCore *undiffCore;

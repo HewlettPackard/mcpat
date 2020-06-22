@@ -52,8 +52,8 @@ public:
   ArrayST fRRAT;
   ArrayST ifreeL;
   ArrayST ffreeL;
-  dep_resource_conflict_check *idcl;
-  dep_resource_conflict_check *fdcl;
+  dep_resource_conflict_check idcl;
+  dep_resource_conflict_check fdcl;
   bool exist;
 
   RENAMINGU();
