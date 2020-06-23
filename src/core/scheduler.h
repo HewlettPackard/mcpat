@@ -56,7 +56,7 @@ public:
   ArrayST int_inst_window;
   ArrayST fp_inst_window;
   ArrayST ROB;
-  selection_logic *instruction_selection;
+  selection_logic instruction_selection;
   bool exist;
 
   SchedulerU();

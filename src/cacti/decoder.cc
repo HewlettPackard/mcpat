@@ -54,8 +54,7 @@ Decoder::Decoder(int _num_dec_signals,
       R_wire_dec_out(_R_wire_dec_out), num_gates(0), num_gates_min(2), delay(0),
       // power(),
       fully_assoc(fully_assoc_), is_dram(is_dram_), is_wl_tr(is_wl_tr_),
-      total_driver_nwidth(0), total_driver_pwidth(0), sleeptx(NULL),
-      cell(cell_), nodes_DSTN(nodes_DSTN_), power_gating(power_gating_) {
+      total_driver_nwidth(0), total_driver_pwidth(0), sleeptx(NULL), nodes_DSTN(nodes_DSTN_), power_gating(power_gating_) {
 
   for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
     w_dec_n[i] = 0;
@@ -86,14 +85,71 @@ Decoder::Decoder(int _num_dec_signals,
     }
   }
 
-  assert(cell.h > 0);
-  assert(cell.w > 0);
+  assert(cell_.h > 0);
+  assert(cell_.w > 0);
   // the height of a row-decoder-driver cell is fixed to be 4 * cell.h;
   // area.h = 4 * cell.h;
-  area.h = g_tp.h_dec * cell.h;
-
+  area.h = g_tp.h_dec * cell_.h;
+  height = cell_.h;
   compute_widths();
   compute_area();
+}
+
+
+void Decoder::set_params(int _num_dec_signals,
+                 bool flag_way_select,
+                 double _C_ld_dec_out,
+                 double _R_wire_dec_out,
+                 bool fully_assoc_,
+                 bool is_dram_,
+                 bool is_wl_tr_,
+                 const Area &cell_,
+                 bool power_gating_,
+                 int nodes_DSTN_) {
+  
+  exist = false;
+  C_ld_dec_out = _C_ld_dec_out;
+
+  R_wire_dec_out=_R_wire_dec_out; num_gates=0; num_gates_min=2; delay=0;
+      fully_assoc=fully_assoc_; is_dram=is_dram_; is_wl_tr=is_wl_tr_;
+      total_driver_nwidth=0; total_driver_pwidth=0; sleeptx=NULL; nodes_DSTN=nodes_DSTN_; power_gating=power_gating_;
+
+  for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
+    w_dec_n[i] = 0;
+    w_dec_p[i] = 0;
+  }
+
+  /*
+   * _num_dec_signals is the number of decoded signal as output
+   * num_addr_bits_dec is the number of signal to be decoded
+   * as the decoders input.
+   */
+  int num_addr_bits_dec = _log2(_num_dec_signals);
+
+  if (num_addr_bits_dec < 4) {
+    if (flag_way_select) {
+      exist = true;
+      num_in_signals = 2;
+    } else {
+      num_in_signals = 0;
+    }
+  } else {
+    exist = true;
+
+    if (flag_way_select) {
+      num_in_signals = 3;
+    } else {
+      num_in_signals = 2;
+    }
+  }
+
+  assert(cell_.h > 0);
+  assert(cell_.w > 0);
+  // the height of a row-decoder-driver cell is fixed to be 4 * cell.h;
+  // area.h = 4 * cell.h;
+  area.h = g_tp.h_dec * cell_.h;
+
+  height = cell_.h;
 }
 
 void Decoder::compute_widths() {
@@ -128,6 +184,10 @@ void Decoder::compute_widths() {
   }
 }
 
+void Decoder::computeArea(){
+    compute_widths();
+  compute_area();
+}
 void Decoder::compute_area() {
   double cumulative_area = 0;
   double cumulative_curr = 0;    // cumulative leakage current
@@ -187,7 +247,7 @@ void Decoder::compute_power_gating() {
   double detalV;
   double c_wakeup;
 
-  c_wakeup = drain_C_(total_driver_pwidth, PCH, 1, 1, cell.h); // Psleep tx
+  c_wakeup = drain_C_(total_driver_pwidth, PCH, 1, 1, height); // Psleep tx
   detalV = g_tp.peri_global.Vdd - g_tp.peri_global.Vcc_min;
   //    if (g_ip->power_gating)
   sleeptx = new Sleep_tx(g_ip->perfloss,
@@ -311,16 +371,85 @@ PredecBlk::PredecBlk(int num_dec_signals,
                      double R_wire_predec_blk_out_,
                      int num_dec_per_predec,
                      bool is_dram,
-                     bool is_blk1)
-    : dec(dec_), exist(false), number_input_addr_bits(0),
-      C_ld_predec_blk_out(0), R_wire_predec_blk_out(0),
-      branch_effort_nand2_gate_output(1), branch_effort_nand3_gate_output(1),
-      flag_two_unique_paths(false), flag_L2_gate(0), number_inputs_L1_gate(0),
-      number_gates_L1_nand2_path(0), number_gates_L1_nand3_path(0),
-      number_gates_L2(0), min_number_gates_L1(2), min_number_gates_L2(2),
-      num_L1_active_nand2_path(0), num_L1_active_nand3_path(0),
-      delay_nand2_path(0), delay_nand3_path(0), power_nand2_path(),
-      power_nand3_path(), power_L2(), is_dram_(is_dram) {
+                     bool is_blk1){
+  dec = dec_;
+  exist= false; number_input_addr_bits= 0;
+      C_ld_predec_blk_out= 0; R_wire_predec_blk_out= 0;
+      branch_effort_nand2_gate_output= 1; branch_effort_nand3_gate_output= 1;
+      flag_two_unique_paths= false; flag_L2_gate= 0; number_inputs_L1_gate= 0;
+      number_gates_L1_nand2_path= 0; number_gates_L1_nand3_path= 0;
+      number_gates_L2= 0; min_number_gates_L1= 2; min_number_gates_L2= 2;
+      num_L1_active_nand2_path= 0; num_L1_active_nand3_path= 0;
+      delay_nand2_path= 0; delay_nand3_path= 0; is_dram_= is_dram;
+
+  int branch_effort_predec_out;
+  double C_ld_dec_gate;
+  int num_addr_bits_dec = _log2(num_dec_signals);
+  int blk1_num_input_addr_bits = (num_addr_bits_dec + 1) / 2;
+  int blk2_num_input_addr_bits = num_addr_bits_dec - blk1_num_input_addr_bits;
+
+  w_L1_nand2_n[0] = 0;
+  w_L1_nand2_p[0] = 0;
+  w_L1_nand3_n[0] = 0;
+  w_L1_nand3_p[0] = 0;
+
+  if (is_blk1 == true) {
+    if (num_addr_bits_dec <= 0) {
+      return;
+    } else if (num_addr_bits_dec < 4) {
+      // Just one predecoder block is required with NAND2 gates. No decoder
+      // required. The first level of predecoding directly drives the decoder
+      // output load
+      exist = true;
+      number_input_addr_bits = num_addr_bits_dec;
+      R_wire_predec_blk_out = dec->R_wire_dec_out;
+      C_ld_predec_blk_out = dec->C_ld_dec_out;
+    } else {
+      exist = true;
+      number_input_addr_bits = blk1_num_input_addr_bits;
+      branch_effort_predec_out = (1 << blk2_num_input_addr_bits);
+      C_ld_dec_gate =
+          num_dec_per_predec *
+          gate_C(dec->w_dec_n[0] + dec->w_dec_p[0], 0, is_dram_, false, false);
+      R_wire_predec_blk_out = R_wire_predec_blk_out_;
+      C_ld_predec_blk_out =
+          branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out;
+    }
+  } else {
+    if (num_addr_bits_dec >= 4) {
+      exist = true;
+      number_input_addr_bits = blk2_num_input_addr_bits;
+      branch_effort_predec_out = (1 << blk1_num_input_addr_bits);
+      C_ld_dec_gate =
+          num_dec_per_predec *
+          gate_C(dec->w_dec_n[0] + dec->w_dec_p[0], 0, is_dram_, false, false);
+      R_wire_predec_blk_out = R_wire_predec_blk_out_;
+      C_ld_predec_blk_out =
+          branch_effort_predec_out * C_ld_dec_gate + C_wire_predec_blk_out;
+    }
+  }
+
+  compute_widths();
+  compute_area();
+}
+
+void PredecBlk::set_params(int num_dec_signals,
+                     Decoder *dec_,
+                     double C_wire_predec_blk_out,
+                     double R_wire_predec_blk_out_,
+                     int num_dec_per_predec,
+                     bool is_dram,
+                     bool is_blk1){
+  dec = dec_;
+  exist= false; number_input_addr_bits= 0;
+      C_ld_predec_blk_out= 0; R_wire_predec_blk_out= 0;
+      branch_effort_nand2_gate_output= 1; branch_effort_nand3_gate_output= 1;
+      flag_two_unique_paths= false; flag_L2_gate= 0; number_inputs_L1_gate= 0;
+      number_gates_L1_nand2_path= 0; number_gates_L1_nand3_path= 0;
+      number_gates_L2= 0; min_number_gates_L1= 2; min_number_gates_L2= 2;
+      num_L1_active_nand2_path= 0; num_L1_active_nand3_path= 0;
+      delay_nand2_path= 0; delay_nand3_path= 0; is_dram_= is_dram;
+
   int branch_effort_predec_out;
   double C_ld_dec_gate;
   int num_addr_bits_dec = _log2(num_dec_signals);
@@ -1046,6 +1175,47 @@ void PredecBlk::leakage_feedback(double temperature) {
   }
 }
 
+void PredecBlkDrv::set_params(int way_select_, PredecBlk *blk_, bool is_dram){
+  flag_driver_exists=0; number_gates_nand2_path=0;
+      number_gates_nand3_path=0; min_number_gates=2;
+      num_buffers_driving_1_nand2_load=0; num_buffers_driving_2_nand2_load=0;
+      num_buffers_driving_4_nand2_load=0; num_buffers_driving_2_nand3_load=0;
+      num_buffers_driving_8_nand3_load=0; num_buffers_nand3_path=0;
+      c_load_nand2_path_out=0; c_load_nand3_path_out=0;
+      r_load_nand2_path_out=0; r_load_nand3_path_out=0; delay_nand2_path=0;
+      delay_nand3_path=0;blk=blk_;
+      dec=blk->dec; is_dram_=is_dram; way_select=way_select_; 
+    for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
+    width_nand2_path_n[i] = 0;
+    width_nand2_path_p[i] = 0;
+    width_nand3_path_n[i] = 0;
+    width_nand3_path_p[i] = 0;
+  }
+
+  number_input_addr_bits = blk->number_input_addr_bits;
+
+  if (way_select > 1) {
+    flag_driver_exists = 1;
+    number_input_addr_bits = way_select;
+    if (dec->num_in_signals == 2) {
+      c_load_nand2_path_out =
+          gate_C(dec->w_dec_n[0] + dec->w_dec_p[0], 0, is_dram_);
+      num_buffers_driving_2_nand2_load = number_input_addr_bits;
+    } else if (dec->num_in_signals == 3) {
+      c_load_nand3_path_out =
+          gate_C(dec->w_dec_n[0] + dec->w_dec_p[0], 0, is_dram_);
+      num_buffers_driving_2_nand3_load = number_input_addr_bits;
+    }
+  } else if (way_select == 0) {
+    if (blk->exist) {
+      flag_driver_exists = 1;
+    }
+  }
+
+  compute_widths();
+  compute_area();
+}
+
 PredecBlkDrv::PredecBlkDrv(int way_select_, PredecBlk *blk_, bool is_dram)
     : flag_driver_exists(0), number_gates_nand2_path(0),
       number_gates_nand3_path(0), min_number_gates(2),
@@ -1344,6 +1514,53 @@ double PredecBlkDrv::get_rdOp_dynamic_E(int num_act_mats_hor_dir) {
          num_act_mats_hor_dir;
 }
 
+void Predec::set_params(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_){
+  blk1=drv1_->blk; blk2=drv2_->blk; drv1=drv1_; drv2=drv2_;
+
+  driver_power.readOp.leakage = drv1->power_nand2_path.readOp.leakage +
+                                drv1->power_nand3_path.readOp.leakage +
+                                drv2->power_nand2_path.readOp.leakage +
+                                drv2->power_nand3_path.readOp.leakage;
+  block_power.readOp.leakage =
+      blk1->power_nand2_path.readOp.leakage +
+      blk1->power_nand3_path.readOp.leakage + blk1->power_L2.readOp.leakage +
+      blk2->power_nand2_path.readOp.leakage +
+      blk2->power_nand3_path.readOp.leakage + blk2->power_L2.readOp.leakage;
+
+  driver_power.readOp.power_gated_leakage =
+      drv1->power_nand2_path.readOp.power_gated_leakage +
+      drv1->power_nand3_path.readOp.power_gated_leakage +
+      drv2->power_nand2_path.readOp.power_gated_leakage +
+      drv2->power_nand3_path.readOp.power_gated_leakage;
+  block_power.readOp.power_gated_leakage =
+      blk1->power_nand2_path.readOp.power_gated_leakage +
+      blk1->power_nand3_path.readOp.power_gated_leakage +
+      blk1->power_L2.readOp.power_gated_leakage +
+      blk2->power_nand2_path.readOp.power_gated_leakage +
+      blk2->power_nand3_path.readOp.power_gated_leakage +
+      blk2->power_L2.readOp.power_gated_leakage;
+
+  power.readOp.leakage =
+      driver_power.readOp.leakage + block_power.readOp.leakage;
+
+  power.readOp.power_gated_leakage = driver_power.readOp.power_gated_leakage +
+                                     block_power.readOp.power_gated_leakage;
+
+  driver_power.readOp.gate_leakage =
+      drv1->power_nand2_path.readOp.gate_leakage +
+      drv1->power_nand3_path.readOp.gate_leakage +
+      drv2->power_nand2_path.readOp.gate_leakage +
+      drv2->power_nand3_path.readOp.gate_leakage;
+  block_power.readOp.gate_leakage = blk1->power_nand2_path.readOp.gate_leakage +
+                                    blk1->power_nand3_path.readOp.gate_leakage +
+                                    blk1->power_L2.readOp.gate_leakage +
+                                    blk2->power_nand2_path.readOp.gate_leakage +
+                                    blk2->power_nand3_path.readOp.gate_leakage +
+                                    blk2->power_L2.readOp.gate_leakage;
+  power.readOp.gate_leakage =
+      driver_power.readOp.gate_leakage + block_power.readOp.gate_leakage;
+  
+}
 Predec::Predec(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_)
     : blk1(drv1_->blk), blk2(drv2_->blk), drv1(drv1_), drv2(drv2_) {
   driver_power.readOp.leakage = drv1->power_nand2_path.readOp.leakage +

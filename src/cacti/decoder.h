@@ -43,7 +43,8 @@ using namespace std;
 
 class Decoder : public Component {
 public:
-  Decoder(int _num_dec_signals,
+
+    Decoder(int _num_dec_signals,
           bool flag_way_select,
           double _C_ld_dec_out,
           double _R_wire_dec_out,
@@ -53,7 +54,17 @@ public:
           const Area &cell_,
           bool power_gating_ = false,
           int nodes_DSTN_ = 1);
-
+  Decoder(){};
+  void set_params(int _num_dec_signals,
+          bool flag_way_select,
+          double _C_ld_dec_out,
+          double _R_wire_dec_out,
+          bool fully_assoc_,
+          bool is_dram_,
+          bool is_wl_tr_,
+          const Area &cell_,
+          bool power_gating_ = false,
+          int nodes_DSTN_ = 1);
   bool exist;
   int num_in_signals;
   double C_ld_dec_out;
@@ -68,14 +79,16 @@ public:
   bool is_dram;
   bool is_wl_tr;
 
+  double height;
   double total_driver_nwidth;
   double total_driver_pwidth;
   Sleep_tx *sleeptx;
 
-  const Area &cell;
   int nodes_DSTN;
   bool power_gating;
 
+
+  void computeArea();
   void compute_widths();
   void compute_area();
   double compute_delays(double inrisetime); // return outrisetime
@@ -91,7 +104,15 @@ public:
 
 class PredecBlk : public Component {
 public:
+  PredecBlk(){};
   PredecBlk(int num_dec_signals,
+            Decoder *dec,
+            double C_wire_predec_blk_out,
+            double R_wire_predec_blk_out,
+            int num_dec_per_predec,
+            bool is_dram_,
+            bool is_blk1);
+  void set_params(int num_dec_signals,
             Decoder *dec,
             double C_wire_predec_blk_out,
             double R_wire_predec_blk_out,
@@ -142,7 +163,10 @@ public:
 
 class PredecBlkDrv : public Component {
 public:
-  PredecBlkDrv(int way_select, PredecBlk *blk_, bool is_dram);
+
+  void set_params(int way_select_, PredecBlk *blk_, bool is_dram);
+  PredecBlkDrv(){};
+  PredecBlkDrv(int way_select_, PredecBlk *blk_, bool is_dram);
 
   int flag_driver_exists;
   int number_input_addr_bits;
@@ -194,6 +218,9 @@ public:
 
 class Predec : public Component {
 public:
+
+  Predec(){};
+  void set_params(PredecBlkDrv *drv1, PredecBlkDrv *drv2);
   Predec(PredecBlkDrv *drv1, PredecBlkDrv *drv2);
 
   double compute_delays(double inrisetime); // return outrisetime

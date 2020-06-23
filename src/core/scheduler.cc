@@ -120,7 +120,7 @@ void SchedulerU::set_params(const ParseXML *XML_interface,
      */
     interface_ip.assoc =
         1; // reset to prevent unnecessary warning messages when init_interface
-    instruction_selection = new selection_logic(
+    instruction_selection.set_params(
         is_default,
         XML->sys.core[ithCore].instruction_window_size,
         coredynp.peak_issueW * XML->sys.core[ithCore].number_hardware_threads,
@@ -370,8 +370,7 @@ void SchedulerU::set_params(const ParseXML *XML_interface,
                      coredynp.opt_local,
                      coredynp.core_ty);
     }
-    instruction_selection =
-        new selection_logic(is_default,
+    instruction_selection.set_params(is_default,
                             XML->sys.core[ithCore].instruction_window_size,
                             coredynp.peak_issueW,
                             &interface_ip,
@@ -418,6 +417,7 @@ void SchedulerU::computeArea() {
                                       coredynp.num_pipelines);
     area.set_area(area.get_area() +
                   int_inst_window.local_result.area * coredynp.num_pipelines);
+
   }
 
   if (coredynp.core_ty == OOO) {
@@ -728,7 +728,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
         int_inst_window.local_result.power.writeOp.dynamic *
             int_inst_window.stats_t.writeAc.access +
         int_inst_window.stats_t.readAc.access *
-            instruction_selection->power.readOp.dynamic;
+            instruction_selection.power.readOp.dynamic;
 
     fp_inst_window.power_t.readOp.dynamic +=
         fp_inst_window.local_result.power.readOp.dynamic *
@@ -738,7 +738,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
         fp_inst_window.local_result.power.writeOp.dynamic *
             fp_inst_window.stats_t.writeAc.access +
         fp_inst_window.stats_t.writeAc.access *
-            instruction_selection->power.readOp.dynamic;
+            instruction_selection.power.readOp.dynamic;
 
     if (XML->sys.core[ithCore].ROB_size > 0) {
       ROB.power_t.reset();
@@ -757,7 +757,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
         int_inst_window.local_result.power.writeOp.dynamic *
             int_inst_window.stats_t.writeAc.access +
         int_inst_window.stats_t.writeAc.access *
-            instruction_selection->power.readOp.dynamic;
+            instruction_selection.power.readOp.dynamic;
   }
 
   // assign values
@@ -765,11 +765,11 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       int_inst_window.power =
           int_inst_window.power_t +
-          (int_inst_window.local_result.power + instruction_selection->power) *
+          (int_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       fp_inst_window.power =
           fp_inst_window.power_t +
-          (fp_inst_window.local_result.power + instruction_selection->power) *
+          (fp_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       power = power + int_inst_window.power + fp_inst_window.power;
       if (XML->sys.core[ithCore].ROB_size > 0) {
@@ -782,7 +782,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
       // XML->sys.core[ithCore].issue_width,1, 1, 1);
       int_inst_window.power =
           int_inst_window.power_t +
-          (int_inst_window.local_result.power + instruction_selection->power) *
+          (int_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       power = power + int_inst_window.power;
     }
@@ -791,11 +791,11 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       int_inst_window.rt_power =
           int_inst_window.power_t +
-          (int_inst_window.local_result.power + instruction_selection->power) *
+          (int_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       fp_inst_window.rt_power =
           fp_inst_window.power_t +
-          (fp_inst_window.local_result.power + instruction_selection->power) *
+          (fp_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       rt_power = rt_power + int_inst_window.rt_power + fp_inst_window.rt_power;
       if (XML->sys.core[ithCore].ROB_size > 0) {
@@ -808,7 +808,7 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
       // XML->sys.core[ithCore].issue_width,1, 1, 1);
       int_inst_window.rt_power =
           int_inst_window.power_t +
-          (int_inst_window.local_result.power + instruction_selection->power) *
+          (int_inst_window.local_result.power + instruction_selection.power) *
               pppm_lkg;
       rt_power = rt_power + int_inst_window.rt_power;
     }
@@ -820,15 +820,9 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
   // int_inst_window.stats_t.readAc.access +
   //    + int_inst_window.local_result.power.writeOp.dynamic *
   //    int_inst_window.stats_t.writeAc.access<<"leakage="<<int_inst_window.local_result.power.readOp.leakage<<endl;
-  //	cout<<"selection"<<instruction_selection->power.readOp.dynamic<<"leakage"<<instruction_selection->power.readOp.leakage<<endl;
+  //	cout<<"selection"<<instruction_selection.power.readOp.dynamic<<"leakage"<<instruction_selection.power.readOp.leakage<<endl;
 }
 
 SchedulerU ::~SchedulerU() {
 
-  if (!exist)
-    return;
-  if (instruction_selection) {
-    delete instruction_selection;
-    instruction_selection = 0;
-  }
 }

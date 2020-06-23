@@ -14,7 +14,6 @@
  * neither the name of the copyright holders nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
-
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -49,7 +48,7 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
                        const CoreDynParam &dyn_p_,
                        bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      coredynp(dyn_p_), IB(0), BTB(0), ID_inst(0), ID_operand(0), ID_misc(0),
+      coredynp(dyn_p_),
       exist(exist_) {
   if (!exist)
     return;
@@ -288,13 +287,14 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
-  IB = new ArrayST(&interface_ip,
+  IB.set_params(&interface_ip,
                    "InstBuffer",
                    Core_device,
                    coredynp.opt_local,
                    coredynp.core_ty);
-  IB->area.set_area(IB->area.get_area() + IB->local_result.area);
-  area.set_area(area.get_area() + IB->local_result.area);
+  IB.computeArea();
+  IB.area.set_area(IB.area.get_area() + IB.local_result.area);
+  area.set_area(area.get_area() + IB.local_result.area);
   // output_data_csv(IB.IB.local_result);
 
   //	  inst_decoder.opcode_length = XML->sys.core[ithCore].opcode_width;
@@ -355,23 +355,23 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
     interface_ip.num_rd_ports = coredynp.predictionW;
     interface_ip.num_wr_ports = coredynp.predictionW;
     interface_ip.num_se_rd_ports = 0;
-    BTB = new ArrayST(&interface_ip,
+    BTB.set_params(&interface_ip,
                       "Branch Target Buffer",
                       Core_device,
                       coredynp.opt_local,
                       coredynp.core_ty);
-    BTB->area.set_area(BTB->area.get_area() + BTB->local_result.area);
-    area.set_area(area.get_area() + BTB->local_result.area);
+    BTB.computeArea();
+    BTB.area.set_area(BTB.area.get_area() + BTB.local_result.area);
+    area.set_area(area.get_area() + BTB.local_result.area);
     /// cout<<"area="<<area<<endl;
 
-    BPT = new BranchPredictor();
-    BPT->set_params(XML, ithCore, &interface_ip, coredynp);
-    BPT->computeArea();
-    BPT->set_stats(XML);
-    area.set_area(area.get_area() + BPT->area.get_area());
+    BPT.set_params(XML, ithCore, &interface_ip, coredynp);
+    BPT.computeArea();
+    BPT.set_stats(XML);
+    area.set_area(area.get_area() + BPT.area.get_area());
   }
 
-  ID_inst = new inst_decoder(is_default,
+  ID_inst.set_params(is_default,
                              &interface_ip,
                              coredynp.opcode_length,
                              1 /*Decoder should not know how many by itself*/,
@@ -379,7 +379,7 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
                              Core_device,
                              coredynp.core_ty);
 
-  ID_operand = new inst_decoder(is_default,
+  ID_operand.set_params(is_default,
                                 &interface_ip,
                                 coredynp.arch_ireg_width,
                                 1,
@@ -387,18 +387,26 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
                                 Core_device,
                                 coredynp.core_ty);
 
-  ID_misc = new inst_decoder(is_default,
+  ID_misc.set_params(is_default,
                              &interface_ip,
                              8 /* Prefix field etc upto 14B*/,
                              1,
                              coredynp.x86,
                              Core_device,
                              coredynp.core_ty);
+  
+  ID_misc.computeArea();
+  ID_misc.computeDynamicPower();
+  ID_operand.computeArea();
+  ID_operand.computeDynamicPower();
+  ID_inst.computeArea();
+  ID_inst.computeDynamicPower();
+  
   // TODO: X86 decoder should decode the inst in cyclic mode under the control
   // of squencer. So the dynamic power should be multiplied by a few times.
   area.set_area(area.get_area() +
-                (ID_inst->area.get_area() + ID_operand->area.get_area() +
-                 ID_misc->area.get_area()) *
+                (ID_inst.area.get_area() + ID_operand.area.get_area() +
+                 ID_misc.area.get_area()) *
                     coredynp.decodeW);
 }
 
@@ -433,23 +441,23 @@ void InstFetchU::computeEnergy(bool is_tdp) {
         icache.ifb.l_ip.num_search_ports * coredynp.IFU_duty_cycle;
     icache.prefetchb.tdp_stats = icache.prefetchb.stats_t;
 
-    IB->stats_t.readAc.access = IB->stats_t.writeAc.access =
+    IB.stats_t.readAc.access = IB.stats_t.writeAc.access =
         XML->sys.core[ithCore].peak_issue_width;
-    IB->tdp_stats = IB->stats_t;
+    IB.tdp_stats = IB.stats_t;
 
     if (coredynp.predictionW > 0) {
-      BTB->stats_t.readAc.access =
+      BTB.stats_t.readAc.access =
           coredynp.predictionW; // XML->sys.core[ithCore].BTB.read_accesses;
-      BTB->stats_t.writeAc.access =
+      BTB.stats_t.writeAc.access =
           0; // XML->sys.core[ithCore].BTB.write_accesses;
     }
 
-    ID_inst->stats_t.readAc.access = coredynp.decodeW;
-    ID_operand->stats_t.readAc.access = coredynp.decodeW;
-    ID_misc->stats_t.readAc.access = coredynp.decodeW;
-    ID_inst->tdp_stats = ID_inst->stats_t;
-    ID_operand->tdp_stats = ID_operand->stats_t;
-    ID_misc->tdp_stats = ID_misc->stats_t;
+    ID_inst.stats_t.readAc.access = coredynp.decodeW;
+    ID_operand.stats_t.readAc.access = coredynp.decodeW;
+    ID_misc.stats_t.readAc.access = coredynp.decodeW;
+    ID_inst.tdp_stats = ID_inst.stats_t;
+    ID_operand.tdp_stats = ID_operand.stats_t;
+    ID_misc.tdp_stats = ID_misc.stats_t;
 
   } else {
     // init stats for Runtime Dynamic (RTP)
@@ -473,37 +481,37 @@ void InstFetchU::computeEnergy(bool is_tdp) {
     icache.prefetchb.stats_t.writeAc.access = icache.caches.stats_t.readAc.miss;
     icache.prefetchb.rtp_stats = icache.prefetchb.stats_t;
 
-    IB->stats_t.readAc.access = IB->stats_t.writeAc.access =
+    IB.stats_t.readAc.access = IB.stats_t.writeAc.access =
         XML->sys.core[ithCore].total_instructions;
-    IB->rtp_stats = IB->stats_t;
+    IB.rtp_stats = IB.stats_t;
 
     if (coredynp.predictionW > 0) {
-      BTB->stats_t.readAc.access =
+      BTB.stats_t.readAc.access =
           XML->sys.core[ithCore]
               .BTB.read_accesses; // XML->sys.core[ithCore].branch_instructions;
-      BTB->stats_t.writeAc.access =
+      BTB.stats_t.writeAc.access =
           XML->sys.core[ithCore]
               .BTB
               .write_accesses; // XML->sys.core[ithCore].branch_mispredictions;
-      BTB->rtp_stats = BTB->stats_t;
+      BTB.rtp_stats = BTB.stats_t;
     }
 
-    ID_inst->stats_t.readAc.access = XML->sys.core[ithCore].total_instructions;
-    ID_operand->stats_t.readAc.access =
+    ID_inst.stats_t.readAc.access = XML->sys.core[ithCore].total_instructions;
+    ID_operand.stats_t.readAc.access =
         XML->sys.core[ithCore].total_instructions;
-    ID_misc->stats_t.readAc.access = XML->sys.core[ithCore].total_instructions;
-    ID_inst->rtp_stats = ID_inst->stats_t;
-    ID_operand->rtp_stats = ID_operand->stats_t;
-    ID_misc->rtp_stats = ID_misc->stats_t;
+    ID_misc.stats_t.readAc.access = XML->sys.core[ithCore].total_instructions;
+    ID_inst.rtp_stats = ID_inst.stats_t;
+    ID_operand.rtp_stats = ID_operand.stats_t;
+    ID_misc.rtp_stats = ID_misc.stats_t;
   }
 
   icache.power_t.reset();
-  IB->power_t.reset();
-  //	ID_inst->power_t.reset();
-  //	ID_operand->power_t.reset();
-  //	ID_misc->power_t.reset();
+  IB.power_t.reset();
+  //	ID_inst.power_t.reset();
+  //	ID_operand.power_t.reset();
+  //	ID_misc.power_t.reset();
   if (coredynp.predictionW > 0) {
-    BTB->power_t.reset();
+    BTB.power_t.reset();
   }
 
   icache.power_t.readOp.dynamic +=
@@ -533,16 +541,16 @@ void InstFetchU::computeEnergy(bool is_tdp) {
       icache.prefetchb.stats_t.writeAc.access *
           icache.prefetchb.local_result.power.writeOp.dynamic;
 
-  IB->power_t.readOp.dynamic +=
-      IB->local_result.power.readOp.dynamic * IB->stats_t.readAc.access +
-      IB->stats_t.writeAc.access * IB->local_result.power.writeOp.dynamic;
+  IB.power_t.readOp.dynamic +=
+      IB.local_result.power.readOp.dynamic * IB.stats_t.readAc.access +
+      IB.stats_t.writeAc.access * IB.local_result.power.writeOp.dynamic;
 
   if (coredynp.predictionW > 0) {
-    BTB->power_t.readOp.dynamic +=
-        BTB->local_result.power.readOp.dynamic * BTB->stats_t.readAc.access +
-        BTB->stats_t.writeAc.access * BTB->local_result.power.writeOp.dynamic;
+    BTB.power_t.readOp.dynamic +=
+        BTB.local_result.power.readOp.dynamic * BTB.stats_t.readAc.access +
+        BTB.stats_t.writeAc.access * BTB.local_result.power.writeOp.dynamic;
 
-    BPT->computeDynamicPower(is_tdp);
+    BPT.computeDynamicPower(is_tdp);
   }
 
   if (is_tdp) {
@@ -557,22 +565,22 @@ void InstFetchU::computeEnergy(bool is_tdp) {
          icache.ifb.local_result.power + icache.prefetchb.local_result.power) *
             pppm_lkg;
 
-    IB->power = IB->power_t + IB->local_result.power * pppm_lkg;
-    power = power + icache.power + IB->power;
+    IB.power = IB.power_t + IB.local_result.power * pppm_lkg;
+    power = power + icache.power + IB.power;
     if (coredynp.predictionW > 0) {
-      BTB->power = BTB->power_t + BTB->local_result.power * pppm_lkg;
-      power = power + BTB->power + BPT->power;
+      BTB.power = BTB.power_t + BTB.local_result.power * pppm_lkg;
+      power = power + BTB.power + BPT.power;
     }
 
-    ID_inst->power_t.readOp.dynamic = ID_inst->power.readOp.dynamic;
-    ID_operand->power_t.readOp.dynamic = ID_operand->power.readOp.dynamic;
-    ID_misc->power_t.readOp.dynamic = ID_misc->power.readOp.dynamic;
+    ID_inst.power_t.readOp.dynamic = ID_inst.power.readOp.dynamic;
+    ID_operand.power_t.readOp.dynamic = ID_operand.power.readOp.dynamic;
+    ID_misc.power_t.readOp.dynamic = ID_misc.power.readOp.dynamic;
 
-    ID_inst->power.readOp.dynamic *= ID_inst->tdp_stats.readAc.access;
-    ID_operand->power.readOp.dynamic *= ID_operand->tdp_stats.readAc.access;
-    ID_misc->power.readOp.dynamic *= ID_misc->tdp_stats.readAc.access;
+    ID_inst.power.readOp.dynamic *= ID_inst.tdp_stats.readAc.access;
+    ID_operand.power.readOp.dynamic *= ID_operand.tdp_stats.readAc.access;
+    ID_misc.power.readOp.dynamic *= ID_misc.tdp_stats.readAc.access;
 
-    power = power + (ID_inst->power + ID_operand->power + ID_misc->power);
+    power = power + (ID_inst.power + ID_operand.power + ID_misc.power);
   } else {
     //    	icache.rt_power = icache.power_t +
     //    	        (icache.caches.local_result.power)*pppm_lkg +
@@ -586,22 +594,22 @@ void InstFetchU::computeEnergy(bool is_tdp) {
          icache.ifb.local_result.power + icache.prefetchb.local_result.power) *
             pppm_lkg;
 
-    IB->rt_power = IB->power_t + IB->local_result.power * pppm_lkg;
-    rt_power = rt_power + icache.rt_power + IB->rt_power;
+    IB.rt_power = IB.power_t + IB.local_result.power * pppm_lkg;
+    rt_power = rt_power + icache.rt_power + IB.rt_power;
     if (coredynp.predictionW > 0) {
-      BTB->rt_power = BTB->power_t + BTB->local_result.power * pppm_lkg;
-      rt_power = rt_power + BTB->rt_power + BPT->rt_power;
+      BTB.rt_power = BTB.power_t + BTB.local_result.power * pppm_lkg;
+      rt_power = rt_power + BTB.rt_power + BPT.rt_power;
     }
 
-    ID_inst->rt_power.readOp.dynamic =
-        ID_inst->power_t.readOp.dynamic * ID_inst->rtp_stats.readAc.access;
-    ID_operand->rt_power.readOp.dynamic = ID_operand->power_t.readOp.dynamic *
-                                          ID_operand->rtp_stats.readAc.access;
-    ID_misc->rt_power.readOp.dynamic =
-        ID_misc->power_t.readOp.dynamic * ID_misc->rtp_stats.readAc.access;
+    ID_inst.rt_power.readOp.dynamic =
+        ID_inst.power_t.readOp.dynamic * ID_inst.rtp_stats.readAc.access;
+    ID_operand.rt_power.readOp.dynamic = ID_operand.power_t.readOp.dynamic *
+                                          ID_operand.rtp_stats.readAc.access;
+    ID_misc.rt_power.readOp.dynamic =
+        ID_misc.power_t.readOp.dynamic * ID_misc.rtp_stats.readAc.access;
 
     rt_power = rt_power +
-               (ID_inst->rt_power + ID_operand->rt_power + ID_misc->rt_power);
+               (ID_inst.rt_power + ID_operand.rt_power + ID_misc.rt_power);
   }
 }
 
@@ -639,125 +647,125 @@ void InstFetchU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     cout << endl;
     if (coredynp.predictionW > 0) {
       cout << indent_str << "Branch Target Buffer:" << endl;
-      cout << indent_str_next << "Area = " << BTB->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << BTB.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << BTB->power.readOp.dynamic * clockRate << " W"
+           << "Peak Dynamic = " << BTB.power.readOp.dynamic * clockRate << " W"
            << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? BTB->power.readOp.longer_channel_leakage
-                            : BTB->power.readOp.leakage)
+           << (long_channel ? BTB.power.readOp.longer_channel_leakage
+                            : BTB.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? BTB->power.readOp.power_gated_with_long_channel_leakage
-                     : BTB->power.readOp.power_gated_leakage)
+                     ? BTB.power.readOp.power_gated_with_long_channel_leakage
+                     : BTB.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next
-           << "Gate Leakage = " << BTB->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << BTB.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << BTB->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << BTB.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
-      if (BPT->exist) {
+      if (BPT.exist) {
         cout << indent_str << "Branch Predictor:" << endl;
-        cout << indent_str_next << "Area = " << BPT->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << BPT.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << BPT->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << BPT.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? BPT->power.readOp.longer_channel_leakage
-                              : BPT->power.readOp.leakage)
+             << (long_channel ? BPT.power.readOp.longer_channel_leakage
+                              : BPT.power.readOp.leakage)
              << " W" << endl;
         if (power_gating)
           cout << indent_str_next << "Subthreshold Leakage with power gating = "
                << (long_channel
-                       ? BPT->power.readOp.power_gated_with_long_channel_leakage
-                       : BPT->power.readOp.power_gated_leakage)
+                       ? BPT.power.readOp.power_gated_with_long_channel_leakage
+                       : BPT.power.readOp.power_gated_leakage)
                << " W" << endl;
         cout << indent_str_next
-             << "Gate Leakage = " << BPT->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << BPT.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << BPT->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << BPT.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
         if (plevel > 3) {
-          BPT->displayEnergy(indent + 4, plevel, is_tdp);
+          BPT.displayEnergy(indent + 4, plevel, is_tdp);
         }
       }
     }
     cout << indent_str << "Instruction Buffer:" << endl;
-    cout << indent_str_next << "Area = " << IB->area.get_area() * 1e-6
+    cout << indent_str_next << "Area = " << IB.area.get_area() * 1e-6
          << " mm^2" << endl;
     cout << indent_str_next
-         << "Peak Dynamic = " << IB->power.readOp.dynamic * clockRate << " W"
+         << "Peak Dynamic = " << IB.power.readOp.dynamic * clockRate << " W"
          << endl;
     cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? IB->power.readOp.longer_channel_leakage
-                          : IB->power.readOp.leakage)
+         << (long_channel ? IB.power.readOp.longer_channel_leakage
+                          : IB.power.readOp.leakage)
          << " W" << endl;
     if (power_gating)
       cout << indent_str_next << "Subthreshold Leakage with power gating = "
            << (long_channel
-                   ? IB->power.readOp.power_gated_with_long_channel_leakage
-                   : IB->power.readOp.power_gated_leakage)
+                   ? IB.power.readOp.power_gated_with_long_channel_leakage
+                   : IB.power.readOp.power_gated_leakage)
            << " W" << endl;
     cout << indent_str_next
-         << "Gate Leakage = " << IB->power.readOp.gate_leakage << " W" << endl;
+         << "Gate Leakage = " << IB.power.readOp.gate_leakage << " W" << endl;
     cout << indent_str_next
-         << "Runtime Dynamic = " << IB->rt_power.readOp.dynamic / executionTime
+         << "Runtime Dynamic = " << IB.rt_power.readOp.dynamic / executionTime
          << " W" << endl;
     cout << endl;
     cout << indent_str << "Instruction Decoder:" << endl;
     cout << indent_str_next << "Area = "
-         << (ID_inst->area.get_area() + ID_operand->area.get_area() +
-             ID_misc->area.get_area()) *
+         << (ID_inst.area.get_area() + ID_operand.area.get_area() +
+             ID_misc.area.get_area()) *
                 coredynp.decodeW * 1e-6
          << " mm^2" << endl;
     cout << indent_str_next << "Peak Dynamic = "
-         << (ID_inst->power.readOp.dynamic + ID_operand->power.readOp.dynamic +
-             ID_misc->power.readOp.dynamic) *
+         << (ID_inst.power.readOp.dynamic + ID_operand.power.readOp.dynamic +
+             ID_misc.power.readOp.dynamic) *
                 clockRate
          << " W" << endl;
     cout << indent_str_next << "Subthreshold Leakage = "
-         << (long_channel ? (ID_inst->power.readOp.longer_channel_leakage +
-                             ID_operand->power.readOp.longer_channel_leakage +
-                             ID_misc->power.readOp.longer_channel_leakage)
-                          : (ID_inst->power.readOp.leakage +
-                             ID_operand->power.readOp.leakage +
-                             ID_misc->power.readOp.leakage))
+         << (long_channel ? (ID_inst.power.readOp.longer_channel_leakage +
+                             ID_operand.power.readOp.longer_channel_leakage +
+                             ID_misc.power.readOp.longer_channel_leakage)
+                          : (ID_inst.power.readOp.leakage +
+                             ID_operand.power.readOp.leakage +
+                             ID_misc.power.readOp.leakage))
          << " W" << endl;
 
     double tot_leakage =
-        (ID_inst->power.readOp.leakage + ID_operand->power.readOp.leakage +
-         ID_misc->power.readOp.leakage);
+        (ID_inst.power.readOp.leakage + ID_operand.power.readOp.leakage +
+         ID_misc.power.readOp.leakage);
     double tot_leakage_longchannel =
-        (ID_inst->power.readOp.longer_channel_leakage +
-         ID_operand->power.readOp.longer_channel_leakage +
-         ID_misc->power.readOp.longer_channel_leakage);
-    double tot_leakage_pg = (ID_inst->power.readOp.power_gated_leakage +
-                             ID_operand->power.readOp.power_gated_leakage +
-                             ID_misc->power.readOp.power_gated_leakage);
+        (ID_inst.power.readOp.longer_channel_leakage +
+         ID_operand.power.readOp.longer_channel_leakage +
+         ID_misc.power.readOp.longer_channel_leakage);
+    double tot_leakage_pg = (ID_inst.power.readOp.power_gated_leakage +
+                             ID_operand.power.readOp.power_gated_leakage +
+                             ID_misc.power.readOp.power_gated_leakage);
     double tot_leakage_pg_with_long_channel =
-        (ID_inst->power.readOp.power_gated_with_long_channel_leakage +
-         ID_operand->power.readOp.power_gated_with_long_channel_leakage +
-         ID_misc->power.readOp.power_gated_with_long_channel_leakage);
+        (ID_inst.power.readOp.power_gated_with_long_channel_leakage +
+         ID_operand.power.readOp.power_gated_with_long_channel_leakage +
+         ID_misc.power.readOp.power_gated_with_long_channel_leakage);
 
     if (power_gating)
       cout << indent_str_next << "Subthreshold Leakage with power gating = "
            << (long_channel ? tot_leakage_pg_with_long_channel : tot_leakage_pg)
            << " W" << endl;
     cout << indent_str_next << "Gate Leakage = "
-         << (ID_inst->power.readOp.gate_leakage +
-             ID_operand->power.readOp.gate_leakage +
-             ID_misc->power.readOp.gate_leakage)
+         << (ID_inst.power.readOp.gate_leakage +
+             ID_operand.power.readOp.gate_leakage +
+             ID_misc.power.readOp.gate_leakage)
          << " W" << endl;
     cout << indent_str_next << "Runtime Dynamic = "
-         << (ID_inst->rt_power.readOp.dynamic +
-             ID_operand->rt_power.readOp.dynamic +
-             ID_misc->rt_power.readOp.dynamic) /
+         << (ID_inst.rt_power.readOp.dynamic +
+             ID_operand.rt_power.readOp.dynamic +
+             ID_misc.rt_power.readOp.dynamic) /
                 executionTime
          << " W" << endl;
     cout << endl;
@@ -769,24 +777,24 @@ void InstFetchU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     // indent_str_next << "Instruction Cache    Gate Leakage = " <<
     // icache.rt_power.readOp.gate_leakage << " W" << endl; 		cout <<
     // indent_str_next << "Instruction Buffer   Peak Dynamic = " <<
-    // IB->rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout <<
+    // IB.rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout <<
     // indent_str_next << "Instruction Buffer   Subthreshold Leakage = " <<
-    // IB->rt_power.readOp.leakage  << " W" << endl; 		cout << indent_str_next
+    // IB.rt_power.readOp.leakage  << " W" << endl; 		cout << indent_str_next
     // << "Instruction Buffer   Gate Leakage = " <<
-    // IB->rt_power.readOp.gate_leakage
+    // IB.rt_power.readOp.gate_leakage
     //<< " W" << endl; 		cout << indent_str_next << "Branch Target Buffer
-    // Peak Dynamic = " << BTB->rt_power.readOp.dynamic*clockRate  << " W" <<
+    // Peak Dynamic = " << BTB.rt_power.readOp.dynamic*clockRate  << " W" <<
     // endl; 		cout << indent_str_next << "Branch Target Buffer   Subthreshold
-    // Leakage = " << BTB->rt_power.readOp.leakage  << " W" << endl; 		cout
+    // Leakage = " << BTB.rt_power.readOp.leakage  << " W" << endl; 		cout
     // << indent_str_next << "Branch Target Buffer   Gate Leakage = " <<
-    // BTB->rt_power.readOp.gate_leakage  << " W" << endl; 		cout <<
+    // BTB.rt_power.readOp.gate_leakage  << " W" << endl; 		cout <<
     // indent_str_next << "Branch Predictor   Peak Dynamic = " <<
-    // BPT->rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
+    // BPT.rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
     // << indent_str_next << "Branch Predictor   Subthreshold Leakage = " <<
-    // BPT->rt_power.readOp.leakage  << " W" << endl; 		cout <<
+    // BPT.rt_power.readOp.leakage  << " W" << endl; 		cout <<
     // indent_str_next
     // << "Branch Predictor   Gate Leakage = " <<
-    // BPT->rt_power.readOp.gate_leakage
+    // BPT.rt_power.readOp.gate_leakage
     //<< " W" << endl;
   }
 }
@@ -795,30 +803,5 @@ InstFetchU ::~InstFetchU() {
 
   if (!exist)
     return;
-  if (IB) {
-    delete IB;
-    IB = 0;
-  }
-  if (ID_inst) {
-    delete ID_inst;
-    ID_inst = 0;
-  }
-  if (ID_operand) {
-    delete ID_operand;
-    ID_operand = 0;
-  }
-  if (ID_misc) {
-    delete ID_misc;
-    ID_misc = 0;
-  }
-  if (coredynp.predictionW > 0) {
-    if (BTB) {
-      delete BTB;
-      BTB = 0;
-    }
-    if (BPT) {
-      delete BPT;
-      BPT = 0;
-    }
-  }
+
 }

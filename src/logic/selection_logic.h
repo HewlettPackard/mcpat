@@ -49,6 +49,7 @@
 
 class selection_logic : public Component {
 public:
+selection_logic(){};
   selection_logic(
       bool _is_default,
       int win_entries_,
@@ -65,7 +66,13 @@ public:
   int num_threads;
   enum Device_ty device_ty;
   enum Core_type core_ty;
-
+  
+  void set_params(bool _is_default,
+      int win_entries_,
+      int issue_width_,
+      const InputParameter *configure_interface,
+      enum Device_ty device_ty_ = Core_device,
+      enum Core_type core_ty_ = Inorder);
   void selection_power();
   void leakage_feedback(double temperature); // TODO
 };

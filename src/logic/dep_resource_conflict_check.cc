@@ -64,6 +64,44 @@ dep_resource_conflict_check::dep_resource_conflict_check(
   power.searchOp.dynamic *= sckRation;
 }
 
+void dep_resource_conflict_check::set_params(const InputParameter *configure_interface,
+                              const CoreDynParam &dyn_p_,
+                              int compare_bits_,
+                              bool _is_default){
+
+  l_ip = *configure_interface;
+  coredynp = dyn_p_;
+  compare_bits = compare_bits_;
+  is_default = _is_default;
+
+  Wcompn = 25 * l_ip.F_sz_um; // this was 20.0 micron for the 0.8 micron process
+  Wevalinvp =
+      25 * l_ip.F_sz_um; // this was 20.0 micron for the 0.8 micron process
+  Wevalinvn =
+      100 * l_ip.F_sz_um; // this was 80.0 mcron for the 0.8 micron process
+  Wcomppreequ =
+      50 * l_ip.F_sz_um; // this was 40.0  micron for the 0.8 micron process
+  WNORn = 6.75 * l_ip.F_sz_um; // this was 5.4 micron for the 0.8 micron process
+  WNORp =
+      38.125 * l_ip.F_sz_um; // this was 30.5 micron for the 0.8 micron process
+
+  local_result = init_interface(&l_ip);
+
+  if (coredynp.core_ty == Inorder) {
+    compare_bits += 16 + 8 + 8; // TODO: opcode bits + log(shared resources) +
+                                // REG TAG BITS-->opcode comparator
+  }
+  else {
+    compare_bits += 16 + 8 + 8;
+  }
+
+  conflict_check_power();
+  double sckRation = g_tp.sckt_co_eff;
+  power.readOp.dynamic *= sckRation;
+  power.writeOp.dynamic *= sckRation;
+  power.searchOp.dynamic *= sckRation;
+                              }
+                              
 void dep_resource_conflict_check::conflict_check_power() {
   double Ctotal;
   int num_comparators;

@@ -14,7 +14,6 @@
  * neither the name of the copyright holders nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
-
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -54,12 +53,12 @@ public:
   double macro_PR_overhead;
   enum Cache_policy cache_p;
   InstCache icache;
-  ArrayST *IB;
-  ArrayST *BTB;
-  BranchPredictor *BPT;
-  inst_decoder *ID_inst;
-  inst_decoder *ID_operand;
-  inst_decoder *ID_misc;
+  ArrayST IB;
+  ArrayST BTB;
+  BranchPredictor BPT;
+  inst_decoder ID_inst;
+  inst_decoder ID_operand;
+  inst_decoder ID_misc;
   bool exist;
 
   InstFetchU(const ParseXML *XML_interface,
