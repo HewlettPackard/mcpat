@@ -61,14 +61,21 @@ public:
   inst_decoder ID_misc;
   bool exist;
 
-  InstFetchU(const ParseXML *XML_interface,
+  InstFetchU(){init_params = false; init_stats = false;};
+  void set_stats(const ParseXML *XML_interface);
+  void set_params(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,
              bool exsit = true);
-  void computeEnergy(bool is_tdp = true);
+  void computeArea();
+  void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~InstFetchU();
+
+  private:
+  bool init_params;
+  bool init_stats;
 };
 
 #endif // __INST_FETCH_U_H__

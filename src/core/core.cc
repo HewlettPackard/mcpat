@@ -70,7 +70,10 @@ Core::Core(const ParseXML *XML_interface,
 
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
-  ifu = new InstFetchU(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  ifu = new InstFetchU();
+  ifu->set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  ifu->computeArea();
+  ifu->set_stats(XML);
   lsu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
   lsu.computeArea();
   mmu = new MemManU();
@@ -155,8 +158,8 @@ void Core::computeEnergy(bool is_tdp) {
   double rtp_pipeline_coe;
   double num_units = 4.0;
   if (is_tdp) {
-    ifu->computeEnergy(is_tdp);
     lsu.computePower(is_tdp);
+    ifu->computeDynamicPower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
@@ -245,8 +248,8 @@ void Core::computeEnergy(bool is_tdp) {
     }
 
   } else {
-    ifu->computeEnergy(is_tdp);
     lsu.computePower(is_tdp);
+    ifu->computeDynamicPower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
