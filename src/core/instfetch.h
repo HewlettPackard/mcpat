@@ -132,9 +132,9 @@ public:
   ArrayST *IB;
   ArrayST *BTB;
   BranchPredictor *BPT;
-  inst_decoder *ID_inst;
-  inst_decoder *ID_operand;
-  inst_decoder *ID_misc;
+  inst_decoder ID_inst;
+  inst_decoder ID_operand;
+  inst_decoder ID_misc;
   bool exist;
 
   InstFetchU(const ParseXML *XML_interface,

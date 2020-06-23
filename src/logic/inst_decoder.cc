@@ -31,16 +31,14 @@
 
 #include "inst_decoder.h"
 
-inst_decoder::inst_decoder(bool _is_default,
+void inst_decoder::set_params(bool _is_default,
                            const InputParameter *configure_interface,
                            int opcode_length_,
                            int num_decoders_,
                            bool x86_,
                            enum Device_ty device_ty_,
                            enum Core_type core_ty_)
-    : is_default(_is_default), opcode_length(opcode_length_),
-      num_decoders(num_decoders_), x86(x86_), device_ty(device_ty_),
-      core_ty(core_ty_) {
+    {
   /*
    * Instruction decoder is different from n to 2^n decoders
    * that are commonly used in row decoders in memory arrays.
@@ -64,6 +62,9 @@ inst_decoder::inst_decoder(bool _is_default,
    * it involve  both decoding instructions into u-ops and
    * merge u-ops when doing micro-ops fusion.
    */
+  is_default=_is_default; opcode_length=opcode_length_;
+      num_decoders=num_decoders_; x86=x86_; device_ty=device_ty_;
+      core_ty=core_ty_;
   bool is_dram = false;
   double pmos_to_nmos_sizing_r;
   double load_nmos_width, load_pmos_width;
@@ -97,7 +98,7 @@ inst_decoder::inst_decoder(bool _is_default,
                           false /*wl_tr*/, // to use peri device
                           cell);
   final_dec.computeArea();
-  PredecBlk predec_blk1;
+
   predec_blk1.set_params(num_decoded_signals,
                     &final_dec,
                     0, // Assuming predec and dec are back to back
@@ -105,7 +106,7 @@ inst_decoder::inst_decoder(bool _is_default,
                     1, // Each Predec only drives one final dec
                     false /*is_dram*/,
                     true);
-  PredecBlk predec_blk2;
+
   predec_blk2.set_params(num_decoded_signals,
                     &final_dec,
                     0, // Assuming predec and dec are back to back
@@ -114,14 +115,17 @@ inst_decoder::inst_decoder(bool _is_default,
                     false /*is_dram*/,
                     false);
 
-  PredecBlkDrv predec_blk_drv1;
+
   predec_blk_drv1.set_params(0, &predec_blk1, false);
-  PredecBlkDrv predec_blk_drv2;
+
   predec_blk_drv2.set_params(0, &predec_blk2, false);
 
   pre_dec.set_params(&predec_blk_drv1, &predec_blk_drv2);
 
-  double area_decoder = final_dec.area.get_area() * num_decoded_signals *
+}
+
+void inst_decoder::computeArea(){
+    double area_decoder = final_dec.area.get_area() * num_decoded_signals *
                         num_decoder_segments * num_decoders;
   // double w_decoder    = area_decoder / area.get_h();
   double area_pre_dec =
@@ -132,7 +136,9 @@ inst_decoder::inst_decoder(bool _is_default,
   double macro_layout_overhead = g_tp.macro_layout_overhead;
   double chip_PR_overhead = g_tp.chip_layout_overhead;
   area.set_area(area.get_area() * macro_layout_overhead * chip_PR_overhead);
+}
 
+void inst_decoder::computeDynamicPower(){
   inst_decoder_delay_power();
 
   double sckRation = g_tp.sckt_co_eff;

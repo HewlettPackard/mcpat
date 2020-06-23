@@ -20,14 +20,14 @@
 class inst_decoder : public Component {
 public:
 
-  inst_decoder(bool _is_default,
+  void set_params(bool _is_default,
                const InputParameter *configure_interface,
                int opcode_length_,
                int num_decoders_,
                bool x86_,
                enum Device_ty device_ty_ = Core_device,
                enum Core_type core_ty_ = Inorder);
-  inst_decoder();
+  inst_decoder(){};
   bool is_default;
   int opcode_length;
   int num_decoders;
@@ -41,11 +41,18 @@ public:
 
   Decoder final_dec;
   Predec pre_dec;
-
+    PredecBlk predec_blk1;
+      PredecBlk predec_blk2;
+    PredecBlkDrv predec_blk_drv1;
+    PredecBlkDrv predec_blk_drv2;
   statsDef tdp_stats;
   statsDef rtp_stats;
   statsDef stats_t;
   powerDef power_t;
+
+  void computeArea();
+  void computeDynamicPower();
+  
   void inst_decoder_delay_power();
   ~inst_decoder();
   void leakage_feedback(double temperature);
