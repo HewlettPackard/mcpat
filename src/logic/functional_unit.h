@@ -42,6 +42,10 @@
 #include "parameter.h"
 #include "xmlParser.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -99,6 +103,19 @@ private:
 
   // Private Methods:
   void computeLeakage();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power_t;
+    ar &stats_t;
+    ar &tdp_stats;
+    ar &rtp_stats;
+    ar &area_t;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __FUNCTIONAL_UNIT_H__

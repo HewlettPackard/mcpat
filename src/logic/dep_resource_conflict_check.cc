@@ -87,13 +87,15 @@ void dep_resource_conflict_check::set_params(const InputParameter *configure_int
 
   local_result = init_interface(&l_ip);
 
-  if (coredynp.core_ty == Inorder)
+  if (coredynp.core_ty == Inorder) {
     compare_bits += 16 + 8 + 8; // TODO: opcode bits + log(shared resources) +
                                 // REG TAG BITS-->opcode comparator
-  else
+  }
+  else {
     compare_bits += 16 + 8 + 8;
+  }
 
-    conflict_check_power();
+  conflict_check_power();
   double sckRation = g_tp.sckt_co_eff;
   power.readOp.dynamic *= sckRation;
   power.writeOp.dynamic *= sckRation;

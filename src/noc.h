@@ -39,6 +39,11 @@
 #include "parameter.h"
 #include "router.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class NoC : public Component {
 public:
   int ithNoC;
@@ -69,10 +74,10 @@ public:
                   double link_len_ = 0);
   void set_stats(const ParseXML *XML);
   void computeArea();
-  void computePower();
+  void computePower(bool cp = false);
   void computeRuntimeDynamicPower();
   void init_link_bus(double link_len_);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   // TODO
   void computeEnergy_link_bus(bool is_tdp = true);
   void displayEnergy_link_bus(uint32_t indent = 0,
@@ -92,6 +97,23 @@ private:
 
   void set_noc_param(const ParseXML *XML);
   void init_router();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &name;
+    ar &link_name;
+    ar &router;
+    ar &link_bus;
+    ar &router_exist;
+    ar &link_bus_exist;
+    ar &link_bus_tot_per_Router;
+    // ar &link_bus_tot_per_Router.area;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif /* NOC_H_ */

@@ -213,15 +213,17 @@ void NoC::set_stats(const ParseXML *XML) {
   init_stats = true;
 }
 
-void NoC::computePower() {
+void NoC::computePower(bool cp) {
   double pppm_t[4] = {1, 1, 1, 1};
   double M = nocdynp.duty_cycle;
   // init stats for TDP
   stats_t.readAc.access = M;
   tdp_stats = stats_t;
   if (router_exist) {
-    set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
-    router.power = router.power * pppm_t;
+    if (!cp) {
+      set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
+      router.power = router.power * pppm_t;
+    }
     set_pppm(pppm_t,
              nocdynp.total_nodes,
              nocdynp.total_nodes,
@@ -230,19 +232,20 @@ void NoC::computePower() {
     power = power + router.power * pppm_t;
   }
   if (link_bus_exist) {
-    if (nocdynp.type)
+    if (nocdynp.type) {
       set_pppm(pppm_t,
                1 * M_traffic_pattern * M * (nocdynp.min_ports - 1),
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports);
-    // reset traffic pattern; local port do not have router links
-    else
+      // reset traffic pattern; local port do not have router links
+    } else {
       set_pppm(pppm_t,
                1 * M_traffic_pattern * M * (nocdynp.min_ports),
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports); // reset traffic pattern
+    }
 
     link_bus_tot_per_Router.power = link_bus.power * pppm_t;
 
@@ -286,7 +289,7 @@ void NoC::computeRuntimeDynamicPower() {
   }
 }
 
-void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
+void NoC::display(uint32_t indent, int plevel, bool is_tdp) {
   string indent_str(indent, ' ');
   string indent_str_next(indent + 2, ' ');
 
@@ -297,196 +300,186 @@ void NoC::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
    * with McPAT's extra traffic pattern.
    * */
   if (is_tdp) {
-    cout << name << endl;
-    cout << indent_str << "Area = " << area.get_area() * 1e-6 << " mm^2"
-         << endl;
-    cout << indent_str
-         << "Peak Dynamic = " << power.readOp.dynamic * nocdynp.clockRate
-         << " W" << endl;
-    cout << indent_str << "Subthreshold Leakage = "
-         << (long_channel ? power.readOp.longer_channel_leakage
-                          : power.readOp.leakage)
-         << " W" << endl;
-    if (power_gating)
-      cout << indent_str << "Subthreshold Leakage with power gating = "
-           << (power.readOp.power_gated_leakage *
-               (long_channel
-                    ? power.readOp.longer_channel_leakage / power.readOp.leakage
-                    : 1))
-           << " W" << endl;
-    cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage << " W"
-         << endl;
-    cout << indent_str << "Runtime Dynamic = "
-         << rt_power.readOp.dynamic / nocdynp.executionTime << " W" << endl;
-    cout << endl;
+    std::cout << name << std::endl;
+    std::cout << indent_str << "Area = " << area.get_area() * 1e-6 << " mm^2"
+              << std::endl;
+    std::cout << indent_str
+              << "Peak Dynamic = " << power.readOp.dynamic * nocdynp.clockRate
+              << " W" << std::endl;
+    std::cout << indent_str << "Subthreshold Leakage = "
+              << (long_channel ? power.readOp.longer_channel_leakage
+                               : power.readOp.leakage)
+              << " W" << std::endl;
+    if (power_gating) {
+      std::cout << indent_str << "Subthreshold Leakage with power gating = "
+                << (power.readOp.power_gated_leakage *
+                    (long_channel ? power.readOp.longer_channel_leakage /
+                                        power.readOp.leakage
+                                  : 1))
+                << " W" << std::endl;
+    }
+    std::cout << indent_str << "Gate Leakage = " << power.readOp.gate_leakage
+              << " W" << std::endl;
+    std::cout << indent_str << "Runtime Dynamic = "
+              << rt_power.readOp.dynamic / nocdynp.executionTime << " W"
+              << std::endl;
+    std::cout << std::endl;
 
     if (router_exist) {
-      cout << indent_str << "Router: " << endl;
-      cout << indent_str_next << "Area = " << router.area.get_area() * 1e-6
-           << " mm^2" << endl;
-      cout << indent_str_next << "Peak Dynamic = "
-           << router.power.readOp.dynamic * nocdynp.clockRate << " W" << endl;
-      cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? router.power.readOp.longer_channel_leakage
-                            : router.power.readOp.leakage)
-           << " W" << endl;
-      if (power_gating)
-        cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? router.power.readOp.power_gated_with_long_channel_leakage
-                     : router.power.readOp.power_gated_leakage)
-             << " W" << endl;
-      cout << indent_str_next
-           << "Gate Leakage = " << router.power.readOp.gate_leakage << " W"
-           << endl;
-      cout << indent_str_next << "Runtime Dynamic = "
-           << router.rt_power.readOp.dynamic / nocdynp.executionTime << " W"
-           << endl;
-      cout << endl;
+      std::cout << indent_str << "Router: " << std::endl;
+      std::cout << indent_str_next << "Area = " << router.area.get_area() * 1e-6
+                << " mm^2" << std::endl;
+      std::cout << indent_str_next << "Peak Dynamic = "
+                << router.power.readOp.dynamic * nocdynp.clockRate << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Subthreshold Leakage = "
+                << (long_channel ? router.power.readOp.longer_channel_leakage
+                                 : router.power.readOp.leakage)
+                << " W" << std::endl;
+      if (power_gating) {
+        std::cout
+            << indent_str_next << "Subthreshold Leakage with power gating = "
+            << (long_channel
+                    ? router.power.readOp.power_gated_with_long_channel_leakage
+                    : router.power.readOp.power_gated_leakage)
+            << " W" << std::endl;
+      }
+      std::cout << indent_str_next
+                << "Gate Leakage = " << router.power.readOp.gate_leakage << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Runtime Dynamic = "
+                << router.rt_power.readOp.dynamic / nocdynp.executionTime
+                << " W" << std::endl;
+      std::cout << std::endl;
       if (plevel > 2) {
-        cout << indent_str << indent_str << "Virtual Channel Buffer:" << endl;
-        cout << indent_str << indent_str_next << "Area = "
-             << router.buffer.area.get_area() * 1e-6 * nocdynp.input_ports
-             << " mm^2" << endl;
-        cout << indent_str << indent_str_next << "Peak Dynamic = "
-             << (router.buffer.power.readOp.dynamic +
-                 router.buffer.power.writeOp.dynamic) *
-                    nocdynp.min_ports * M * nocdynp.clockRate
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel
-                     ? router.buffer.power.readOp.longer_channel_leakage *
-                           nocdynp.input_ports
-                     : router.buffer.power.readOp.leakage * nocdynp.input_ports)
-             << " W" << endl;
-        if (power_gating)
-          cout << indent_str << indent_str_next
-               << "Subthreshold Leakage with power gating = "
-               << (long_channel
-                       ? router.buffer.power.readOp
-                             .power_gated_with_long_channel_leakage
-                       : router.buffer.power.readOp.power_gated_leakage)
-               << " W" << endl;
-        cout << indent_str << indent_str_next << "Gate Leakage = "
-             << router.buffer.power.readOp.gate_leakage * nocdynp.input_ports
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Runtime Dynamic = "
-             << router.buffer.rt_power.readOp.dynamic / nocdynp.executionTime
-             << " W" << endl;
-        cout << endl;
-        cout << indent_str << indent_str << "Crossbar:" << endl;
-        cout << indent_str << indent_str_next
-             << "Area = " << router.crossbar.area.get_area() * 1e-6 << " mm^2"
-             << endl;
-        cout << indent_str << indent_str_next << "Peak Dynamic = "
-             << router.crossbar.power.readOp.dynamic * nocdynp.clockRate *
-                    nocdynp.min_ports * M
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel
-                     ? router.crossbar.power.readOp.longer_channel_leakage
-                     : router.crossbar.power.readOp.leakage)
-             << " W" << endl;
-        if (power_gating)
-          cout << indent_str << indent_str_next
-               << "Subthreshold Leakage with power gating = "
-               << (long_channel
-                       ? router.crossbar.power.readOp
-                             .power_gated_with_long_channel_leakage
-                       : router.crossbar.power.readOp.power_gated_leakage)
-               << " W" << endl;
-        cout << indent_str << indent_str_next
-             << "Gate Leakage = " << router.crossbar.power.readOp.gate_leakage
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Runtime Dynamic = "
-             << router.crossbar.rt_power.readOp.dynamic / nocdynp.executionTime
-             << " W" << endl;
-        cout << endl;
-        cout << indent_str << indent_str << "Arbiter:" << endl;
-        cout << indent_str << indent_str_next << "Peak Dynamic = "
-             << router.arbiter.power.readOp.dynamic * nocdynp.clockRate *
-                    nocdynp.min_ports * M
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel
-                     ? router.arbiter.power.readOp.longer_channel_leakage
-                     : router.arbiter.power.readOp.leakage)
-             << " W" << endl;
-        if (power_gating)
-          cout << indent_str << indent_str_next
-               << "Subthreshold Leakage with power gating = "
-               << (long_channel
-                       ? router.arbiter.power.readOp
-                             .power_gated_with_long_channel_leakage
-                       : router.arbiter.power.readOp.power_gated_leakage)
-               << " W" << endl;
-        cout << indent_str << indent_str_next
-             << "Gate Leakage = " << router.arbiter.power.readOp.gate_leakage
-             << " W" << endl;
-        cout << indent_str << indent_str_next << "Runtime Dynamic = "
-             << router.arbiter.rt_power.readOp.dynamic / nocdynp.executionTime
-             << " W" << endl;
-        cout << endl;
+        std::cout << indent_str << indent_str
+                  << "Virtual Channel Buffer:" << std::endl;
+        std::cout << indent_str << indent_str_next << "Area = "
+                  << router.buffer.area.get_area() * 1e-6 * nocdynp.input_ports
+                  << " mm^2" << std::endl;
+        std::cout << indent_str << indent_str_next << "Peak Dynamic = "
+                  << (router.buffer.power.readOp.dynamic +
+                      router.buffer.power.writeOp.dynamic) *
+                         nocdynp.min_ports * M * nocdynp.clockRate
+                  << " W" << std::endl;
+        std::cout << indent_str << indent_str_next << "Subthreshold Leakage = "
+                  << (long_channel
+                          ? router.buffer.power.readOp.longer_channel_leakage *
+                                nocdynp.input_ports
+                          : router.buffer.power.readOp.leakage *
+                                nocdynp.input_ports)
+                  << " W" << std::endl;
+        if (power_gating) {
+          std::cout << indent_str << indent_str_next
+                    << "Subthreshold Leakage with power gating = "
+                    << (long_channel
+                            ? router.buffer.power.readOp
+                                  .power_gated_with_long_channel_leakage
+                            : router.buffer.power.readOp.power_gated_leakage)
+                    << " W" << std::endl;
+        }
+        std::cout << indent_str << indent_str_next << "Gate Leakage = "
+                  << router.buffer.power.readOp.gate_leakage *
+                         nocdynp.input_ports
+                  << " W" << std::endl;
+        std::cout << indent_str << indent_str_next << "Runtime Dynamic = "
+                  << router.buffer.rt_power.readOp.dynamic /
+                         nocdynp.executionTime
+                  << " W" << std::endl;
+        std::cout << std::endl;
+        std::cout << indent_str << indent_str << "Crossbar:" << std::endl;
+        std::cout << indent_str << indent_str_next
+                  << "Area = " << router.crossbar.area.get_area() * 1e-6
+                  << " mm^2" << std::endl;
+        std::cout << indent_str << indent_str_next << "Peak Dynamic = "
+                  << router.crossbar.power.readOp.dynamic * nocdynp.clockRate *
+                         nocdynp.min_ports * M
+                  << " W" << std::endl;
+        std::cout << indent_str << indent_str_next << "Subthreshold Leakage = "
+                  << (long_channel
+                          ? router.crossbar.power.readOp.longer_channel_leakage
+                          : router.crossbar.power.readOp.leakage)
+                  << " W" << std::endl;
+        if (power_gating) {
+          std::cout << indent_str << indent_str_next
+                    << "Subthreshold Leakage with power gating = "
+                    << (long_channel
+                            ? router.crossbar.power.readOp
+                                  .power_gated_with_long_channel_leakage
+                            : router.crossbar.power.readOp.power_gated_leakage)
+                    << " W" << std::endl;
+        }
+        std::cout << indent_str << indent_str_next << "Gate Leakage = "
+                  << router.crossbar.power.readOp.gate_leakage << " W"
+                  << std::endl;
+        std::cout << indent_str << indent_str_next << "Runtime Dynamic = "
+                  << router.crossbar.rt_power.readOp.dynamic /
+                         nocdynp.executionTime
+                  << " W" << std::endl;
+        std::cout << std::endl;
+        std::cout << indent_str << indent_str << "Arbiter:" << std::endl;
+        std::cout << indent_str << indent_str_next << "Peak Dynamic = "
+                  << router.arbiter.power.readOp.dynamic * nocdynp.clockRate *
+                         nocdynp.min_ports * M
+                  << " W" << std::endl;
+        std::cout << indent_str << indent_str_next << "Subthreshold Leakage = "
+                  << (long_channel
+                          ? router.arbiter.power.readOp.longer_channel_leakage
+                          : router.arbiter.power.readOp.leakage)
+                  << " W" << std::endl;
+        if (power_gating) {
+          std::cout << indent_str << indent_str_next
+                    << "Subthreshold Leakage with power gating = "
+                    << (long_channel
+                            ? router.arbiter.power.readOp
+                                  .power_gated_with_long_channel_leakage
+                            : router.arbiter.power.readOp.power_gated_leakage)
+                    << " W" << std::endl;
+        }
+        std::cout << indent_str << indent_str_next << "Gate Leakage = "
+                  << router.arbiter.power.readOp.gate_leakage << " W"
+                  << std::endl;
+        std::cout << indent_str << indent_str_next << "Runtime Dynamic = "
+                  << router.arbiter.rt_power.readOp.dynamic /
+                         nocdynp.executionTime
+                  << " W" << std::endl;
+        std::cout << std::endl;
       }
     }
     if (link_bus_exist) {
-      cout << indent_str << (nocdynp.type ? "Per Router " : "") << link_name
-           << ": " << endl;
-      cout << indent_str_next
-           << "Area = " << link_bus_tot_per_Router.area.get_area() * 1e-6
-           << " mm^2" << endl;
-      cout << indent_str_next << "Peak Dynamic = "
-           << link_bus_tot_per_Router.power.readOp.dynamic * nocdynp.clockRate
-           << " W" << endl;
-      cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel
-                   ? link_bus_tot_per_Router.power.readOp.longer_channel_leakage
-                   : link_bus_tot_per_Router.power.readOp.leakage)
-           << " W" << endl;
-      if (power_gating)
-        cout << indent_str_next << "Subthreshold Leakage with power gating = "
-             << (long_channel
-                     ? link_bus_tot_per_Router.power.readOp
-                           .power_gated_with_long_channel_leakage
-                     : link_bus_tot_per_Router.power.readOp.power_gated_leakage)
-             << " W" << endl;
-      cout << indent_str_next << "Gate Leakage = "
-           << link_bus_tot_per_Router.power.readOp.gate_leakage << " W" << endl;
-      cout << indent_str_next << "Runtime Dynamic = "
-           << link_bus.rt_power.readOp.dynamic / nocdynp.executionTime << " W"
-           << endl;
-      cout << endl;
+      std::cout << indent_str << (nocdynp.type ? "Per Router " : "")
+                << link_name << ": " << std::endl;
+      std::cout << indent_str_next
+                << "Area = " << link_bus_tot_per_Router.area.get_area() * 1e-6
+                << " mm^2" << std::endl;
+      std::cout << indent_str_next << "Peak Dynamic = "
+                << link_bus_tot_per_Router.power.readOp.dynamic *
+                       nocdynp.clockRate
+                << " W" << std::endl;
+      std::cout
+          << indent_str_next << "Subthreshold Leakage = "
+          << (long_channel
+                  ? link_bus_tot_per_Router.power.readOp.longer_channel_leakage
+                  : link_bus_tot_per_Router.power.readOp.leakage)
+          << " W" << std::endl;
+      if (power_gating) {
+        std::cout
+            << indent_str_next << "Subthreshold Leakage with power gating = "
+            << (long_channel
+                    ? link_bus_tot_per_Router.power.readOp
+                          .power_gated_with_long_channel_leakage
+                    : link_bus_tot_per_Router.power.readOp.power_gated_leakage)
+            << " W" << std::endl;
+      }
+      std::cout << indent_str_next << "Gate Leakage = "
+                << link_bus_tot_per_Router.power.readOp.gate_leakage << " W"
+                << std::endl;
+      std::cout << indent_str_next << "Runtime Dynamic = "
+                << link_bus.rt_power.readOp.dynamic / nocdynp.executionTime
+                << " W" << std::endl;
+      std::cout << std::endl;
     }
   } else {
-    //		cout << indent_str_next << "Instruction Fetch Unit    Peak Dynamic =
-    //"
-    //<< ifu->rt_power.readOp.dynamic*clockRate << " W" << endl; 		cout
-    //<< indent_str_next << "Instruction Fetch Unit    Subthreshold Leakage = "
-    // << ifu->rt_power.readOp.leakage <<" W" << endl; 		cout <<
-    // indent_str_next << "Instruction Fetch Unit    Gate Leakage = " <<
-    // ifu->rt_power.readOp.gate_leakage << " W" << endl; 		cout <<
-    // indent_str_next
-    //<< "Load Store Unit   Peak Dynamic = " <<
-    // lsu->rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
-    // << indent_str_next << "Load Store Unit   Subthreshold Leakage = " <<
-    // lsu->rt_power.readOp.leakage  << " W" << endl; 		cout <<
-    // indent_str_next
-    // << "Load Store Unit   Gate Leakage = " <<
-    // lsu->rt_power.readOp.gate_leakage
-    //<< " W" << endl; 		cout << indent_str_next << "Memory Management Unit
-    // Peak Dynamic = " << mmu->rt_power.readOp.dynamic*clockRate  << " W" <<
-    // endl; 		cout << indent_str_next << "Memory Management Unit Subthreshold
-    // Leakage = " << mmu->rt_power.readOp.leakage  << " W" << endl; 		cout
-    // << indent_str_next << "Memory Management Unit   Gate Leakage = " <<
-    // mmu->rt_power.readOp.gate_leakage  << " W" << endl; 		cout <<
-    // indent_str_next << "Execution Unit   Peak Dynamic = " <<
-    // exu->rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
-    // << indent_str_next << "Execution Unit   Subthreshold Leakage = " <<
-    // exu->rt_power.readOp.leakage  << " W" << endl; 		cout <<
-    // indent_str_next
-    // << "Execution Unit   Gate Leakage = " <<
-    // exu->rt_power.readOp.gate_leakage
-    //<< " W" << endl;
   }
 }
 
@@ -534,10 +527,11 @@ void NoC::set_noc_param(const ParseXML *XML) {
   assert(nocdynp.chip_coverage <= 1);
   assert(nocdynp.route_over_perc <= 1);
 
-  if (nocdynp.type)
+  if (nocdynp.type) {
     name = "NOC";
-  else
+  } else {
     name = "BUSES";
+  }
 
   if (XML->sys.NoC[ithNoC].vdd > 0) {
     interface_ip.specific_hp_vdd = true;

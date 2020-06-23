@@ -103,6 +103,17 @@ private:
   void compute();
 
   TechnologyParameter::DeviceType *deviceType;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power_bit;
+    ar &max_unpipelined_link_delay;
+    ar &no_device_under_wire_area;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif

@@ -35,6 +35,11 @@
 #include "area.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 using namespace std;
 
 class Crossbar;
@@ -71,6 +76,18 @@ protected:
                      bool is_dram_,
                      bool is_wl_tr_,
                      double max_w_nmos);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power;
+    ar &rt_power;
+    ar &delay;
+    ar &cycle_time;
+    ar &area;
+  }
 
 private:
   double compute_diffusion_width(int num_stacked_in, int num_folded_tr);

@@ -36,18 +36,39 @@
 #include "version.h"
 #include "xmlParser.h"
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <fstream>
 #include <iostream>
+
+void save(const Processor &s, std::string name) {
+  // Make an archive
+  std::ofstream ofs(name.c_str());
+  boost::archive::text_oarchive oa(ofs);
+  oa << s;
+}
+
+void restore(Processor &s, std::string name) {
+  // Restore from the Archive
+  // std::cerr << "Archive " << name << "\n";
+  std::ifstream ifs(name.c_str());
+  if (ifs.good()) {
+    boost::archive::text_iarchive ia(ifs);
+    ia >> s;
+  } else {
+    std::cerr << "Archive " << name << " cannot be used\n";
+    assert(false);
+  }
+}
 
 using namespace std;
 
-void print_usage(char *argv0);
-
 int main(int argc, char *argv[]) {
   mcpat::Options opt;
-
   if (!opt.parse(argc, argv)) {
     return 1;
   }
+
   opt_for_clk = opt.opt_for_clk;
 
   cout << "McPAT (version " << VER_MAJOR << "." << VER_MINOR << " of "
@@ -55,8 +76,19 @@ int main(int argc, char *argv[]) {
 
   // parse XML-based interface
   ParseXML *p1 = new ParseXML();
+  Processor proc;
   p1->parse(opt.input_xml);
-  Processor proc(p1);
+  if (opt.serialization_create) {
+    proc.init(p1);
+    save(proc, opt.serialization_file);
+    std::cout << "Checkpoint generated @: " << opt.serialization_file << "\n";
+    return 0;
+  } else if (opt.serialization_restore) {
+    restore(proc, opt.serialization_file);
+    proc.init(p1, true);
+  } else {
+    proc.init(p1);
+  }
   proc.displayEnergy(2, opt.print_level);
   delete p1;
   return 0;

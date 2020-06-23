@@ -35,6 +35,10 @@
 #include "XML_Parse.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 const double cdb_overhead = 1.1;
@@ -88,6 +92,16 @@ public:
                                    const statsComponents &y);
   friend statsComponents operator*(const statsComponents &x,
                                    double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &access;
+    ar &hit;
+    ar &miss;
+  }
 };
 
 class statsDef {
@@ -105,6 +119,16 @@ public:
 
   friend statsDef operator+(const statsDef &x, const statsDef &y);
   friend statsDef operator*(const statsDef &x, double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &readAc;
+    ar &writeAc;
+    ar &searchAc;
+  }
 };
 
 double longer_channel_device_reduction(enum Device_ty device_ty = Core_device,

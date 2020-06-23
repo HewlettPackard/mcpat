@@ -39,10 +39,16 @@ quiet = False
 timeout_limit = 120.0
 kill_flag = False
 
-input_path = "./input"
-output_path = "./output"
-golden_path = "./golden"
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', type=str, default="./input/basic_test_1", help="Test Input Path")
+parser.add_argument("--output", type=str, default="./output/basic_test_1", help="Test Output Path")
+parser.add_argument("--golden", type=str, default="./golden/basic_test_1", help="Test Golden Path")
+parser.add_argument("--serial", type=bool, default=False, help="Serial if true, Basic if false")
+args = parser.parse_args()
 
+input_path = args.input
+output_path = args.output
+golden_path = args.golden
 
 def print_info(info, *args):
   if verbose:
@@ -85,9 +91,9 @@ def kill(p):
 
 
 def diff_result(vector):
-  outfile = os.path.join("./output", vector + ".out")
-  difffile = os.path.join("./output", vector + ".diff")
-  goldfile = os.path.join("./golden", vector + ".golden")
+  outfile = os.path.join(output_path, vector + ".out")
+  difffile = os.path.join(output_path, vector + ".diff")
+  goldfile = os.path.join(golden_path, vector + ".golden")
   with open(outfile, "r") as o, open(goldfile, "r") as g:
     outlines = o.readlines()
     goldlines = g.readlines()
@@ -99,7 +105,7 @@ def diff_result(vector):
   return 1
 
 
-def run_test(vector):
+def run_test_normal(vector):
   global kill_flag
   kill_flag = False
   infile = os.path.join(input_path, vector + ".xml")
@@ -134,6 +140,69 @@ def run_test(vector):
   return 0
 
 
+def run_test_serializaiton_create(vector):
+  global kill_flag
+  kill_flag = False
+  infile = os.path.join(input_path, vector + ".xml")
+  sname = os.path.join(output_path, vector + ".txt")
+  stdo = os.path.join(output_path, vector + ".out")
+  stde = os.path.join(output_path, vector + ".err")
+  with open(stdo, "w") as so, open(stde, "w") as se:
+    p = subprocess.Popen([
+        "../build/mcpat", "-i", infile, "-p", "5", "--serial_create=true",
+        "--serial_file=" + sname
+    ],
+                         stdout=so,
+                         stderr=se)
+    t = Timer(timeout_limit, kill, [p])
+    t.start()
+    p.wait()
+    t.cancel()
+  if kill_flag:
+    print_fail(vector, "Timeout Limit of " + str(timeout_limit) + "s Reached")
+    return 1
+  if (os.stat(os.path.join(output_path, vector + ".txt")).st_size > 0):
+    print_pass(vector)
+    return 0
+  else:
+    return 1
+  return 0
+
+
+def run_test_serialization_restore(vector, sfile):
+  global kill_flag
+  kill_flag = False
+  infile = os.path.join(input_path, vector + ".xml")
+  sname = os.path.join(output_path, sfile + ".txt")
+  stdo = os.path.join(output_path, vector + ".out")
+  stde = os.path.join(output_path, vector + ".err")
+  with open(stdo, "w") as so, open(stde, "w") as se:
+    p = subprocess.Popen([
+        "../build/mcpat", "-i", infile, "-p", "5", "--serial_restore=true",
+        "--serial_file=" + sname
+    ],
+                         stdout=so,
+                         stderr=se)
+    t = Timer(timeout_limit, kill, [p])
+    t.start()
+    p.wait()
+    t.cancel()
+  if kill_flag:
+    print_fail(vector, "Timeout Limit of " + str(timeout_limit) + "s Reached")
+    return 1
+  #else:
+  #  if diff_result(vector) == 0:
+  #    print_pass(vector)
+  #    return 0
+  #  else:
+  #    print_fail(
+  #        vector,
+  #        "The files " + vector + ".out and " + vector + ".golden differ")
+  #    return 1
+  print_pass(vector)
+  return 0
+
+
 def get_vectors():
   files = glob.glob(os.path.join(input_path, "*"))
   vectors = sorted([os.path.basename(f).split(".")[0] for f in files])
@@ -146,9 +215,25 @@ if __name__ == "__main__":
   print_info(start)
   vectors = get_vectors()
   print_info("Found " + str(len(vectors)) + " test vectors")
-  for vector in vectors:
-    if run_test(vector) == 0:
-      p += 1
+  if not args.serial:
+    for vector in vectors:
+      if run_test_normal(vector) == 0:
+        p += 1
+      else:
+        f += 1
+  else:
+    # Create a Serialized File:
+    if(len(vectors) > 0):
+      if run_test_serializaiton_create(vectors[0]) == 0:
+        # Use Serialized File for Remainder of Tests:
+        for vector in vectors:
+          if run_test_serialization_restore(vector, vectors[0]) == 0:
+            p += 1
+          else:
+            f += 1
+      else:
+        print_info("Failed to create serialization checkpoint")
     else:
-      f += 1
+      print_info("No files in "+input_path)
+      sys.exit(1)
   print_results(p, f, len(vectors))
