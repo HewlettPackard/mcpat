@@ -238,12 +238,12 @@ void ArrayST::optimize_array() {
       // For array structures except CAM and FA, Give warning but still provide
       // a result with best timing found
       if (throughput_overflow == true)
-        cout << "Warning: " << name
+        std::cerr << "Warning: " << name
              << " array structure cannot satisfy throughput constraint."
-             << endl;
+             << std::endl;
       if (latency_overflow == true)
-        cout << "Warning: " << name
-             << " array structure cannot satisfy latency constraint." << endl;
+        std::cerr << "Warning: " << name
+             << " array structure cannot satisfy latency constraint." << std::endl;
     }
 
     //	else
