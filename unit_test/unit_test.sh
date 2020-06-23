@@ -26,11 +26,12 @@ print_info () {
   echo -e "[ $script_name ] $1"
 }
 
-#--------------------------------------------------------------------
-#
-#
-#
-#--------------------------------------------------------------------
+print_info "#########################################################"
+print_info "#                                                       #"
+print_info "#               McPAT Unit Test v2.0.0                  #"
+print_info "#                                                       #"
+print_info "#########################################################"
+
 TESTS=("basic_test_1"
        "serialization_test_1"
        "serialization_test_2"
@@ -50,9 +51,9 @@ OUTPUT="./output"
 if [ ! -d $OUTPUT ]; then
   print_info "Creating $OUTPUT"
   mkdir -p $OUTPUT
-#else
-#  print_info "Cleaning $OUTPUT"
-#  rm -f $OUTPUT/*
+else
+  print_info "Cleaning $OUTPUT"
+  rm -rf $OUTPUT/*
 fi
 for test_set in ${TESTS[@]}; do
   mkdir -p $OUTPUT/$test_set
@@ -67,4 +68,42 @@ done
 #   |_| |_____|____/ |_| |____/ 
 #                             
 #--------------------------------------------------------------------
-./unit_test.py
+print_info "#########################################################"
+print_info "#                  Unit Test Basic 1                    #"
+print_info "#########################################################"
+./unit_test.py \
+  --input=./input/basic_test_1 \
+  --output=./output/basic_test_1 \
+  --golden=./golden/basic_test_1
+print_info "#########################################################"
+print_info "#               Unit Test Serialization 1               #"
+print_info "#########################################################"
+#./unit_test.py \
+#  --input=./input/serialization_test_1 \
+#  --output=./output/serialization_test_1 \
+#  --golden=./golden/serialization_test_1 \
+#  --serial=True
+print_info "#########################################################"
+print_info "#               Unit Test Serialization 2               #"
+print_info "#########################################################"
+#./unit_test.py \
+#  --input=./input/serialization_test_2 \
+#  --output=./output/serialization_test_2 \
+#  --golden=./golden/serialization_test_2 \
+#  --serial=True
+print_info "#########################################################"
+print_info "#               Unit Test Serialization 3               #"
+print_info "#########################################################"
+#./unit_test.py \
+#  --input=./input/serialization_test_3 \
+#  --output=./output/serialization_test_3 \
+#  --golden=./golden/serialization_test_3 \
+#  --serial=True
+print_info "#########################################################"
+print_info "#               Unit Test Serialization 4               #"
+print_info "#########################################################"
+#./unit_test.py \
+#  --input=./input/serialization_test_4 \
+#  --output=./output/serialization_test_4 \
+#  --golden=./golden/serialization_test_4 \
+#  --serial=True
