@@ -419,10 +419,10 @@ void InstFetchU::computeArea(){
     area.set_area(area.get_area() + BTB.local_result.area);
   }
 
-    ID_misc.computeArea();
+  ID_misc.computeArea();
   ID_operand.computeArea();
   ID_inst.computeArea();
-  ID_inst.computeDynamicPower();
+  //ID_inst.computeDynamicPower();
 
   
   // TODO: X86 decoder should decode the inst in cyclic mode under the control

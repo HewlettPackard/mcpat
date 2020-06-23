@@ -158,8 +158,8 @@ void Core::computeEnergy(bool is_tdp) {
   double rtp_pipeline_coe;
   double num_units = 4.0;
   if (is_tdp) {
-    lsu.computePower(is_tdp);
     ifu->computeDynamicPower(is_tdp);
+    lsu.computePower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
@@ -248,8 +248,8 @@ void Core::computeEnergy(bool is_tdp) {
     }
 
   } else {
-    lsu.computePower(is_tdp);
     ifu->computeDynamicPower(is_tdp);
+    lsu.computePower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
