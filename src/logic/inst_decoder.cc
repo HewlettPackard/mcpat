@@ -121,10 +121,16 @@ void inst_decoder::set_params(bool _is_default,
   predec_blk_drv2.set_params(0, &predec_blk2, false);
 
   pre_dec.set_params(&predec_blk_drv1, &predec_blk_drv2);
-
+  init_params = true;
 }
 
 void inst_decoder::computeArea(){
+    if (!init_params) {
+    std::cerr << "[ Inst_decoder ] Error: must set params before calling "
+                 "computeArea()\n";
+
+    exit(1);
+  }
     double area_decoder = final_dec.area.get_area() * num_decoded_signals *
                         num_decoder_segments * num_decoders;
   // double w_decoder    = area_decoder / area.get_h();
