@@ -61,7 +61,7 @@ public:
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
     ar &wbb;
-    Component::serialize(ar, version);
+    InstCache::serialize(ar, version);
   }
 };
 

@@ -513,31 +513,34 @@ void Processor::init(const ParseXML *XML, bool cp) {
      * at the end (even after the NOC router part) since the total chip area
      * must be obtain to decide the link routing
      */
-    for (i = 0; i < numNOC; i++) {
-      if (nocs[i].nocdynp.has_global_link && XML->sys.NoC[i].type) {
-        nocs[i].init_link_bus(
-            sqrt(area.get_area() *
-                 XML->sys.NoC[i].chip_coverage)); // compute global links
-        if (procdynp.homoNOC) {
-          noc.area.set_area(noc.area.get_area() +
-                            nocs[i].link_bus_tot_per_Router.area.get_area() *
-                                nocs[i].nocdynp.total_nodes * procdynp.numNOC);
-          area.set_area(area.get_area() +
-                        nocs[i].link_bus_tot_per_Router.area.get_area() *
-                            nocs[i].nocdynp.total_nodes * procdynp.numNOC);
-        } else {
-          noc.area.set_area(noc.area.get_area() +
-                            nocs[i].link_bus_tot_per_Router.area.get_area() *
-                                nocs[i].nocdynp.total_nodes);
-          area.set_area(area.get_area() +
-                        nocs[i].link_bus_tot_per_Router.area.get_area() *
-                            nocs[i].nocdynp.total_nodes);
+    if (!cp) {
+      for (i = 0; i < numNOC; i++) {
+        if (nocs[i].nocdynp.has_global_link && XML->sys.NoC[i].type) {
+          nocs[i].init_link_bus(
+              sqrt(area.get_area() *
+                   XML->sys.NoC[i].chip_coverage)); // compute global links
+          if (procdynp.homoNOC) {
+            noc.area.set_area(noc.area.get_area() +
+                              nocs[i].link_bus_tot_per_Router.area.get_area() *
+                                  nocs[i].nocdynp.total_nodes *
+                                  procdynp.numNOC);
+            area.set_area(area.get_area() +
+                          nocs[i].link_bus_tot_per_Router.area.get_area() *
+                              nocs[i].nocdynp.total_nodes * procdynp.numNOC);
+          } else {
+            noc.area.set_area(noc.area.get_area() +
+                              nocs[i].link_bus_tot_per_Router.area.get_area() *
+                                  nocs[i].nocdynp.total_nodes);
+            area.set_area(area.get_area() +
+                          nocs[i].link_bus_tot_per_Router.area.get_area() *
+                              nocs[i].nocdynp.total_nodes);
+          }
         }
       }
     }
     // Compute energy of NoC (w or w/o links) or buses
     for (i = 0; i < numNOC; i++) {
-      nocs[i].computePower();
+      nocs[i].computePower(cp);
       nocs[i].computeRuntimeDynamicPower();
       if (procdynp.homoNOC) {
         set_pppm(pppm_t,

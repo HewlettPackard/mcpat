@@ -39,9 +39,9 @@ OUTPUT="./output"
 if [ ! -d $OUTPUT ]; then
   print_info "Creating $OUTPUT"
   mkdir -p $OUTPUT
-else
-  print_info "Cleaning $OUTPUT"
-  rm -f $OUTPUT/*
+#else
+  #print_info "Cleaning $OUTPUT"
+  #rm -f $OUTPUT/*
 fi
 
 #--------------------------------------------------------------------

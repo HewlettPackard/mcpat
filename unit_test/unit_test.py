@@ -43,6 +43,12 @@ input_path = "./input"
 output_path = "./output"
 golden_path = "./golden"
 
+#parser = argparse.ArgumentParser()
+#parser.add_argument('--input', type=str, default="", help="input path")
+#parser.add_argument('--warmup', type=int, default=100000, help="time in nanoseconds of the warmup")
+#parser.add_argument('--end', type=int, default=0, help="time in nanoseconds of end of the plot")
+#args = parser.parse_args()
+
 
 def print_info(info, *args):
   if verbose:
@@ -99,7 +105,7 @@ def diff_result(vector):
   return 1
 
 
-def run_test(vector):
+def run_test_normal(vector):
   global kill_flag
   kill_flag = False
   infile = os.path.join(input_path, vector + ".xml")
@@ -134,6 +140,68 @@ def run_test(vector):
   return 0
 
 
+def run_test_serializaiton_create(vector):
+  global kill_flag
+  kill_flag = False
+  infile = os.path.join(input_path, vector + ".xml")
+  sname = os.path.join(output_path, vector + ".txt")
+  stdo = os.path.join(output_path, vector + ".out")
+  stde = os.path.join(output_path, vector + ".err")
+  with open(stdo, "w") as so, open(stde, "w") as se:
+    p = subprocess.Popen([
+        "../build/mcpat", "-i", infile, "-p", "5", "--serial_create=true",
+        "--serial_file=" + sname
+    ],
+                         stdout=so,
+                         stderr=se)
+    t = Timer(timeout_limit, kill, [p])
+    t.start()
+    p.wait()
+    t.cancel()
+  if kill_flag:
+    print_fail(vector, "Timeout Limit of " + str(timeout_limit) + "s Reached")
+    return 1
+  if os.stat(os.path.join(output_path, vector + ".err")).st_size == 0:
+    print_pass(vector)
+    return 0
+  else:
+    return 1
+  return 0
+
+
+def run_test_serialization_restore(vector):
+  global kill_flag
+  kill_flag = False
+  infile = os.path.join(input_path, vector + ".xml")
+  sname = os.path.join(output_path, vector + ".txt")
+  stdo = os.path.join(output_path, vector + ".out")
+  stde = os.path.join(output_path, vector + ".err")
+  with open(stdo, "w") as so, open(stde, "w") as se:
+    p = subprocess.Popen([
+        "../build/mcpat", "-i", infile, "-p", "5", "--serial_restore=true",
+        "--serial_file=" + sname
+    ],
+                         stdout=so,
+                         stderr=se)
+    t = Timer(timeout_limit, kill, [p])
+    t.start()
+    p.wait()
+    t.cancel()
+  if kill_flag:
+    print_fail(vector, "Timeout Limit of " + str(timeout_limit) + "s Reached")
+    return 1
+  else:
+    if diff_result(vector) == 0:
+      print_pass(vector)
+      return 0
+    else:
+      print_fail(
+          vector,
+          "The files " + vector + ".out and " + vector + ".golden differ")
+      return 1
+  return 0
+
+
 def get_vectors():
   files = glob.glob(os.path.join(input_path, "*"))
   vectors = sorted([os.path.basename(f).split(".")[0] for f in files])
@@ -146,8 +214,18 @@ if __name__ == "__main__":
   print_info(start)
   vectors = get_vectors()
   print_info("Found " + str(len(vectors)) + " test vectors")
+  #for vector in vectors:
+  #  if run_test_normal(vector) == 0:
+  #    p += 1
+  #  else:
+  #    f += 1
+  #for vector in vectors:
+  #  if run_test_serializaiton_create(vector) == 0:
+  #    p += 1
+  #  else:
+  #    f += 1
   for vector in vectors:
-    if run_test(vector) == 0:
+    if run_test_serialization_restore(vector) == 0:
       p += 1
     else:
       f += 1

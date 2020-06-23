@@ -82,10 +82,10 @@ protected:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &delay;
-    ar &cycle_time;
     ar &power;
     ar &rt_power;
+    ar &delay;
+    ar &cycle_time;
     ar &area;
   }
 

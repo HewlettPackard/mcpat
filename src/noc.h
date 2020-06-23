@@ -74,7 +74,7 @@ public:
                   double link_len_ = 0);
   void set_stats(const ParseXML *XML);
   void computeArea();
-  void computePower();
+  void computePower(bool cp = false);
   void computeRuntimeDynamicPower();
   void init_link_bus(double link_len_);
   void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
@@ -110,6 +110,7 @@ private:
     ar &router_exist;
     ar &link_bus_exist;
     ar &link_bus_tot_per_Router;
+    // ar &link_bus_tot_per_Router.area;
     ar &Component::area;
     // Component::serialize(ar, version);
   }

@@ -213,36 +213,39 @@ void NoC::set_stats(const ParseXML *XML) {
   init_stats = true;
 }
 
-void NoC::computePower() {
+void NoC::computePower(bool cp) {
   double pppm_t[4] = {1, 1, 1, 1};
   double M = nocdynp.duty_cycle;
   // init stats for TDP
   stats_t.readAc.access = M;
   tdp_stats = stats_t;
   if (router_exist) {
-    set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
-    router.power = router.power * pppm_t;
-    set_pppm(pppm_t,
-             nocdynp.total_nodes,
-             nocdynp.total_nodes,
-             nocdynp.total_nodes,
-             nocdynp.total_nodes);
+    if (!cp) {
+      set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
+      router.power = router.power * pppm_t;
+      set_pppm(pppm_t,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes,
+               nocdynp.total_nodes);
+    }
     power = power + router.power * pppm_t;
   }
   if (link_bus_exist) {
-    if (nocdynp.type)
+    if (nocdynp.type) {
       set_pppm(pppm_t,
                1 * M_traffic_pattern * M * (nocdynp.min_ports - 1),
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports);
-    // reset traffic pattern; local port do not have router links
-    else
+      // reset traffic pattern; local port do not have router links
+    } else {
       set_pppm(pppm_t,
                1 * M_traffic_pattern * M * (nocdynp.min_ports),
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports,
                nocdynp.global_linked_ports); // reset traffic pattern
+    }
 
     link_bus_tot_per_Router.power = link_bus.power * pppm_t;
 

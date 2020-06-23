@@ -42,6 +42,10 @@
 #include "wire.h"
 
 #include <assert.h>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <iostream>
 
 class Router : public Component {
@@ -112,6 +116,19 @@ private:
   void get_router_delay();
 
   double min_w_pmos;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &arbiter;
+    ar &crossbar;
+    ar &buffer;
+    ar &Component::power;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif

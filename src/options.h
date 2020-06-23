@@ -53,8 +53,7 @@ public:
   bool opt_for_clk = true;
 
   // Serialization Options
-  std::string serialization_path = "";
-  std::string serialization_name = "";
+  std::string serialization_file = "";
   bool serialization_create = false;
   bool serialization_restore = false;
 

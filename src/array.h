@@ -90,14 +90,11 @@ protected:
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
     ar &name;
-    ar &device_ty;
-    ar &opt_local;
-    ar &core_ty;
-    ar &is_default;
+    ar &power_t;
+    ar &stats_t;
     ar &tdp_stats;
     ar &rtp_stats;
-    ar &stats_t;
-    ar &power_t;
+    ar &local_result;
     Component::serialize(ar, version);
   }
 };

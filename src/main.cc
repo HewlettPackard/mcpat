@@ -50,9 +50,15 @@ void save(const Processor &s, std::string name) {
 
 void restore(Processor &s, std::string name) {
   // Restore from the Archive
+  // std::cerr << "Archive " << name << "\n";
   std::ifstream ifs(name.c_str());
-  boost::archive::text_iarchive ia(ifs);
-  ia >> s;
+  if (ifs.good()) {
+    boost::archive::text_iarchive ia(ifs);
+    ia >> s;
+  } else {
+    std::cerr << "Archive " << name << " cannot be used\n";
+    assert(false);
+  }
 }
 
 using namespace std;
@@ -71,14 +77,19 @@ int main(int argc, char *argv[]) {
   // parse XML-based interface
   ParseXML *p1 = new ParseXML();
   Processor proc;
-  Processor proc2;
   p1->parse(opt.input_xml);
-  proc.init(p1);
-  save(proc, opt.serialization_name);
-  restore(proc2, opt.serialization_name);
-  proc2.init(p1, true);
-  proc2.displayEnergy(2, opt.print_level);
-  // proc.displayEnergy(2, opt.print_level);
+  if (opt.serialization_create) {
+    proc.init(p1);
+    save(proc, opt.serialization_file);
+    std::cout << "Checkpoint generated @: " << opt.serialization_file << "\n";
+    return 0;
+  } else if (opt.serialization_restore) {
+    restore(proc, opt.serialization_file);
+    proc.init(p1, true);
+  } else {
+    proc.init(p1);
+  }
+  proc.displayEnergy(2, opt.print_level);
   delete p1;
   return 0;
 }
