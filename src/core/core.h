@@ -55,7 +55,7 @@ public:
   double clockRate, executionTime;
   double scktRatio, chip_PR_overhead, macro_PR_overhead;
   InstFetchU *ifu;
-  LoadStoreU *lsu;
+  LoadStoreU lsu;
   MemManU *mmu;
   EXECU exu;
   RENAMINGU *rnu;

@@ -67,9 +67,9 @@ public:
   powerDef power_t;
 
   void set_params(const InputParameter *configure_interface,
-                              const CoreDynParam &dyn_p_,
-                              int compare_bits_,
-                              bool _is_default = true);
+                  const CoreDynParam &dyn_p_,
+                  int compare_bits_,
+                  bool _is_default = true);
 
   void conflict_check_power();
   double compare_cap();

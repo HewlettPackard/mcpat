@@ -48,8 +48,7 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
                        const CoreDynParam &dyn_p_,
                        bool exist_)
     : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      coredynp(dyn_p_),
-      exist(exist_) {
+      coredynp(dyn_p_), exist(exist_) {
   if (!exist)
     return;
   int idx, tag, data, size, line, assoc, banks;
@@ -288,10 +287,10 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
   IB.set_params(&interface_ip,
-                   "InstBuffer",
-                   Core_device,
-                   coredynp.opt_local,
-                   coredynp.core_ty);
+                "InstBuffer",
+                Core_device,
+                coredynp.opt_local,
+                coredynp.core_ty);
   IB.computeArea();
   IB.area.set_area(IB.area.get_area() + IB.local_result.area);
   area.set_area(area.get_area() + IB.local_result.area);
@@ -356,10 +355,10 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
     interface_ip.num_wr_ports = coredynp.predictionW;
     interface_ip.num_se_rd_ports = 0;
     BTB.set_params(&interface_ip,
-                      "Branch Target Buffer",
-                      Core_device,
-                      coredynp.opt_local,
-                      coredynp.core_ty);
+                   "Branch Target Buffer",
+                   Core_device,
+                   coredynp.opt_local,
+                   coredynp.core_ty);
     BTB.computeArea();
     BTB.area.set_area(BTB.area.get_area() + BTB.local_result.area);
     area.set_area(area.get_area() + BTB.local_result.area);
@@ -372,36 +371,36 @@ InstFetchU::InstFetchU(const ParseXML *XML_interface,
   }
 
   ID_inst.set_params(is_default,
-                             &interface_ip,
-                             coredynp.opcode_length,
-                             1 /*Decoder should not know how many by itself*/,
-                             coredynp.x86,
-                             Core_device,
-                             coredynp.core_ty);
+                     &interface_ip,
+                     coredynp.opcode_length,
+                     1 /*Decoder should not know how many by itself*/,
+                     coredynp.x86,
+                     Core_device,
+                     coredynp.core_ty);
 
   ID_operand.set_params(is_default,
-                                &interface_ip,
-                                coredynp.arch_ireg_width,
-                                1,
-                                coredynp.x86,
-                                Core_device,
-                                coredynp.core_ty);
+                        &interface_ip,
+                        coredynp.arch_ireg_width,
+                        1,
+                        coredynp.x86,
+                        Core_device,
+                        coredynp.core_ty);
 
   ID_misc.set_params(is_default,
-                             &interface_ip,
-                             8 /* Prefix field etc upto 14B*/,
-                             1,
-                             coredynp.x86,
-                             Core_device,
-                             coredynp.core_ty);
-  
+                     &interface_ip,
+                     8 /* Prefix field etc upto 14B*/,
+                     1,
+                     coredynp.x86,
+                     Core_device,
+                     coredynp.core_ty);
+
   ID_misc.computeArea();
   ID_misc.computeDynamicPower();
   ID_operand.computeArea();
   ID_operand.computeDynamicPower();
   ID_inst.computeArea();
   ID_inst.computeDynamicPower();
-  
+
   // TODO: X86 decoder should decode the inst in cyclic mode under the control
   // of squencer. So the dynamic power should be multiplied by a few times.
   area.set_area(area.get_area() +
@@ -603,13 +602,13 @@ void InstFetchU::computeEnergy(bool is_tdp) {
 
     ID_inst.rt_power.readOp.dynamic =
         ID_inst.power_t.readOp.dynamic * ID_inst.rtp_stats.readAc.access;
-    ID_operand.rt_power.readOp.dynamic = ID_operand.power_t.readOp.dynamic *
-                                          ID_operand.rtp_stats.readAc.access;
+    ID_operand.rt_power.readOp.dynamic =
+        ID_operand.power_t.readOp.dynamic * ID_operand.rtp_stats.readAc.access;
     ID_misc.rt_power.readOp.dynamic =
         ID_misc.power_t.readOp.dynamic * ID_misc.rtp_stats.readAc.access;
 
-    rt_power = rt_power +
-               (ID_inst.rt_power + ID_operand.rt_power + ID_misc.rt_power);
+    rt_power =
+        rt_power + (ID_inst.rt_power + ID_operand.rt_power + ID_misc.rt_power);
   }
 }
 
@@ -697,8 +696,8 @@ void InstFetchU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
       }
     }
     cout << indent_str << "Instruction Buffer:" << endl;
-    cout << indent_str_next << "Area = " << IB.area.get_area() * 1e-6
-         << " mm^2" << endl;
+    cout << indent_str_next << "Area = " << IB.area.get_area() * 1e-6 << " mm^2"
+         << endl;
     cout << indent_str_next
          << "Peak Dynamic = " << IB.power.readOp.dynamic * clockRate << " W"
          << endl;
@@ -712,8 +711,8 @@ void InstFetchU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
                    ? IB.power.readOp.power_gated_with_long_channel_leakage
                    : IB.power.readOp.power_gated_leakage)
            << " W" << endl;
-    cout << indent_str_next
-         << "Gate Leakage = " << IB.power.readOp.gate_leakage << " W" << endl;
+    cout << indent_str_next << "Gate Leakage = " << IB.power.readOp.gate_leakage
+         << " W" << endl;
     cout << indent_str_next
          << "Runtime Dynamic = " << IB.rt_power.readOp.dynamic / executionTime
          << " W" << endl;
@@ -803,5 +802,4 @@ InstFetchU ::~InstFetchU() {
 
   if (!exist)
     return;
-
 }

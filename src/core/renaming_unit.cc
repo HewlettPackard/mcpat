@@ -395,8 +395,7 @@ void RENAMINGU::set_params(const ParseXML *XML,
           &interface_ip,
           coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl.set_params(
-          &interface_ip, coredynp, coredynp.phy_freg_width);
+      fdcl.set_params(&interface_ip, coredynp, coredynp.phy_freg_width);
 
     } else if (coredynp.scheu_ty == ReservationStation) {
       if (coredynp.rm_ty == RAMbased) {
@@ -639,8 +638,7 @@ void RENAMINGU::set_params(const ParseXML *XML,
           &interface_ip,
           coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl.set_params(
-          &interface_ip, coredynp, coredynp.phy_freg_width);
+      fdcl.set_params(&interface_ip, coredynp, coredynp.phy_freg_width);
     }
   }
   if (coredynp.core_ty == Inorder && coredynp.issueW > 1) {
@@ -648,12 +646,10 @@ void RENAMINGU::set_params(const ParseXML *XML,
      *  Multiple issue in order processor can do without renaming, but dcl is a
      * must.
      */
-    idcl.set_params(
-        &interface_ip,
-        coredynp,
-        coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-    fdcl.set_params(
-        &interface_ip, coredynp, coredynp.phy_freg_width);
+    idcl.set_params(&interface_ip,
+                    coredynp,
+                    coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
+    fdcl.set_params(&interface_ip, coredynp, coredynp.phy_freg_width);
   }
   init_params = true;
 }
@@ -1130,10 +1126,8 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
   if (is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
-        iFRAT.power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
-        fFRAT.power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
+        iFRAT.power = iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
+        fFRAT.power = fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
         ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
         ffreeL.power = ffreeL.power_t + ffreeL.local_result.power;
         power = power +
@@ -1146,10 +1140,8 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
           power = power + (iRRAT.power + fRRAT.power);
         }
       } else if (coredynp.scheu_ty == ReservationStation) {
-        iFRAT.power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
-        fFRAT.power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
+        iFRAT.power = iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
+        fFRAT.power = fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
         ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
         power = power + (iFRAT.power + fFRAT.power) + ifreeL.power;
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
@@ -1362,8 +1354,8 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
     } else {
       cout << indent_str << "Int DCL:" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << idcl.power.readOp.dynamic * clockRate
-           << " W" << endl;
+           << "Peak Dynamic = " << idcl.power.readOp.dynamic * clockRate << " W"
+           << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
            << (long_channel ? idcl.power.readOp.longer_channel_leakage
                             : idcl.power.readOp.leakage)
@@ -1382,8 +1374,8 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
            << idcl.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << indent_str << "FP DCL:" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << fdcl.power.readOp.dynamic * clockRate
-           << " W" << endl;
+           << "Peak Dynamic = " << fdcl.power.readOp.dynamic * clockRate << " W"
+           << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
            << (long_channel ? fdcl.power.readOp.longer_channel_leakage
                             : fdcl.power.readOp.leakage)
@@ -1453,8 +1445,9 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
            << " W" << endl;
       cout << indent_str_next << "FP DCL   Peak Dynamic = "
            << fdcl.rt_power.readOp.dynamic * clockRate << " W" << endl;
-      cout << indent_str_next << "FP DCL   Subthreshold Leakage = "
-           << fdcl.rt_power.readOp.leakage << " W" << endl;
+      cout << indent_str_next
+           << "FP DCL   Subthreshold Leakage = " << fdcl.rt_power.readOp.leakage
+           << " W" << endl;
       cout << indent_str_next
            << "FP DCL   Gate Leakage = " << fdcl.rt_power.readOp.gate_leakage
            << " W" << endl;

@@ -75,44 +75,44 @@ print_info "Launching Tests; NTHREADS=$NTHREADS"
 print_info "#########################################################"
 print_info "#                  Unit Test Basic 1                    #"
 print_info "#########################################################"
-#./unit_test.py \
-#  --input=./input/basic_test_1 \
-#  --output=./output/basic_test_1 \
-#  --golden=./golden/basic_test_1 \
-#  --nthreads=$NTHREADS 
+./unit_test.py \
+  --input=./input/basic_test_1 \
+  --output=./output/basic_test_1 \
+  --golden=./golden/basic_test_1 \
+  --nthreads=$NTHREADS 
 print_info "#########################################################"
 print_info "#               Unit Test Serialization 1               #"
 print_info "#########################################################"
-./unit_test.py \
-  --input=./input/serialization_test_1 \
-  --output=./output/serialization_test_1 \
-  --golden=./golden/serialization_test_1 \
-  --serial=True \
-  --nthreads=$NTHREADS
+#./unit_test.py \
+#  --input=./input/serialization_test_1 \
+#  --output=./output/serialization_test_1 \
+#  --golden=./golden/serialization_test_1 \
+#  --serial=True \
+#  --nthreads=$NTHREADS
 print_info "#########################################################"
 print_info "#               Unit Test Serialization 2               #"
 print_info "#########################################################"
-./unit_test.py \
-  --input=./input/serialization_test_2 \
-  --output=./output/serialization_test_2 \
-  --golden=./golden/serialization_test_2 \
-  --serial=True \
-  --nthreads=$NTHREADS
+#./unit_test.py \
+#  --input=./input/serialization_test_2 \
+#  --output=./output/serialization_test_2 \
+#  --golden=./golden/serialization_test_2 \
+#  --serial=True \
+#  --nthreads=$NTHREADS
 print_info "#########################################################"
 print_info "#               Unit Test Serialization 3               #"
 print_info "#########################################################"
-./unit_test.py \
-  --input=./input/serialization_test_3 \
-  --output=./output/serialization_test_3 \
-  --golden=./golden/serialization_test_3 \
-  --serial=True \
-  --nthreads=$NTHREADS
+#./unit_test.py \
+#  --input=./input/serialization_test_3 \
+#  --output=./output/serialization_test_3 \
+#  --golden=./golden/serialization_test_3 \
+#  --serial=True \
+#  --nthreads=$NTHREADS
 print_info "#########################################################"
 print_info "#               Unit Test Serialization 4               #"
 print_info "#########################################################"
-./unit_test.py \
-  --input=./input/serialization_test_4 \
-  --output=./output/serialization_test_4 \
-  --golden=./golden/serialization_test_4 \
-  --serial=True \
-  --nthreads=$NTHREADS
+#./unit_test.py \
+#  --input=./input/serialization_test_4 \
+#  --output=./output/serialization_test_4 \
+#  --golden=./golden/serialization_test_4 \
+#  --serial=True \
+#  --nthreads=$NTHREADS

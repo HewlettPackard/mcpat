@@ -41,16 +41,31 @@ timeout_limit = 120.0
 kill_flag = []
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--input', type=str, default="./input/basic_test_1", help="Test Input Path")
-parser.add_argument("--output", type=str, default="./output/basic_test_1", help="Test Output Path")
-parser.add_argument("--golden", type=str, default="./golden/basic_test_1", help="Test Golden Path")
-parser.add_argument("--serial", type=bool, default=False, help="Serial if true, Basic if false")
-parser.add_argument("--nthreads", type=int, default=1, help="Number of Threads to unit test with")
+parser.add_argument(
+    '--input', type=str, default="./input/basic_test_1", help="Test Input Path")
+parser.add_argument(
+    "--output",
+    type=str,
+    default="./output/basic_test_1",
+    help="Test Output Path")
+parser.add_argument(
+    "--golden",
+    type=str,
+    default="./golden/basic_test_1",
+    help="Test Golden Path")
+parser.add_argument(
+    "--serial", type=bool, default=False, help="Serial if true, Basic if false")
+parser.add_argument(
+    "--nthreads",
+    type=int,
+    default=1,
+    help="Number of Threads to unit test with")
 args = parser.parse_args()
 
 input_path = args.input
 output_path = args.output
 golden_path = args.golden
+
 
 def print_info(info, *args):
   if verbose:
@@ -156,7 +171,7 @@ def run_test_serializaiton_create(vector, i):
     ],
                          stdout=so,
                          stderr=se)
-    t = Timer(timeout_limit, kill, [p,i])
+    t = Timer(timeout_limit, kill, [p, i])
     t.start()
     p.wait()
     t.cancel()
@@ -203,8 +218,10 @@ def run_test_serialization_restore(vector, sfile, i):
       return 1
   return 0
 
+
 results = []
 iteration = 0
+
 
 def worker_thread_normal(iq, tid):
   global results
@@ -212,13 +229,14 @@ def worker_thread_normal(iq, tid):
   """ Worker Thread Normal expects just the test vector name and test numer in
   the queue [name, number] """
   while not iq.empty():
-    test = iq.get();
+    test = iq.get()
     name = test[0]
     number = test[1]
     if run_test_normal(name, tid) == 0:
       results[number] = True
     else:
       results[number] = False
+
 
 def worker_thread_serial(iq, tid):
   global results
@@ -227,7 +245,7 @@ def worker_thread_serial(iq, tid):
   file name in the queue [name, number, sfile] """
   global results
   while not iq.empty():
-    test = iq.get();
+    test = iq.get()
     name = test[0]
     number = test[1]
     sfile = test[2]
@@ -248,16 +266,16 @@ if __name__ == "__main__":
   f = 0
   print_info(start)
   vectors = get_vectors()
-  results = [False]*len(vectors)
+  results = [False] * len(vectors)
   print_info("Found " + str(len(vectors)) + " test vectors")
 
   InputQueue = queue.Queue()
   threads = []
-  kill_flag = [False]*args.nthreads
+  kill_flag = [False] * args.nthreads
 
   if not args.serial:
     # Prepare queue with inputs:
-    for vector,i in zip(vectors, range(len(vectors))):
+    for vector, i in zip(vectors, range(len(vectors))):
       InputQueue.put([vector, i])
     # Create Threads:
     for i in range(args.nthreads):
@@ -269,21 +287,22 @@ if __name__ == "__main__":
       thr.join()
   else:
     # Create a Serialized File:
-    if(len(vectors) > 0):
+    if (len(vectors) > 0):
       if run_test_serializaiton_create(vectors[0], 0) == 0:
         # Prepare queue with inputs:
-        for vector,i in zip(vectors, range(len(vectors))):
+        for vector, i in zip(vectors, range(len(vectors))):
           InputQueue.put([vector, i, vectors[0]])
         # Create Threads:
         for i in range(args.nthreads):
-          thr = threading.Thread(target=worker_thread_serial, args=[InputQueue, i])
+          thr = threading.Thread(
+              target=worker_thread_serial, args=[InputQueue, i])
           thr.start()
           threads.append(thr)
         # Join Threads:
         for thr in threads:
           thr.join()
     else:
-      print_info("No files in "+input_path)
+      print_info("No files in " + input_path)
       sys.exit(1)
   for i in results:
     if i:
