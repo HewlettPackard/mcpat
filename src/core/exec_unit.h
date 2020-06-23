@@ -53,8 +53,8 @@ public:
   double macro_PR_overhead;
   double lsq_height;
   CoreDynParam coredynp;
-  RegFU *rfu;
-  SchedulerU *scheu;
+  RegFU rfu;
+  SchedulerU scheu;
   FunctionalUnit fp_u;
   FunctionalUnit exeu;
   FunctionalUnit mul;
@@ -68,15 +68,25 @@ public:
   Component bypass;
   bool exist;
 
-  EXECU(const ParseXML *XML_interface,
+  EXECU();
+
+  void set_params(const ParseXML *XML_interface,
         int ithCore_,
         InputParameter *interface_ip_,
         double lsq_height_,
         const CoreDynParam &dyn_p_,
         bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computeStaticPower();
+  void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
-  ~EXECU();
+  ~EXECU(){};
+
+  private:
+  bool init_params;
+  bool init_stats;
+
 };
 
 #endif // __EXEC_U_H__

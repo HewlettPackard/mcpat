@@ -391,11 +391,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
                         coredynp.opt_local,
                         coredynp.core_ty);
 
-      idcl = new dep_resource_conflict_check(
+      idcl.set_params(
           &interface_ip,
           coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl = new dep_resource_conflict_check(
+      fdcl.set_params(
           &interface_ip, coredynp, coredynp.phy_freg_width);
 
     } else if (coredynp.scheu_ty == ReservationStation) {
@@ -635,11 +635,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
       // ifreeL.area.set_area(ifreeL.area.get_area()+
       // ifreeL.local_result.area*XML->sys.core[ithCore].number_hardware_threads);
 
-      idcl = new dep_resource_conflict_check(
+      idcl.set_params(
           &interface_ip,
           coredynp,
           coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-      fdcl = new dep_resource_conflict_check(
+      fdcl.set_params(
           &interface_ip, coredynp, coredynp.phy_freg_width);
     }
   }
@@ -648,11 +648,11 @@ void RENAMINGU::set_params(const ParseXML *XML,
      *  Multiple issue in order processor can do without renaming, but dcl is a
      * must.
      */
-    idcl = new dep_resource_conflict_check(
+    idcl.set_params(
         &interface_ip,
         coredynp,
         coredynp.phy_ireg_width); // TODO:Separate 2 sections See TR
-    fdcl = new dep_resource_conflict_check(
+    fdcl.set_params(
         &interface_ip, coredynp, coredynp.phy_freg_width);
   }
   init_params = true;
@@ -881,16 +881,16 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
             coredynp.decodeW; // ifreeL.l_ip.num_wr_ports;
         ifreeL.tdp_stats = ifreeL.stats_t;
       }
-      idcl->stats_t.readAc.access = coredynp.decodeW;
-      fdcl->stats_t.readAc.access = coredynp.decodeW;
-      idcl->tdp_stats = idcl->stats_t;
-      fdcl->tdp_stats = fdcl->stats_t;
+      idcl.stats_t.readAc.access = coredynp.decodeW;
+      fdcl.stats_t.readAc.access = coredynp.decodeW;
+      idcl.tdp_stats = idcl.stats_t;
+      fdcl.tdp_stats = fdcl.stats_t;
     } else {
       if (coredynp.issueW > 1) {
-        idcl->stats_t.readAc.access = coredynp.decodeW;
-        fdcl->stats_t.readAc.access = coredynp.decodeW;
-        idcl->tdp_stats = idcl->stats_t;
-        fdcl->tdp_stats = fdcl->stats_t;
+        idcl.stats_t.readAc.access = coredynp.decodeW;
+        fdcl.stats_t.readAc.access = coredynp.decodeW;
+        idcl.tdp_stats = idcl.stats_t;
+        fdcl.tdp_stats = fdcl.stats_t;
       }
     }
 
@@ -970,18 +970,18 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         ifreeL.stats_t.writeAc.access = 2 * (rename_writes + fp_rename_writes);
         ifreeL.rtp_stats = ifreeL.stats_t;
       }
-      idcl->stats_t.readAc.access =
+      idcl.stats_t.readAc.access =
           3 * coredynp.decodeW * coredynp.decodeW * rename_reads;
-      fdcl->stats_t.readAc.access =
+      fdcl.stats_t.readAc.access =
           3 * coredynp.fp_issueW * coredynp.fp_issueW * fp_rename_writes;
-      idcl->rtp_stats = idcl->stats_t;
-      fdcl->rtp_stats = fdcl->stats_t;
+      idcl.rtp_stats = idcl.stats_t;
+      fdcl.rtp_stats = fdcl.stats_t;
     } else {
       if (coredynp.issueW > 1) {
-        idcl->stats_t.readAc.access = 2 * int_instructions;
-        fdcl->stats_t.readAc.access = fp_instructions;
-        idcl->rtp_stats = idcl->stats_t;
-        fdcl->rtp_stats = fdcl->stats_t;
+        idcl.stats_t.readAc.access = 2 * int_instructions;
+        fdcl.stats_t.readAc.access = fp_instructions;
+        idcl.rtp_stats = idcl.stats_t;
+        fdcl.rtp_stats = fdcl.stats_t;
       }
     }
   }
@@ -995,13 +995,13 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         iFRAT.power_t.readOp.dynamic +=
             (iFRAT.stats_t.readAc.access *
                  (iFRAT.local_result.power.readOp.dynamic +
-                  idcl->power.readOp.dynamic) +
+                  idcl.power.readOp.dynamic) +
              iFRAT.stats_t.writeAc.access *
                  iFRAT.local_result.power.writeOp.dynamic);
         fFRAT.power_t.readOp.dynamic +=
             (fFRAT.stats_t.readAc.access *
                  (fFRAT.local_result.power.readOp.dynamic +
-                  fdcl->power.readOp.dynamic) +
+                  fdcl.power.readOp.dynamic) +
              fFRAT.stats_t.writeAc.access *
                  fFRAT.local_result.power.writeOp.dynamic);
       } else if (coredynp.rm_ty == CAMbased) {
@@ -1010,13 +1010,13 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         iFRAT.power_t.readOp.dynamic +=
             (iFRAT.stats_t.readAc.access *
                  (iFRAT.local_result.power.searchOp.dynamic +
-                  idcl->power.readOp.dynamic) +
+                  idcl.power.readOp.dynamic) +
              iFRAT.stats_t.writeAc.access *
                  iFRAT.local_result.power.writeOp.dynamic);
         fFRAT.power_t.readOp.dynamic +=
             (fFRAT.stats_t.readAc.access *
                  (fFRAT.local_result.power.searchOp.dynamic +
-                  fdcl->power.readOp.dynamic) +
+                  fdcl.power.readOp.dynamic) +
              fFRAT.stats_t.writeAc.access *
                  fFRAT.local_result.power.writeOp.dynamic);
       }
@@ -1057,13 +1057,13 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         iFRAT.power_t.readOp.dynamic +=
             (iFRAT.stats_t.readAc.access *
                  (iFRAT.local_result.power.readOp.dynamic +
-                  idcl->power.readOp.dynamic) +
+                  idcl.power.readOp.dynamic) +
              iFRAT.stats_t.writeAc.access *
                  iFRAT.local_result.power.writeOp.dynamic);
         fFRAT.power_t.readOp.dynamic +=
             (fFRAT.stats_t.readAc.access *
                  (fFRAT.local_result.power.readOp.dynamic +
-                  fdcl->power.readOp.dynamic) +
+                  fdcl.power.readOp.dynamic) +
              fFRAT.stats_t.writeAc.access *
                  fFRAT.local_result.power.writeOp.dynamic);
       } else if (coredynp.rm_ty == CAMbased) {
@@ -1072,13 +1072,13 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         iFRAT.power_t.readOp.dynamic +=
             (iFRAT.stats_t.readAc.access *
                  (iFRAT.local_result.power.searchOp.dynamic +
-                  idcl->power.readOp.dynamic) +
+                  idcl.power.readOp.dynamic) +
              iFRAT.stats_t.writeAc.access *
                  iFRAT.local_result.power.writeOp.dynamic);
         fFRAT.power_t.readOp.dynamic +=
             (fFRAT.stats_t.readAc.access *
                  (fFRAT.local_result.power.searchOp.dynamic +
-                  fdcl->power.readOp.dynamic) +
+                  fdcl.power.readOp.dynamic) +
              fFRAT.stats_t.writeAc.access *
                  fFRAT.local_result.power.writeOp.dynamic);
       }
@@ -1109,20 +1109,20 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
 
   } else {
     if (coredynp.issueW > 1) {
-      idcl->power_t.reset();
-      fdcl->power_t.reset();
+      idcl.power_t.reset();
+      fdcl.power_t.reset();
       set_pppm(pppm_t,
-               idcl->stats_t.readAc.access,
+               idcl.stats_t.readAc.access,
                coredynp.num_hthreads,
                coredynp.num_hthreads,
-               idcl->stats_t.readAc.access);
-      idcl->power_t = idcl->power * pppm_t;
+               idcl.stats_t.readAc.access);
+      idcl.power_t = idcl.power * pppm_t;
       set_pppm(pppm_t,
-               fdcl->stats_t.readAc.access,
+               fdcl.stats_t.readAc.access,
                coredynp.num_hthreads,
                coredynp.num_hthreads,
-               idcl->stats_t.readAc.access);
-      fdcl->power_t = fdcl->power * pppm_t;
+               idcl.stats_t.readAc.access);
+      fdcl.power_t = fdcl.power * pppm_t;
     }
   }
 
@@ -1131,9 +1131,9 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
         iFRAT.power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
         fFRAT.power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
         ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
         ffreeL.power = ffreeL.power_t + ffreeL.local_result.power;
         power = power +
@@ -1147,9 +1147,9 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         }
       } else if (coredynp.scheu_ty == ReservationStation) {
         iFRAT.power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
         fFRAT.power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
         ifreeL.power = ifreeL.power_t + ifreeL.local_result.power;
         power = power + (iFRAT.power + fFRAT.power) + ifreeL.power;
         if ((coredynp.rm_ty == RAMbased) && (coredynp.globalCheckpoint < 1)) {
@@ -1159,16 +1159,16 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         }
       }
     } else {
-      power = power + idcl->power_t + fdcl->power_t;
+      power = power + idcl.power_t + fdcl.power_t;
     }
 
   } else {
     if (coredynp.core_ty == OOO) {
       if (coredynp.scheu_ty == PhysicalRegFile) {
         iFRAT.rt_power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
         fFRAT.rt_power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
 
         ifreeL.rt_power = ifreeL.power_t + ifreeL.local_result.power;
         ffreeL.rt_power = ffreeL.power_t + ffreeL.local_result.power;
@@ -1185,9 +1185,9 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         }
       } else if (coredynp.scheu_ty == ReservationStation) {
         iFRAT.rt_power =
-            iFRAT.power_t + (iFRAT.local_result.power) + idcl->power_t;
+            iFRAT.power_t + (iFRAT.local_result.power) + idcl.power_t;
         fFRAT.rt_power =
-            fFRAT.power_t + (fFRAT.local_result.power) + fdcl->power_t;
+            fFRAT.power_t + (fFRAT.local_result.power) + fdcl.power_t;
         ifreeL.rt_power = ifreeL.power_t + ifreeL.local_result.power;
         rt_power =
             rt_power + (iFRAT.rt_power + fFRAT.rt_power) + ifreeL.rt_power;
@@ -1198,7 +1198,7 @@ void RENAMINGU::computeStaticPower(bool is_tdp) {
         }
       }
     } else {
-      rt_power = rt_power + idcl->power_t + fdcl->power_t;
+      rt_power = rt_power + idcl.power_t + fdcl.power_t;
     }
   }
 }
@@ -1362,44 +1362,44 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
     } else {
       cout << indent_str << "Int DCL:" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << idcl->power.readOp.dynamic * clockRate
+           << "Peak Dynamic = " << idcl.power.readOp.dynamic * clockRate
            << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? idcl->power.readOp.longer_channel_leakage
-                            : idcl->power.readOp.leakage)
+           << (long_channel ? idcl.power.readOp.longer_channel_leakage
+                            : idcl.power.readOp.leakage)
            << " W" << endl;
       if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? idcl->power.readOp.power_gated_with_long_channel_leakage
-                     : idcl->power.readOp.power_gated_leakage)
+                     ? idcl.power.readOp.power_gated_with_long_channel_leakage
+                     : idcl.power.readOp.power_gated_leakage)
              << " W" << endl;
       }
       cout << indent_str_next
-           << "Gate Leakage = " << idcl->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << idcl.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << idcl->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << idcl.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << indent_str << "FP DCL:" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << fdcl->power.readOp.dynamic * clockRate
+           << "Peak Dynamic = " << fdcl.power.readOp.dynamic * clockRate
            << " W" << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? fdcl->power.readOp.longer_channel_leakage
-                            : fdcl->power.readOp.leakage)
+           << (long_channel ? fdcl.power.readOp.longer_channel_leakage
+                            : fdcl.power.readOp.leakage)
            << " W" << endl;
       if (power_gating) {
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? fdcl->power.readOp.power_gated_with_long_channel_leakage
-                     : fdcl->power.readOp.power_gated_leakage)
+                     ? fdcl.power.readOp.power_gated_with_long_channel_leakage
+                     : fdcl.power.readOp.power_gated_leakage)
              << " W" << endl;
       }
       cout << indent_str_next
-           << "Gate Leakage = " << fdcl->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << fdcl.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << fdcl->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << fdcl.rt_power.readOp.dynamic / executionTime << " W" << endl;
     }
   } else {
     if (coredynp.core_ty == OOO) {
@@ -1445,18 +1445,18 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
       }
     } else {
       cout << indent_str_next << "Int DCL   Peak Dynamic = "
-           << idcl->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << idcl.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "Int DCL   Subthreshold Leakage = "
-           << idcl->rt_power.readOp.leakage << " W" << endl;
+           << idcl.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next
-           << "Int DCL   Gate Leakage = " << idcl->rt_power.readOp.gate_leakage
+           << "Int DCL   Gate Leakage = " << idcl.rt_power.readOp.gate_leakage
            << " W" << endl;
       cout << indent_str_next << "FP DCL   Peak Dynamic = "
-           << fdcl->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << fdcl.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "FP DCL   Subthreshold Leakage = "
-           << fdcl->rt_power.readOp.leakage << " W" << endl;
+           << fdcl.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next
-           << "FP DCL   Gate Leakage = " << fdcl->rt_power.readOp.gate_leakage
+           << "FP DCL   Gate Leakage = " << fdcl.rt_power.readOp.gate_leakage
            << " W" << endl;
     }
   }
@@ -1465,13 +1465,5 @@ void RENAMINGU::display(uint32_t indent, int plevel, bool is_tdp) {
 RENAMINGU ::~RENAMINGU() {
   if (!exist) {
     return;
-  }
-  if (idcl) {
-    delete idcl;
-    idcl = 0;
-  }
-  if (fdcl) {
-    delete fdcl;
-    fdcl = 0;
   }
 }
