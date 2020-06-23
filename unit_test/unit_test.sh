@@ -27,6 +27,17 @@ print_info () {
 }
 
 #--------------------------------------------------------------------
+#
+#
+#
+#--------------------------------------------------------------------
+TESTS=("basic_test_1"
+       "serialization_test_1"
+       "serialization_test_2"
+       "serialization_test_3"
+       "serialization_test_4")
+
+#--------------------------------------------------------------------
 # Output Directories
 #   ___  _   _ _____ ____  _   _ _____   ____ ___ ____  
 #  / _ \| | | |_   _|  _ \| | | |_   _| |  _ \_ _|  _ \ 
@@ -40,9 +51,12 @@ if [ ! -d $OUTPUT ]; then
   print_info "Creating $OUTPUT"
   mkdir -p $OUTPUT
 #else
-  #print_info "Cleaning $OUTPUT"
-  #rm -f $OUTPUT/*
+#  print_info "Cleaning $OUTPUT"
+#  rm -f $OUTPUT/*
 fi
+for test_set in ${TESTS[@]}; do
+  mkdir -p $OUTPUT/$test_set
+done
 
 #--------------------------------------------------------------------
 # Run Tests

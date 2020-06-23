@@ -223,12 +223,12 @@ void NoC::computePower(bool cp) {
     if (!cp) {
       set_pppm(pppm_t, 1 * M, 1, 1, 1); // reset traffic pattern
       router.power = router.power * pppm_t;
-      set_pppm(pppm_t,
-               nocdynp.total_nodes,
-               nocdynp.total_nodes,
-               nocdynp.total_nodes,
-               nocdynp.total_nodes);
     }
+    set_pppm(pppm_t,
+             nocdynp.total_nodes,
+             nocdynp.total_nodes,
+             nocdynp.total_nodes,
+             nocdynp.total_nodes);
     power = power + router.power * pppm_t;
   }
   if (link_bus_exist) {
