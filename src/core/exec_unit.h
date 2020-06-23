@@ -71,11 +71,11 @@ public:
   EXECU();
 
   void set_params(const ParseXML *XML_interface,
-        int ithCore_,
-        InputParameter *interface_ip_,
-        double lsq_height_,
-        const CoreDynParam &dyn_p_,
-        bool exist_ = true);
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  double lsq_height_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
   void set_stats(const ParseXML *XML);
   void computeArea();
   void computeStaticPower();
@@ -83,10 +83,9 @@ public:
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~EXECU(){};
 
-  private:
+private:
   bool init_params;
   bool init_stats;
-
 };
 
 #endif // __EXEC_U_H__

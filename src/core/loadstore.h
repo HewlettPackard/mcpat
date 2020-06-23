@@ -53,19 +53,24 @@ public:
   double macro_PR_overhead;
   double lsq_height;
   DataCache dcache;
-  ArrayST *LSQ; // it is actually the store queue but for inorder processors it
-                // serves as both loadQ and StoreQ
-  ArrayST *LoadQ;
+  ArrayST LSQ; // it is actually the store queue but for inorder processors it
+               // serves as both loadQ and StoreQ
+  ArrayST LoadQ;
   bool exist;
 
-  LoadStoreU(const ParseXML *XML_interface,
-             int ithCore_,
-             InputParameter *interface_ip_,
-             const CoreDynParam &dyn_p_,
-             bool exist_ = true);
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  LoadStoreU();
+  void set_params(const ParseXML *XML,
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true);
+  void computeArea();
+  void computePower(bool is_tdp = true);
+  void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~LoadStoreU();
+
+private:
+  bool init_params;
 };
 
 #endif // __LOAD_STORE_U_H__

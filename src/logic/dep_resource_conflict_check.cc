@@ -64,10 +64,11 @@ dep_resource_conflict_check::dep_resource_conflict_check(
   power.searchOp.dynamic *= sckRation;
 }
 
-void dep_resource_conflict_check::set_params(const InputParameter *configure_interface,
-                              const CoreDynParam &dyn_p_,
-                              int compare_bits_,
-                              bool _is_default){
+void dep_resource_conflict_check::set_params(
+    const InputParameter *configure_interface,
+    const CoreDynParam &dyn_p_,
+    int compare_bits_,
+    bool _is_default) {
 
   l_ip = *configure_interface;
   coredynp = dyn_p_;
@@ -90,8 +91,7 @@ void dep_resource_conflict_check::set_params(const InputParameter *configure_int
   if (coredynp.core_ty == Inorder) {
     compare_bits += 16 + 8 + 8; // TODO: opcode bits + log(shared resources) +
                                 // REG TAG BITS-->opcode comparator
-  }
-  else {
+  } else {
     compare_bits += 16 + 8 + 8;
   }
 
@@ -100,8 +100,8 @@ void dep_resource_conflict_check::set_params(const InputParameter *configure_int
   power.readOp.dynamic *= sckRation;
   power.writeOp.dynamic *= sckRation;
   power.searchOp.dynamic *= sckRation;
-                              }
-                              
+}
+
 void dep_resource_conflict_check::conflict_check_power() {
   double Ctotal;
   int num_comparators;

@@ -370,12 +370,13 @@ void SchedulerU::set_params(const ParseXML *XML_interface,
                      coredynp.opt_local,
                      coredynp.core_ty);
     }
-    instruction_selection.set_params(is_default,
-                            XML->sys.core[ithCore].instruction_window_size,
-                            coredynp.peak_issueW,
-                            &interface_ip,
-                            Core_device,
-                            coredynp.core_ty);
+    instruction_selection.set_params(
+        is_default,
+        XML->sys.core[ithCore].instruction_window_size,
+        coredynp.peak_issueW,
+        &interface_ip,
+        Core_device,
+        coredynp.core_ty);
   }
 
   init_params = true;
@@ -417,7 +418,6 @@ void SchedulerU::computeArea() {
                                       coredynp.num_pipelines);
     area.set_area(area.get_area() +
                   int_inst_window.local_result.area * coredynp.num_pipelines);
-
   }
 
   if (coredynp.core_ty == OOO) {
@@ -823,6 +823,4 @@ void SchedulerU::computeDynamicPower(bool is_tdp) {
   //	cout<<"selection"<<instruction_selection.power.readOp.dynamic<<"leakage"<<instruction_selection.power.readOp.leakage<<endl;
 }
 
-SchedulerU ::~SchedulerU() {
-
-}
+SchedulerU ::~SchedulerU() {}

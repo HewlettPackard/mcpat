@@ -43,16 +43,30 @@
 #include <iostream>
 #include <string>
 
-LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
-                       int ithCore_,
-                       InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_,
-                       bool exist_)
-    : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      coredynp(dyn_p_), LSQ(0), LoadQ(0), exist(exist_) {
-  if (!exist)
+LoadStoreU::LoadStoreU() { init_params = false; }
+
+void LoadStoreU::set_params(const ParseXML *XML,
+                            int ithCore_,
+                            InputParameter *interface_ip_,
+                            const CoreDynParam &dyn_p_,
+                            bool exist_) {
+  this->XML = XML;
+  this->ithCore = ithCore_;
+  this->interface_ip = *interface_ip_;
+  this->coredynp = dyn_p_;
+  this->exist = exist_;
+
+  if (!exist) {
     return;
-  int idx, tag, data, size, line, assoc, banks;
+  }
+
+  int idx = 0;
+  int tag = 0;
+  int data = 0;
+  int size = 0;
+  int line = 0;
+  int assoc = 0;
+  int banks = 0;
   bool debug = false;
   int ldst_opcode = XML->sys.core[ithCore].opcode_width; // 16;
 
@@ -110,11 +124,6 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                            Core_device,
                            coredynp.opt_local,
                            coredynp.core_ty);
-  dcache.caches.computeArea();
-  dcache.area.set_area(dcache.area.get_area() +
-                       dcache.caches.local_result.area);
-  area.set_area(area.get_area() + dcache.caches.local_result.area);
-  // output_data_csv(dcache.caches.local_result);
 
   // dCache controllers
   // miss buffer
@@ -151,10 +160,6 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                           Core_device,
                           coredynp.opt_local,
                           coredynp.core_ty);
-  dcache.missb.computeArea();
-  dcache.area.set_area(dcache.area.get_area() + dcache.missb.local_result.area);
-  area.set_area(area.get_area() + dcache.missb.local_result.area);
-  // output_data_csv(dcache.missb.local_result);
 
   // fill buffer
   tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
@@ -187,10 +192,6 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                         Core_device,
                         coredynp.opt_local,
                         coredynp.core_ty);
-  dcache.ifb.computeArea();
-  dcache.area.set_area(dcache.area.get_area() + dcache.ifb.local_result.area);
-  area.set_area(area.get_area() + dcache.ifb.local_result.area);
-  // output_data_csv(dcache.ifb.local_result);
 
   // prefetch buffer
   tag = XML->sys.physical_address_width +
@@ -218,7 +219,6 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.obj_func_leak_power = 0;
   interface_ip.obj_func_cycle_t = 1;
   interface_ip.num_rw_ports = debug ? 1 : XML->sys.core[ithCore].memory_ports;
-  ;
   interface_ip.num_rd_ports = 0;
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
@@ -227,14 +227,7 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                               Core_device,
                               coredynp.opt_local,
                               coredynp.core_ty);
-  dcache.prefetchb.computeArea();
-  dcache.area.set_area(dcache.area.get_area() +
-                       dcache.prefetchb.local_result.area);
-  area.set_area(area.get_area() + dcache.prefetchb.local_result.area);
-  // output_data_csv(dcache.prefetchb.local_result);
-
   // WBB
-
   if (cache_p == Write_back) {
     tag = XML->sys.physical_address_width + EXTRA_TAG_BITS;
     data = dcache.caches.l_ip.line_sz;
@@ -266,10 +259,6 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
                           Core_device,
                           coredynp.opt_local,
                           coredynp.core_ty);
-    dcache.wbb.computeArea();
-    dcache.area.set_area(dcache.area.get_area() + dcache.wbb.local_result.area);
-    area.set_area(area.get_area() + dcache.wbb.local_result.area);
-    // output_data_csv(dcache.wbb.local_result);
   }
 
   /*
@@ -303,17 +292,11 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
   interface_ip.num_wr_ports = XML->sys.core[ithCore].memory_ports;
   interface_ip.num_se_rd_ports = 0;
   interface_ip.num_search_ports = XML->sys.core[ithCore].memory_ports;
-  LSQ = new ArrayST(&interface_ip,
-                    "Load(Store)Queue",
-                    Core_device,
-                    coredynp.opt_local,
-                    coredynp.core_ty);
-  LSQ->area.set_area(LSQ->area.get_area() + LSQ->local_result.area);
-  area.set_area(area.get_area() + LSQ->local_result.area);
-  // output_data_csv(LSQ.LSQ.local_result);
-  lsq_height =
-      LSQ->local_result.cache_ht *
-      sqrt(cdb_overhead); /*XML->sys.core[ithCore].number_hardware_threads*/
+  LSQ.set_params(&interface_ip,
+                 "Load(Store)Queue",
+                 Core_device,
+                 coredynp.opt_local,
+                 coredynp.core_ty);
 
   if ((coredynp.core_ty == OOO) &&
       (XML->sys.core[ithCore].load_buffer_size > 0)) {
@@ -337,24 +320,81 @@ LoadStoreU::LoadStoreU(const ParseXML *XML_interface,
     interface_ip.num_wr_ports = XML->sys.core[ithCore].memory_ports;
     interface_ip.num_se_rd_ports = 0;
     interface_ip.num_search_ports = XML->sys.core[ithCore].memory_ports;
-    LoadQ = new ArrayST(&interface_ip,
-                        "LoadQueue",
-                        Core_device,
-                        coredynp.opt_local,
-                        coredynp.core_ty);
-    LoadQ->area.set_area(LoadQ->area.get_area() + LoadQ->local_result.area);
-    area.set_area(area.get_area() + LoadQ->local_result.area);
+    LoadQ.set_params(&interface_ip,
+                     "LoadQueue",
+                     Core_device,
+                     coredynp.opt_local,
+                     coredynp.core_ty);
+  }
+  init_params = true;
+}
+
+void LoadStoreU::computeArea() {
+  if (!init_params) {
+    std::cerr << "[ LoadStoreU ] Error: ComputeArea() must be called after "
+                 "initializing params"
+              << std::endl;
+    exit(1);
+  }
+
+  dcache.caches.computeArea();
+  dcache.area.set_area(dcache.area.get_area() +
+                       dcache.caches.local_result.area);
+  area.set_area(area.get_area() + dcache.caches.local_result.area);
+
+  // dCache controllers
+  // miss buffer
+  dcache.missb.computeArea();
+  dcache.area.set_area(dcache.area.get_area() + dcache.missb.local_result.area);
+  area.set_area(area.get_area() + dcache.missb.local_result.area);
+
+  // fill buffer
+  dcache.ifb.computeArea();
+  dcache.area.set_area(dcache.area.get_area() + dcache.ifb.local_result.area);
+  area.set_area(area.get_area() + dcache.ifb.local_result.area);
+
+  dcache.prefetchb.computeArea();
+  dcache.area.set_area(dcache.area.get_area() +
+                       dcache.prefetchb.local_result.area);
+  area.set_area(area.get_area() + dcache.prefetchb.local_result.area);
+
+  if (cache_p == Write_back) {
+    dcache.wbb.computeArea();
+    dcache.area.set_area(dcache.area.get_area() + dcache.wbb.local_result.area);
+    area.set_area(area.get_area() + dcache.wbb.local_result.area);
+  }
+
+  /*
+   * LSU--in-order processors do not have separate load queue: unified lsq
+   * partitioned among threads
+   * it is actually the store queue but for inorder processors it serves as both
+   * loadQ and StoreQ
+   */
+  LSQ.computeArea();
+  LSQ.area.set_area(LSQ.area.get_area() + LSQ.local_result.area);
+  area.set_area(area.get_area() + LSQ.local_result.area);
+  // output_data_csv(LSQ.LSQ.local_result);
+  lsq_height =
+      LSQ.local_result.cache_ht *
+      sqrt(cdb_overhead); /*XML->sys.core[ithCore].number_hardware_threads*/
+
+  if ((coredynp.core_ty == OOO) &&
+      (XML->sys.core[ithCore].load_buffer_size > 0)) {
+    LoadQ.computeArea();
+    LoadQ.area.set_area(LoadQ.area.get_area() + LoadQ.local_result.area);
+    area.set_area(area.get_area() + LoadQ.local_result.area);
     // output_data_csv(LoadQ.LoadQ.local_result);
     lsq_height =
-        (LSQ->local_result.cache_ht + LoadQ->local_result.cache_ht) *
+        (LSQ.local_result.cache_ht + LoadQ.local_result.cache_ht) *
         sqrt(cdb_overhead); /*XML->sys.core[ithCore].number_hardware_threads*/
   }
   area.set_area(area.get_area() * cdb_overhead);
 }
 
-void LoadStoreU::computeEnergy(bool is_tdp) {
-  if (!exist)
+void LoadStoreU::computePower(bool is_tdp) {
+  if (!exist) {
     return;
+  }
   if (is_tdp) {
     // init stats for Peak
     dcache.caches.stats_t.readAc.access =
@@ -392,14 +432,14 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
       dcache.wbb.tdp_stats = dcache.wbb.stats_t;
     }
 
-    LSQ->stats_t.readAc.access = LSQ->stats_t.writeAc.access =
-        LSQ->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-    LSQ->tdp_stats = LSQ->stats_t;
+    LSQ.stats_t.readAc.access = LSQ.stats_t.writeAc.access =
+        LSQ.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+    LSQ.tdp_stats = LSQ.stats_t;
     if ((coredynp.core_ty == OOO) &&
         (XML->sys.core[ithCore].load_buffer_size > 0)) {
-      LoadQ->stats_t.readAc.access = LoadQ->stats_t.writeAc.access =
-          LoadQ->l_ip.num_search_ports * coredynp.LSU_duty_cycle;
-      LoadQ->tdp_stats = LoadQ->stats_t;
+      LoadQ.stats_t.readAc.access = LoadQ.stats_t.writeAc.access =
+          LoadQ.l_ip.num_search_ports * coredynp.LSU_duty_cycle;
+      LoadQ.tdp_stats = LoadQ.stats_t;
     }
   } else {
     // init stats for Runtime Dynamic (RTP)
@@ -451,26 +491,26 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
       dcache.prefetchb.rtp_stats = dcache.prefetchb.stats_t;
     }
 
-    LSQ->stats_t.readAc.access = (XML->sys.core[ithCore].load_instructions +
+    LSQ.stats_t.readAc.access = (XML->sys.core[ithCore].load_instructions +
+                                 XML->sys.core[ithCore].store_instructions) *
+                                2; // flush overhead considered
+    LSQ.stats_t.writeAc.access = (XML->sys.core[ithCore].load_instructions +
                                   XML->sys.core[ithCore].store_instructions) *
-                                 2; // flush overhead considered
-    LSQ->stats_t.writeAc.access = (XML->sys.core[ithCore].load_instructions +
-                                   XML->sys.core[ithCore].store_instructions) *
-                                  2;
-    LSQ->rtp_stats = LSQ->stats_t;
+                                 2;
+    LSQ.rtp_stats = LSQ.stats_t;
 
     if ((coredynp.core_ty == OOO) &&
         (XML->sys.core[ithCore].load_buffer_size > 0)) {
-      LoadQ->stats_t.readAc.access = XML->sys.core[ithCore].load_instructions +
+      LoadQ.stats_t.readAc.access = XML->sys.core[ithCore].load_instructions +
+                                    XML->sys.core[ithCore].store_instructions;
+      LoadQ.stats_t.writeAc.access = XML->sys.core[ithCore].load_instructions +
                                      XML->sys.core[ithCore].store_instructions;
-      LoadQ->stats_t.writeAc.access = XML->sys.core[ithCore].load_instructions +
-                                      XML->sys.core[ithCore].store_instructions;
-      LoadQ->rtp_stats = LoadQ->stats_t;
+      LoadQ.rtp_stats = LoadQ.stats_t;
     }
   }
 
   dcache.power_t.reset();
-  LSQ->power_t.reset();
+  LSQ.power_t.reset();
   dcache.power_t.readOp.dynamic +=
       (dcache.caches.stats_t.readAc.hit *
            dcache.caches.local_result.power.readOp.dynamic +
@@ -515,30 +555,30 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
 
   if ((coredynp.core_ty == OOO) &&
       (XML->sys.core[ithCore].load_buffer_size > 0)) {
-    LoadQ->power_t.reset();
-    LoadQ->power_t.readOp.dynamic +=
-        LoadQ->stats_t.readAc.access *
-            (LoadQ->local_result.power.searchOp.dynamic +
-             LoadQ->local_result.power.readOp.dynamic) +
-        LoadQ->stats_t.writeAc.access *
-            LoadQ->local_result.power.writeOp
+    LoadQ.power_t.reset();
+    LoadQ.power_t.readOp.dynamic +=
+        LoadQ.stats_t.readAc.access *
+            (LoadQ.local_result.power.searchOp.dynamic +
+             LoadQ.local_result.power.readOp.dynamic) +
+        LoadQ.stats_t.writeAc.access *
+            LoadQ.local_result.power.writeOp
                 .dynamic; // every memory access invloves at least two
                           // operations on LoadQ
 
-    LSQ->power_t.readOp.dynamic +=
-        LSQ->stats_t.readAc.access * (LSQ->local_result.power.searchOp.dynamic +
-                                      LSQ->local_result.power.readOp.dynamic) +
-        LSQ->stats_t.writeAc.access *
-            LSQ->local_result.power.writeOp
+    LSQ.power_t.readOp.dynamic +=
+        LSQ.stats_t.readAc.access * (LSQ.local_result.power.searchOp.dynamic +
+                                     LSQ.local_result.power.readOp.dynamic) +
+        LSQ.stats_t.writeAc.access *
+            LSQ.local_result.power.writeOp
                 .dynamic; // every memory access invloves at least two
                           // operations on LSQ
 
   } else {
-    LSQ->power_t.readOp.dynamic +=
-        LSQ->stats_t.readAc.access * (LSQ->local_result.power.searchOp.dynamic +
-                                      LSQ->local_result.power.readOp.dynamic) +
-        LSQ->stats_t.writeAc.access *
-            LSQ->local_result.power.writeOp
+    LSQ.power_t.readOp.dynamic +=
+        LSQ.stats_t.readAc.access * (LSQ.local_result.power.searchOp.dynamic +
+                                     LSQ.local_result.power.readOp.dynamic) +
+        LSQ.stats_t.writeAc.access *
+            LSQ.local_result.power.writeOp
                 .dynamic; // every memory access invloves at least two
                           // operations on LSQ
   }
@@ -559,13 +599,13 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
       dcache.power = dcache.power + dcache.wbb.local_result.power * pppm_lkg;
     }
 
-    LSQ->power = LSQ->power_t + LSQ->local_result.power * pppm_lkg;
-    power = power + dcache.power + LSQ->power;
+    LSQ.power = LSQ.power_t + LSQ.local_result.power * pppm_lkg;
+    power = power + dcache.power + LSQ.power;
 
     if ((coredynp.core_ty == OOO) &&
         (XML->sys.core[ithCore].load_buffer_size > 0)) {
-      LoadQ->power = LoadQ->power_t + LoadQ->local_result.power * pppm_lkg;
-      power = power + LoadQ->power;
+      LoadQ.power = LoadQ.power_t + LoadQ.local_result.power * pppm_lkg;
+      power = power + LoadQ.power;
     }
   } else {
     //    	dcache.rt_power = dcache.power_t +
@@ -585,18 +625,18 @@ void LoadStoreU::computeEnergy(bool is_tdp) {
           dcache.rt_power + dcache.wbb.local_result.power * pppm_lkg;
     }
 
-    LSQ->rt_power = LSQ->power_t + LSQ->local_result.power * pppm_lkg;
-    rt_power = rt_power + dcache.rt_power + LSQ->rt_power;
+    LSQ.rt_power = LSQ.power_t + LSQ.local_result.power * pppm_lkg;
+    rt_power = rt_power + dcache.rt_power + LSQ.rt_power;
 
     if ((coredynp.core_ty == OOO) &&
         (XML->sys.core[ithCore].load_buffer_size > 0)) {
-      LoadQ->rt_power = LoadQ->power_t + LoadQ->local_result.power * pppm_lkg;
-      rt_power = rt_power + LoadQ->rt_power;
+      LoadQ.rt_power = LoadQ.power_t + LoadQ.local_result.power * pppm_lkg;
+      rt_power = rt_power + LoadQ.rt_power;
     }
   }
 }
 
-void LoadStoreU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
+void LoadStoreU::display(uint32_t indent, int plevel, bool is_tdp) {
   if (!exist)
     return;
   string indent_str(indent, ' ');
@@ -629,75 +669,76 @@ void LoadStoreU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     cout << endl;
     if (coredynp.core_ty == Inorder) {
       cout << indent_str << "Load/Store Queue:" << endl;
-      cout << indent_str_next << "Area = " << LSQ->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << LSQ.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << LSQ->power.readOp.dynamic * clockRate << " W"
+           << "Peak Dynamic = " << LSQ.power.readOp.dynamic * clockRate << " W"
            << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? LSQ->power.readOp.longer_channel_leakage
-                            : LSQ->power.readOp.leakage)
+           << (long_channel ? LSQ.power.readOp.longer_channel_leakage
+                            : LSQ.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? LSQ->power.readOp.power_gated_with_long_channel_leakage
-                     : LSQ->power.readOp.power_gated_leakage)
+                     ? LSQ.power.readOp.power_gated_with_long_channel_leakage
+                     : LSQ.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next
-           << "Gate Leakage = " << LSQ->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << LSQ.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << LSQ->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << LSQ.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
     } else
 
     {
       if (XML->sys.core[ithCore].load_buffer_size > 0) {
         cout << indent_str << "LoadQ:" << endl;
-        cout << indent_str_next << "Area = " << LoadQ->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << LoadQ.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << LoadQ->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << LoadQ.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? LoadQ->power.readOp.longer_channel_leakage
-                              : LoadQ->power.readOp.leakage)
+             << (long_channel ? LoadQ.power.readOp.longer_channel_leakage
+                              : LoadQ.power.readOp.leakage)
              << " W" << endl;
         if (power_gating)
-          cout << indent_str_next << "Subthreshold Leakage with power gating = "
-               << (long_channel ? LoadQ->power.readOp
-                                      .power_gated_with_long_channel_leakage
-                                : LoadQ->power.readOp.power_gated_leakage)
-               << " W" << endl;
+          cout
+              << indent_str_next << "Subthreshold Leakage with power gating = "
+              << (long_channel
+                      ? LoadQ.power.readOp.power_gated_with_long_channel_leakage
+                      : LoadQ.power.readOp.power_gated_leakage)
+              << " W" << endl;
         cout << indent_str_next
-             << "Gate Leakage = " << LoadQ->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << LoadQ.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << LoadQ->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << LoadQ.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
       }
       cout << indent_str << "StoreQ:" << endl;
-      cout << indent_str_next << "Area = " << LSQ->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << LSQ.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << LSQ->power.readOp.dynamic * clockRate << " W"
+           << "Peak Dynamic = " << LSQ.power.readOp.dynamic * clockRate << " W"
            << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? LSQ->power.readOp.longer_channel_leakage
-                            : LSQ->power.readOp.leakage)
+           << (long_channel ? LSQ.power.readOp.longer_channel_leakage
+                            : LSQ.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? LSQ->power.readOp.power_gated_with_long_channel_leakage
-                     : LSQ->power.readOp.power_gated_leakage)
+                     ? LSQ.power.readOp.power_gated_with_long_channel_leakage
+                     : LSQ.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next
-           << "Gate Leakage = " << LSQ->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << LSQ.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << LSQ->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << LSQ.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
     }
   } else {
@@ -709,41 +750,30 @@ void LoadStoreU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << dcache.rt_power.readOp.gate_leakage << " W" << endl;
     if (coredynp.core_ty == Inorder) {
       cout << indent_str_next << "Load/Store Queue   Peak Dynamic = "
-           << LSQ->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << LSQ.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next << "Load/Store Queue   Subthreshold Leakage = "
-           << LSQ->rt_power.readOp.leakage << " W" << endl;
+           << LSQ.rt_power.readOp.leakage << " W" << endl;
       cout << indent_str_next << "Load/Store Queue   Gate Leakage = "
-           << LSQ->rt_power.readOp.gate_leakage << " W" << endl;
+           << LSQ.rt_power.readOp.gate_leakage << " W" << endl;
     } else {
       cout << indent_str_next << "LoadQ   Peak Dynamic = "
-           << LoadQ->rt_power.readOp.dynamic * clockRate << " W" << endl;
-      cout << indent_str_next << "LoadQ   Subthreshold Leakage = "
-           << LoadQ->rt_power.readOp.leakage << " W" << endl;
+           << LoadQ.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next
-           << "LoadQ   Gate Leakage = " << LoadQ->rt_power.readOp.gate_leakage
+           << "LoadQ   Subthreshold Leakage = " << LoadQ.rt_power.readOp.leakage
+           << " W" << endl;
+      cout << indent_str_next
+           << "LoadQ   Gate Leakage = " << LoadQ.rt_power.readOp.gate_leakage
            << " W" << endl;
       cout << indent_str_next << "StoreQ   Peak Dynamic = "
-           << LSQ->rt_power.readOp.dynamic * clockRate << " W" << endl;
+           << LSQ.rt_power.readOp.dynamic * clockRate << " W" << endl;
       cout << indent_str_next
-           << "StoreQ   Subthreshold Leakage = " << LSQ->rt_power.readOp.leakage
+           << "StoreQ   Subthreshold Leakage = " << LSQ.rt_power.readOp.leakage
            << " W" << endl;
       cout << indent_str_next
-           << "StoreQ   Gate Leakage = " << LSQ->rt_power.readOp.gate_leakage
+           << "StoreQ   Gate Leakage = " << LSQ.rt_power.readOp.gate_leakage
            << " W" << endl;
     }
   }
 }
 
-LoadStoreU ::~LoadStoreU() {
-
-  if (!exist)
-    return;
-  if (LSQ) {
-    delete LSQ;
-    LSQ = 0;
-  }
-  if (LoadQ) {
-    delete LoadQ;
-    LoadQ = 0;
-  }
-}
+LoadStoreU ::~LoadStoreU(){};

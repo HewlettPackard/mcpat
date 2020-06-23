@@ -54,7 +54,8 @@ Decoder::Decoder(int _num_dec_signals,
       R_wire_dec_out(_R_wire_dec_out), num_gates(0), num_gates_min(2), delay(0),
       // power(),
       fully_assoc(fully_assoc_), is_dram(is_dram_), is_wl_tr(is_wl_tr_),
-      total_driver_nwidth(0), total_driver_pwidth(0), sleeptx(NULL), nodes_DSTN(nodes_DSTN_), power_gating(power_gating_) {
+      total_driver_nwidth(0), total_driver_pwidth(0), sleeptx(NULL),
+      nodes_DSTN(nodes_DSTN_), power_gating(power_gating_) {
 
   for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
     w_dec_n[i] = 0;
@@ -95,24 +96,32 @@ Decoder::Decoder(int _num_dec_signals,
   compute_area();
 }
 
-
 void Decoder::set_params(int _num_dec_signals,
-                 bool flag_way_select,
-                 double _C_ld_dec_out,
-                 double _R_wire_dec_out,
-                 bool fully_assoc_,
-                 bool is_dram_,
-                 bool is_wl_tr_,
-                 const Area &cell_,
-                 bool power_gating_,
-                 int nodes_DSTN_) {
-  
+                         bool flag_way_select,
+                         double _C_ld_dec_out,
+                         double _R_wire_dec_out,
+                         bool fully_assoc_,
+                         bool is_dram_,
+                         bool is_wl_tr_,
+                         const Area &cell_,
+                         bool power_gating_,
+                         int nodes_DSTN_) {
+
   exist = false;
   C_ld_dec_out = _C_ld_dec_out;
 
-  R_wire_dec_out=_R_wire_dec_out; num_gates=0; num_gates_min=2; delay=0;
-      fully_assoc=fully_assoc_; is_dram=is_dram_; is_wl_tr=is_wl_tr_;
-      total_driver_nwidth=0; total_driver_pwidth=0; sleeptx=NULL; nodes_DSTN=nodes_DSTN_; power_gating=power_gating_;
+  R_wire_dec_out = _R_wire_dec_out;
+  num_gates = 0;
+  num_gates_min = 2;
+  delay = 0;
+  fully_assoc = fully_assoc_;
+  is_dram = is_dram_;
+  is_wl_tr = is_wl_tr_;
+  total_driver_nwidth = 0;
+  total_driver_pwidth = 0;
+  sleeptx = NULL;
+  nodes_DSTN = nodes_DSTN_;
+  power_gating = power_gating_;
 
   for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
     w_dec_n[i] = 0;
@@ -184,8 +193,8 @@ void Decoder::compute_widths() {
   }
 }
 
-void Decoder::computeArea(){
-    compute_widths();
+void Decoder::computeArea() {
+  compute_widths();
   compute_area();
 }
 void Decoder::compute_area() {
@@ -371,16 +380,27 @@ PredecBlk::PredecBlk(int num_dec_signals,
                      double R_wire_predec_blk_out_,
                      int num_dec_per_predec,
                      bool is_dram,
-                     bool is_blk1){
+                     bool is_blk1) {
   dec = dec_;
-  exist= false; number_input_addr_bits= 0;
-      C_ld_predec_blk_out= 0; R_wire_predec_blk_out= 0;
-      branch_effort_nand2_gate_output= 1; branch_effort_nand3_gate_output= 1;
-      flag_two_unique_paths= false; flag_L2_gate= 0; number_inputs_L1_gate= 0;
-      number_gates_L1_nand2_path= 0; number_gates_L1_nand3_path= 0;
-      number_gates_L2= 0; min_number_gates_L1= 2; min_number_gates_L2= 2;
-      num_L1_active_nand2_path= 0; num_L1_active_nand3_path= 0;
-      delay_nand2_path= 0; delay_nand3_path= 0; is_dram_= is_dram;
+  exist = false;
+  number_input_addr_bits = 0;
+  C_ld_predec_blk_out = 0;
+  R_wire_predec_blk_out = 0;
+  branch_effort_nand2_gate_output = 1;
+  branch_effort_nand3_gate_output = 1;
+  flag_two_unique_paths = false;
+  flag_L2_gate = 0;
+  number_inputs_L1_gate = 0;
+  number_gates_L1_nand2_path = 0;
+  number_gates_L1_nand3_path = 0;
+  number_gates_L2 = 0;
+  min_number_gates_L1 = 2;
+  min_number_gates_L2 = 2;
+  num_L1_active_nand2_path = 0;
+  num_L1_active_nand3_path = 0;
+  delay_nand2_path = 0;
+  delay_nand3_path = 0;
+  is_dram_ = is_dram;
 
   int branch_effort_predec_out;
   double C_ld_dec_gate;
@@ -434,21 +454,32 @@ PredecBlk::PredecBlk(int num_dec_signals,
 }
 
 void PredecBlk::set_params(int num_dec_signals,
-                     Decoder *dec_,
-                     double C_wire_predec_blk_out,
-                     double R_wire_predec_blk_out_,
-                     int num_dec_per_predec,
-                     bool is_dram,
-                     bool is_blk1){
+                           Decoder *dec_,
+                           double C_wire_predec_blk_out,
+                           double R_wire_predec_blk_out_,
+                           int num_dec_per_predec,
+                           bool is_dram,
+                           bool is_blk1) {
   dec = dec_;
-  exist= false; number_input_addr_bits= 0;
-      C_ld_predec_blk_out= 0; R_wire_predec_blk_out= 0;
-      branch_effort_nand2_gate_output= 1; branch_effort_nand3_gate_output= 1;
-      flag_two_unique_paths= false; flag_L2_gate= 0; number_inputs_L1_gate= 0;
-      number_gates_L1_nand2_path= 0; number_gates_L1_nand3_path= 0;
-      number_gates_L2= 0; min_number_gates_L1= 2; min_number_gates_L2= 2;
-      num_L1_active_nand2_path= 0; num_L1_active_nand3_path= 0;
-      delay_nand2_path= 0; delay_nand3_path= 0; is_dram_= is_dram;
+  exist = false;
+  number_input_addr_bits = 0;
+  C_ld_predec_blk_out = 0;
+  R_wire_predec_blk_out = 0;
+  branch_effort_nand2_gate_output = 1;
+  branch_effort_nand3_gate_output = 1;
+  flag_two_unique_paths = false;
+  flag_L2_gate = 0;
+  number_inputs_L1_gate = 0;
+  number_gates_L1_nand2_path = 0;
+  number_gates_L1_nand3_path = 0;
+  number_gates_L2 = 0;
+  min_number_gates_L1 = 2;
+  min_number_gates_L2 = 2;
+  num_L1_active_nand2_path = 0;
+  num_L1_active_nand3_path = 0;
+  delay_nand2_path = 0;
+  delay_nand3_path = 0;
+  is_dram_ = is_dram;
 
   int branch_effort_predec_out;
   double C_ld_dec_gate;
@@ -1175,17 +1206,28 @@ void PredecBlk::leakage_feedback(double temperature) {
   }
 }
 
-void PredecBlkDrv::set_params(int way_select_, PredecBlk *blk_, bool is_dram){
-  flag_driver_exists=0; number_gates_nand2_path=0;
-      number_gates_nand3_path=0; min_number_gates=2;
-      num_buffers_driving_1_nand2_load=0; num_buffers_driving_2_nand2_load=0;
-      num_buffers_driving_4_nand2_load=0; num_buffers_driving_2_nand3_load=0;
-      num_buffers_driving_8_nand3_load=0; num_buffers_nand3_path=0;
-      c_load_nand2_path_out=0; c_load_nand3_path_out=0;
-      r_load_nand2_path_out=0; r_load_nand3_path_out=0; delay_nand2_path=0;
-      delay_nand3_path=0;blk=blk_;
-      dec=blk->dec; is_dram_=is_dram; way_select=way_select_; 
-    for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
+void PredecBlkDrv::set_params(int way_select_, PredecBlk *blk_, bool is_dram) {
+  flag_driver_exists = 0;
+  number_gates_nand2_path = 0;
+  number_gates_nand3_path = 0;
+  min_number_gates = 2;
+  num_buffers_driving_1_nand2_load = 0;
+  num_buffers_driving_2_nand2_load = 0;
+  num_buffers_driving_4_nand2_load = 0;
+  num_buffers_driving_2_nand3_load = 0;
+  num_buffers_driving_8_nand3_load = 0;
+  num_buffers_nand3_path = 0;
+  c_load_nand2_path_out = 0;
+  c_load_nand3_path_out = 0;
+  r_load_nand2_path_out = 0;
+  r_load_nand3_path_out = 0;
+  delay_nand2_path = 0;
+  delay_nand3_path = 0;
+  blk = blk_;
+  dec = blk->dec;
+  is_dram_ = is_dram;
+  way_select = way_select_;
+  for (int i = 0; i < MAX_NUMBER_GATES_STAGE; i++) {
     width_nand2_path_n[i] = 0;
     width_nand2_path_p[i] = 0;
     width_nand3_path_n[i] = 0;
@@ -1514,8 +1556,11 @@ double PredecBlkDrv::get_rdOp_dynamic_E(int num_act_mats_hor_dir) {
          num_act_mats_hor_dir;
 }
 
-void Predec::set_params(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_){
-  blk1=drv1_->blk; blk2=drv2_->blk; drv1=drv1_; drv2=drv2_;
+void Predec::set_params(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_) {
+  blk1 = drv1_->blk;
+  blk2 = drv2_->blk;
+  drv1 = drv1_;
+  drv2 = drv2_;
 
   driver_power.readOp.leakage = drv1->power_nand2_path.readOp.leakage +
                                 drv1->power_nand3_path.readOp.leakage +
@@ -1559,7 +1604,6 @@ void Predec::set_params(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_){
                                     blk2->power_L2.readOp.gate_leakage;
   power.readOp.gate_leakage =
       driver_power.readOp.gate_leakage + block_power.readOp.gate_leakage;
-  
 }
 Predec::Predec(PredecBlkDrv *drv1_, PredecBlkDrv *drv2_)
     : blk1(drv1_->blk), blk2(drv2_->blk), drv1(drv1_), drv2(drv2_) {

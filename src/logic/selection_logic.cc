@@ -63,21 +63,25 @@ selection_logic::selection_logic(bool _is_default,
   power.readOp.power_gated_with_long_channel_leakage =
       power.readOp.power_gated_leakage * long_channel_device_reduction;
 }
-void selection_logic::set_params(bool _is_default, int win_entries_, int issue_width_, const InputParameter *configure_interface, enum Device_ty device_ty_ , enum Core_type core_ty_ )
-{
+void selection_logic::set_params(bool _is_default,
+                                 int win_entries_,
+                                 int issue_width_,
+                                 const InputParameter *configure_interface,
+                                 enum Device_ty device_ty_,
+                                 enum Core_type core_ty_) {
   is_default = _is_default;
   win_entries = win_entries_;
   issue_width = issue_width_;
   device_ty = device_ty_;
   core_ty = core_ty_;
-  
+
   l_ip = *configure_interface;
   local_result = init_interface(&l_ip);
   // init_tech_params(l_ip.F_sz_um, false);
   // win_entries=numIBEntries;//IQentries;
   // issue_width=issueWidth;
 
-      selection_power();
+  selection_power();
   double sckRation = g_tp.sckt_co_eff;
   power.readOp.dynamic *= sckRation;
   power.writeOp.dynamic *= sckRation;
@@ -93,7 +97,6 @@ void selection_logic::set_params(bool _is_default, int win_entries_, int issue_w
   power.readOp.power_gated_with_long_channel_leakage =
       power.readOp.power_gated_leakage * long_channel_device_reduction;
 }
-
 
 void selection_logic::selection_power() { // based on cost effective superscalar
                                           // processor TR pp27-31

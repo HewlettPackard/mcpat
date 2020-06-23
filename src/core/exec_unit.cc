@@ -42,17 +42,17 @@
 #include <iostream>
 #include <string>
 
-EXECU::EXECU(){
+EXECU::EXECU() {
   init_params = false;
   init_stats = false;
 }
 
 void EXECU::set_params(const ParseXML *XML_interface,
-             int ithCore_,
-             InputParameter *interface_ip_,
-             double lsq_height_,
-             const CoreDynParam &dyn_p_,
-             bool exist_){
+                       int ithCore_,
+                       InputParameter *interface_ip_,
+                       double lsq_height_,
+                       const CoreDynParam &dyn_p_,
+                       bool exist_) {
 
   XML = XML_interface;
   ithCore = ithCore_;
@@ -70,13 +70,11 @@ void EXECU::set_params(const ParseXML *XML_interface,
   scheu.set_params(XML, ithCore, &interface_ip, coredynp);
   exeu.set_params(XML, ithCore, &interface_ip, coredynp, ALU);
 
-
   if (coredynp.num_fpus > 0) {
     fp_u.set_params(XML, ithCore, &interface_ip, coredynp, FPU);
   }
   if (coredynp.num_muls > 0) {
     mul.set_params(XML, ithCore, &interface_ip, coredynp, MUL);
-
   }
   /*
    * broadcast logic, including int-broadcast; int_tag-broadcast; fp-broadcast;
@@ -88,15 +86,16 @@ void EXECU::set_params(const ParseXML *XML_interface,
   init_params = true;
 }
 
-void EXECU::computeStaticPower(){
-  //Doing nothing as of now, everything seems to be hapening inside set area itself
+void EXECU::computeStaticPower() {
+  // Doing nothing as of now, everything seems to be hapening inside set area
+  // itself
 }
 
-void EXECU::set_stats(const ParseXML *XML){
-    rfu.set_stats(XML);
-    scheu.set_stats(XML);
-    exeu.set_stats(XML);
-    if (coredynp.num_fpus > 0) {
+void EXECU::set_stats(const ParseXML *XML) {
+  rfu.set_stats(XML);
+  scheu.set_stats(XML);
+  exeu.set_stats(XML);
+  if (coredynp.num_fpus > 0) {
     fp_u.set_stats(XML);
   }
   if (coredynp.num_muls > 0) {
@@ -105,8 +104,8 @@ void EXECU::set_stats(const ParseXML *XML){
   init_stats = true;
 }
 
-void EXECU::computeArea(){
-    if (!init_params) {
+void EXECU::computeArea() {
+  if (!init_params) {
     std::cerr << "[ EXECU ] Error: must set params before calling "
                  "computeArea()\n";
     exit(1);
@@ -117,10 +116,10 @@ void EXECU::computeArea(){
 
   exeu.computeArea();
 
-  //all of the below interconnects depend ont he stats being set
-    rfu.set_stats(XML);
-    scheu.set_stats(XML);
-    exeu.set_stats(XML);
+  // all of the below interconnects depend ont he stats being set
+  rfu.set_stats(XML);
+  scheu.set_stats(XML);
+  exeu.set_stats(XML);
   double fu_height = 0.0;
 
   area.set_area(area.get_area() + exeu.area.get_area() + rfu.area.get_area() +
@@ -455,9 +454,8 @@ void EXECU::computeArea(){
   area.set_area(area.get_area() + bypass.area.get_area());
 }
 
-
 void EXECU::computeDynamicPower(bool is_tdp) {
-    if (!init_params) {
+  if (!init_params) {
     std::cerr << "[ EXECU ] Error: must set params before calling "
                  "computeStaticPower()\n";
     exit(1);
