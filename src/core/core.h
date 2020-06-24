@@ -77,6 +77,7 @@ public:
                   InputParameter *interface_ip_,
                   bool cp = false);
   void computeArea();
+  void set_stats(const ParseXML *XML_interface);
   void set_core_param();
   void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
