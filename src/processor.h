@@ -63,7 +63,7 @@ public:
 
 private:
   const ParseXML *XML;
-  vector<Core *> cores;
+  vector<Core> cores;
   vector<SharedCache> l2array;
   vector<SharedCache> l3array;
   vector<SharedCache> l1dirarray;
@@ -103,6 +103,7 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
+    ar &cores;
     ar &l2array;
     ar &l3array;
     ar &l1dirarray;

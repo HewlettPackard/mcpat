@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT
+ *                                McPAT/CACTI
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -28,54 +28,80 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-#ifndef __DFF_CELL_H__
-#define __DFF_CELL_H__
 
-#include "XML_Parse.h"
-#include "arch_const.h"
-#include "basic_circuit.h"
-#include "basic_components.h"
-#include "cacti_interface.h"
+#ifndef __DECODER_H__
+#define __DECODER_H__
+
+#include "area.h"
 #include "component.h"
-#include "const.h"
-#include "decoder.h"
 #include "parameter.h"
-#include "xmlParser.h"
+#include "powergating.h"
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/utility.hpp>
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <iostream>
+#include <vector>
 
-class DFFCell : public Component {
+using namespace std;
+
+class Decoder : public Component {
 public:
-  DFFCell(bool _is_dram,
-          double _WdecNANDn,
-          double _WdecNANDp,
-          double _cell_load,
-          const InputParameter *configure_interface);
-  InputParameter l_ip;
+  Decoder(int _num_dec_signals,
+          bool flag_way_select,
+          double _C_ld_dec_out,
+          double _R_wire_dec_out,
+          bool fully_assoc_,
+          bool is_dram_,
+          bool is_wl_tr_,
+          const Area &cell_,
+          bool power_gating_ = false,
+          int nodes_DSTN_ = 1);
+  Decoder(){};
+  void set_params(int _num_dec_signals,
+                  bool flag_way_select,
+                  double _C_ld_dec_out,
+                  double _R_wire_dec_out,
+                  bool fully_assoc_,
+                  bool is_dram_,
+                  bool is_wl_tr_,
+                  const Area &cell_,
+                  bool power_gating_ = false,
+                  int nodes_DSTN_ = 1);
+  bool exist;
+  int num_in_signals;
+  double C_ld_dec_out;
+  double R_wire_dec_out;
+  int num_gates;
+  int num_gates_min;
+  double w_dec_n[MAX_NUMBER_GATES_STAGE];
+  double w_dec_p[MAX_NUMBER_GATES_STAGE];
+  double delay;
+  // powerDef power;
+  bool fully_assoc;
   bool is_dram;
-  double cell_load;
-  double WdecNANDn;
-  double WdecNANDp;
-  double clock_cap;
-  int model;
-  int n_switch;
-  int n_keep_1;
-  int n_keep_0;
-  int n_clock;
-  powerDef e_switch;
-  powerDef e_keep_1;
-  powerDef e_keep_0;
-  powerDef e_clock;
+  bool is_wl_tr;
 
-  double fpfp_node_cap(unsigned int fan_in, unsigned int fan_out);
-  void compute_DFF_cell(void);
+  double height;
+  double total_driver_nwidth;
+  double total_driver_pwidth;
+  Sleep_tx *sleeptx;
+
+  int nodes_DSTN;
+  bool power_gating;
+
+  void computeArea();
+  void compute_widths();
+  void compute_area();
+  double compute_delays(double inrisetime); // return outrisetime
+  void compute_power_gating();
+
+  void leakage_feedback(double temperature);
+
+  ~Decoder() {
+    if (sleeptx != 0)
+      delete sleeptx;
+  };
 
 private:
   // Serialization
@@ -83,22 +109,27 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
+    ar &exist;
+    ar &num_in_signals;
+    ar &C_ld_dec_out;
+    ar &R_wire_dec_out;
+    ar &num_gates;
+    ar &num_gates_min;
+    ar &w_dec_n;
+    ar &w_dec_p;
+    ar &delay;
+    ar &fully_assoc;
     ar &is_dram;
-    ar &cell_load;
-    ar &WdecNANDn;
-    ar &WdecNANDp;
-    ar &clock_cap;
-    ar &model;
-    ar &n_switch;
-    ar &n_keep_1;
-    ar &n_keep_0;
-    ar &n_clock;
-    ar &e_switch;
-    ar &e_keep_1;
-    ar &e_keep_0;
-    ar &e_clock;
+    ar &is_wl_tr;
+
+    ar &height;
+    ar &total_driver_nwidth;
+    ar &total_driver_pwidth;
+
+    ar &nodes_DSTN;
+    ar &power_gating;
     Component::serialize(ar, version);
   }
 };
 
-#endif //__DFF_CELL_H__
+#endif

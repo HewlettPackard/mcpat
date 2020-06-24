@@ -42,6 +42,10 @@
 #include "parameter.h"
 #include "xmlParser.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -75,6 +79,22 @@ public:
                   enum Core_type core_ty_ = Inorder);
   void selection_power();
   void leakage_feedback(double temperature); // TODO
+
+private:
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &is_default;
+    ar &local_result;
+    ar &win_entries;
+    ar &issue_width;
+    ar &num_threads;
+    ar &device_ty;
+    ar &core_ty;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif //__SELECTION_LOGIC_H__

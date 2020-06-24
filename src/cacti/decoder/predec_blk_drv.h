@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT
+ *                                McPAT/CACTI
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -28,54 +28,75 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-#ifndef __DFF_CELL_H__
-#define __DFF_CELL_H__
 
-#include "XML_Parse.h"
-#include "arch_const.h"
-#include "basic_circuit.h"
-#include "basic_components.h"
-#include "cacti_interface.h"
+#ifndef __PREDEC_BLK_DRV_H__
+#define __PREDEC_BLK_DRV_H__
+
+#include "area.h"
 #include "component.h"
-#include "const.h"
 #include "decoder.h"
 #include "parameter.h"
-#include "xmlParser.h"
+#include "powergating.h"
+#include "predec_blk.h"
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/utility.hpp>
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <iostream>
+#include <vector>
 
-class DFFCell : public Component {
+class PredecBlkDrv : public Component {
 public:
-  DFFCell(bool _is_dram,
-          double _WdecNANDn,
-          double _WdecNANDp,
-          double _cell_load,
-          const InputParameter *configure_interface);
-  InputParameter l_ip;
-  bool is_dram;
-  double cell_load;
-  double WdecNANDn;
-  double WdecNANDp;
-  double clock_cap;
-  int model;
-  int n_switch;
-  int n_keep_1;
-  int n_keep_0;
-  int n_clock;
-  powerDef e_switch;
-  powerDef e_keep_1;
-  powerDef e_keep_0;
-  powerDef e_clock;
+  void set_params(int way_select_, PredecBlk *blk_, bool is_dram);
+  PredecBlkDrv(){};
+  PredecBlkDrv(int way_select_, PredecBlk *blk_, bool is_dram);
 
-  double fpfp_node_cap(unsigned int fan_in, unsigned int fan_out);
-  void compute_DFF_cell(void);
+  int flag_driver_exists;
+  int number_input_addr_bits;
+  int number_gates_nand2_path;
+  int number_gates_nand3_path;
+  int min_number_gates;
+  int num_buffers_driving_1_nand2_load;
+  int num_buffers_driving_2_nand2_load;
+  int num_buffers_driving_4_nand2_load;
+  int num_buffers_driving_2_nand3_load;
+  int num_buffers_driving_8_nand3_load;
+  int num_buffers_nand3_path;
+  double c_load_nand2_path_out;
+  double c_load_nand3_path_out;
+  double r_load_nand2_path_out;
+  double r_load_nand3_path_out;
+  double width_nand2_path_n[MAX_NUMBER_GATES_STAGE];
+  double width_nand2_path_p[MAX_NUMBER_GATES_STAGE];
+  double width_nand3_path_n[MAX_NUMBER_GATES_STAGE];
+  double width_nand3_path_p[MAX_NUMBER_GATES_STAGE];
+  double delay_nand2_path;
+  double delay_nand3_path;
+  powerDef power_nand2_path;
+  powerDef power_nand3_path;
+
+  PredecBlk *blk;
+  Decoder *dec;
+  bool is_dram_;
+  int way_select;
+
+  void compute_widths();
+  void compute_area();
+
+  void leakage_feedback(double temperature);
+
+  pair<double, double> compute_delays(
+      double inrisetime_nand2_path,
+      double inrisetime_nand3_path); // return <outrise_nand2, outrise_nand3>
+
+  inline int num_addr_bits_nand2_path() {
+    return num_buffers_driving_1_nand2_load + num_buffers_driving_2_nand2_load +
+           num_buffers_driving_4_nand2_load;
+  }
+  inline int num_addr_bits_nand3_path() {
+    return num_buffers_driving_2_nand3_load + num_buffers_driving_8_nand3_load;
+  }
+  double get_rdOp_dynamic_E(int num_act_mats_hor_dir);
 
 private:
   // Serialization
@@ -83,22 +104,8 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &is_dram;
-    ar &cell_load;
-    ar &WdecNANDn;
-    ar &WdecNANDp;
-    ar &clock_cap;
-    ar &model;
-    ar &n_switch;
-    ar &n_keep_1;
-    ar &n_keep_0;
-    ar &n_clock;
-    ar &e_switch;
-    ar &e_keep_1;
-    ar &e_keep_0;
-    ar &e_clock;
     Component::serialize(ar, version);
   }
 };
 
-#endif //__DFF_CELL_H__
+#endif // __PREDEC_BLK_DRV_H__

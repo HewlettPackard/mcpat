@@ -39,6 +39,11 @@
 #include "interconnect.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class LoadStoreU : public Component {
 public:
   const ParseXML *XML;
@@ -71,6 +76,18 @@ public:
 
 private:
   bool init_params;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &dcache;
+    ar &LSQ;
+    ar &LoadQ;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif // __LOAD_STORE_U_H__

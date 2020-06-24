@@ -34,14 +34,16 @@
 #include "dff_cell.h"
 
 void Pipeline::set_params(const InputParameter *configure_interface,
-                   const CoreDynParam &dyn_p_,
-                   enum Device_ty device_ty_,
-                   bool _is_core_pipeline,
-                   bool _is_default)
-{
-  l_ip=*configure_interface; coredynp=dyn_p_; device_ty=device_ty_;
-      is_core_pipeline=_is_core_pipeline; is_default=_is_default;
-      num_piperegs=0.0;
+                          const CoreDynParam &dyn_p_,
+                          enum Device_ty device_ty_,
+                          bool _is_core_pipeline,
+                          bool _is_default) {
+  l_ip = *configure_interface;
+  coredynp = dyn_p_;
+  device_ty = device_ty_;
+  is_core_pipeline = _is_core_pipeline;
+  is_default = _is_default;
+  num_piperegs = 0.0;
   local_result = init_interface(&l_ip);
   if (!coredynp.Embedded)
     process_ind = true;
@@ -59,7 +61,7 @@ void Pipeline::set_params(const InputParameter *configure_interface,
   load_per_pipeline_stage = 2 * gate_C(WNANDn + WNANDp, 0, false);
 }
 
-void Pipeline::computeArea(){
+void Pipeline::computeArea() {
   compute_stage_vector();
   DFFCell pipe_reg(false, WNANDn, WNANDp, load_per_pipeline_stage, &l_ip);
   pipe_reg.compute_DFF_cell();
@@ -102,7 +104,6 @@ void Pipeline::computeArea(){
   if (!coredynp.Embedded)
     area.set_area(area.get_area() * macro_layout_overhead);
 }
-
 
 void Pipeline::compute_stage_vector() {
   double num_stages, tot_stage_vector, per_stage_vector;

@@ -251,7 +251,7 @@ void BranchPredictor::computeDynamicPower(bool is_tdp) {
   if (!exist)
     return;
   if (!init_stats) {
-    std::cerr << "[ BranchPredictor ] Error: must set params before calling "
+    std::cerr << "[ BranchPredictor ] Error: must set stats before calling "
                  "computeDynamicPower()\n";
     exit(1);
   }

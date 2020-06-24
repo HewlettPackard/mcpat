@@ -38,6 +38,11 @@
 #include "interconnect.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class MemManU : public Component {
 public:
   const ParseXML *XML;
@@ -69,6 +74,24 @@ public:
 private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &ithCore;
+    ar &clockRate;
+    ar &executionTime;
+    ar &scktRatio;
+    ar &chip_PR_overhead;
+    ar &macro_PR_overhead;
+    ar &itlb;
+    ar &dtlb;
+    ar &exist;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif // __MEMORY_MANAGEMENT_U_H__

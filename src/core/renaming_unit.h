@@ -39,6 +39,11 @@
 #include "interconnect.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class RENAMINGU : public Component {
 public:
   int ithCore;
@@ -82,6 +87,28 @@ private:
   unsigned int rename_reads;
   unsigned int int_instructions;
   unsigned int fp_instructions;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &ithCore;
+    ar &clockRate;
+    ar &executionTime;
+    ar &iFRAT;
+    ar &fFRAT;
+    ar &iRRAT;
+    ar &fRRAT;
+    ar &ifreeL;
+    ar &ffreeL;
+    ar &idcl;
+    ar &fdcl;
+    ar &exist;
+    ar &set_area;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif // __RENAMING_U_H__

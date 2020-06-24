@@ -72,6 +72,26 @@ public:
 private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &IRF;
+    ar &FRF;
+    ar &RFWIN;
+    ar &fp_regfile_height;
+    ar &int_regfile_height;
+    ar &macro_PR_overhead;
+    ar &chip_PR_overhead;
+    ar &scktRatio;
+    ar &executionTime;
+    ar &clockRate;
+    ar &ithCore;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif // __REGFILE_U_H__

@@ -455,8 +455,8 @@ void EXECU::computeArea() {
 }
 
 void EXECU::computeDynamicPower(bool is_tdp) {
-  if (!init_params) {
-    std::cerr << "[ EXECU ] Error: must set params before calling "
+  if (!init_stats) {
+    std::cerr << "[ EXECU ] Error: must set stats before calling "
                  "computeStaticPower()\n";
     exit(1);
   }

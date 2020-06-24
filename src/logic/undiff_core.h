@@ -48,15 +48,14 @@
 #include <iostream>
 
 class UndiffCore : public Component {
-public:  
-  
+public:
   UndiffCore(){};
   void set_params(const ParseXML *XML_interface,
-             int ithCore_,
-             InputParameter *interface_ip_,
-             const CoreDynParam &dyn_p_,
-             bool exist_ = true,
-             bool embedded_ = false);
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exist_ = true,
+                  bool embedded_ = false);
   const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
@@ -68,7 +67,6 @@ public:
   double pipeline_stage, num_hthreads, issue_width;
   bool is_default;
   void computeArea();
-
 
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~UndiffCore(){};
