@@ -48,8 +48,10 @@
 #include <iostream>
 
 class UndiffCore : public Component {
-public:
-  UndiffCore(const ParseXML *XML_interface,
+public:  
+  
+  UndiffCore(){};
+  void set_params(const ParseXML *XML_interface,
              int ithCore_,
              InputParameter *interface_ip_,
              const CoreDynParam &dyn_p_,
@@ -65,6 +67,8 @@ public:
   bool opt_performance, embedded;
   double pipeline_stage, num_hthreads, issue_width;
   bool is_default;
+  void computeArea();
+
 
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~UndiffCore(){};
