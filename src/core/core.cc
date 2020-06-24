@@ -52,7 +52,7 @@ Core::Core(const ParseXML *XML_interface,
    */
 
   XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
-      ifu=0; mmu=0; rnu=0; corepipe=0; undiffCore=0; l2cache=0;
+      ifu=0; mmu=0; rnu=0; corepipe=0; l2cache=0;
 
   bool exit_flag = true;
 
@@ -86,7 +86,11 @@ Core::Core(const ParseXML *XML_interface,
   exu.computeArea();
   exu.set_stats(XML);
   exu.computeStaticPower();
-  undiffCore = new UndiffCore(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  undiffCore.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  undiffCore.computeArea();
+  // undiffCore.computeArea();
+  // undiffCore.computeDynamicPower();
+  
   if (coredynp.core_ty == OOO) {
     rnu = new RENAMINGU();
     rnu->set_params(XML, ithCore, &interface_ip, coredynp);
@@ -131,8 +135,8 @@ Core::Core(const ParseXML *XML_interface,
     }
   }
 
-  if (undiffCore->exist) {
-    area.set_area(area.get_area() + undiffCore->area.get_area());
+  if (undiffCore.exist) {
+    area.set_area(area.get_area() + undiffCore.area.get_area());
   }
 
   if (XML->sys.Private_L2) {
@@ -238,7 +242,7 @@ void Core::computeEnergy(bool is_tdp) {
       // power.readOp.dynamic*clockRate  << " W" << endl;
     }
 
-    power = power + undiffCore->power;
+    power = power + undiffCore.power;
 
     if (XML->sys.Private_L2) {
 
@@ -348,7 +352,7 @@ void Core::computeEnergy(bool is_tdp) {
       rt_power = rt_power + mmu->rt_power;
     }
 
-    rt_power = rt_power + undiffCore->power;
+    rt_power = rt_power + undiffCore.power;
     //		cout << "EXE = " << exu.power.readOp.dynamic*clockRate  << " W"
     //<< endl;
     if (XML->sys.Private_L2) {
@@ -521,25 +525,25 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     }
     //		if (plevel >2)
     //		{
-    //			if (undiffCore->exist)
+    //			if (undiffCore.exist)
     //			{
     //				cout << indent_str << "Undifferentiated Core" <<
     // endl; 				cout << indent_str_next << "Area = " <<
-    // undiffCore->area.get_area()*1e-6<< " mm^2" << endl; 				cout
+    // undiffCore.area.get_area()*1e-6<< " mm^2" << endl; 				cout
     // << indent_str_next << "Peak Dynamic = " <<
-    // undiffCore->power.readOp.dynamic*clockRate << " W" << endl;
+    // undiffCore.power.readOp.dynamic*clockRate << " W" << endl;
     ////				cout << indent_str_next << "Subthreshold Leakage = "
-    ///<< undiffCore->power.readOp.leakage <<" W" << endl;
+    ///<< undiffCore.power.readOp.leakage <<" W" << endl;
     //				cout << indent_str_next << "Subthreshold Leakage
     //=
     //"
     //								<<
     //(long_channel?
-    // undiffCore->power.readOp.longer_channel_leakage:undiffCore->power.readOp.leakage)
+    // undiffCore.power.readOp.longer_channel_leakage:undiffCore.power.readOp.leakage)
     //<< " W" << endl; 				cout << indent_str_next << "Gate Leakage = "
-    //<< undiffCore->power.readOp.gate_leakage << " W" << endl;
+    //<< undiffCore.power.readOp.gate_leakage << " W" << endl;
     //				//		cout << indent_str_next << "Runtime Dynamic = "
-    //<< undiffCore->rt_power.readOp.dynamic/executionTime << " W" << endl;
+    //<< undiffCore.rt_power.readOp.dynamic/executionTime << " W" << endl;
     // cout
     //<<endl;
     //			}
@@ -600,10 +604,6 @@ Core ::~Core() {
   if (corepipe) {
     delete corepipe;
     corepipe = 0;
-  }
-  if (undiffCore) {
-    delete undiffCore;
-    undiffCore = 0;
   }
   if (l2cache) {
     delete l2cache;

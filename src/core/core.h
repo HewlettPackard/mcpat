@@ -60,7 +60,7 @@ public:
   EXECU exu;
   RENAMINGU *rnu;
   Pipeline *corepipe;
-  UndiffCore *undiffCore;
+  UndiffCore undiffCore;
   SharedCache *l2cache;
   CoreDynParam coredynp;
   // full_decoder 	inst_decoder;
