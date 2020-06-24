@@ -108,9 +108,11 @@ void Processor::init(const ParseXML *XML, bool cp) {
   }
 
   for (i = 0; i < numCore; i++) {
-    cores.push_back(new Core(XML, i, &interface_ip));
-    cores[i]->computeEnergy();
-    cores[i]->computeEnergy(false);
+    cores.push_back(new Core());
+    cores[i]->set_params(XML, i, &interface_ip);
+    cores[i]->computeArea();
+    cores[i]->computeDynamicPower();
+    cores[i]->computeDynamicPower(false);
     if (procdynp.homoCore) {
       core.area.set_area(core.area.get_area() +
                          cores[i]->area.get_area() * procdynp.numCore);

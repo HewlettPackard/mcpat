@@ -70,7 +70,7 @@ public:
                   const CoreDynParam &dyn_p_,
                   bool exist_ = true);
   void computeArea();
-  void computePower(bool is_tdp = true);
+  void computeDynamicPower(bool is_tdp = true);
   void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~LoadStoreU();
 
