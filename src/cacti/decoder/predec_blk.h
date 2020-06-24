@@ -108,6 +108,35 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
+    ar &exist;
+    ar &number_input_addr_bits;
+    ar &C_ld_predec_blk_out;
+    ar &R_wire_predec_blk_out;
+    ar &branch_effort_nand2_gate_output;
+    ar &branch_effort_nand3_gate_output;
+    ar &flag_two_unique_paths;
+    ar &flag_L2_gate;
+    ar &number_inputs_L1_gate;
+    ar &number_gates_L1_nand2_path;
+    ar &number_gates_L1_nand3_path;
+    ar &number_gates_L2;
+    ar &min_number_gates_L1;
+    ar &min_number_gates_L2;
+    ar &num_L1_active_nand2_path;
+    ar &num_L1_active_nand3_path;
+    ar &w_L1_nand2_n[MAX_NUMBER_GATES_STAGE];
+    ar &w_L1_nand2_p[MAX_NUMBER_GATES_STAGE];
+    ar &w_L1_nand3_n[MAX_NUMBER_GATES_STAGE];
+    ar &w_L1_nand3_p[MAX_NUMBER_GATES_STAGE];
+    ar &w_L2_n[MAX_NUMBER_GATES_STAGE];
+    ar &w_L2_p[MAX_NUMBER_GATES_STAGE];
+    ar &delay_nand2_path;
+    ar &delay_nand3_path;
+    ar &power_nand2_path;
+    ar &power_nand3_path;
+    ar &power_L2;
+
+    ar &is_dram_;
     Component::serialize(ar, version);
   }
 };
