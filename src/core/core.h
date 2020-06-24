@@ -54,22 +54,27 @@ public:
   InputParameter interface_ip;
   double clockRate, executionTime;
   double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  InstFetchU *ifu;
+  InstFetchU ifu;
   LoadStoreU lsu;
-  MemManU *mmu;
+  MemManU mmu;
   EXECU exu;
-  RENAMINGU *rnu;
+  RENAMINGU rnu;
   Pipeline corepipe;
   UndiffCore undiffCore;
-  SharedCache *l2cache;
+  SharedCache l2cache;
   CoreDynParam coredynp;
+
+  double pipeline_area_per_unit;
+
   // full_decoder 	inst_decoder;
   // clock_network	clockNetwork;
-  Core(const ParseXML *XML_interface,
+  Core(){};
+  void set_params(const ParseXML *XML_interface,
        int ithCore_,
        InputParameter *interface_ip_);
+  void computeArea();
   void set_core_param();
-  void computeEnergy(bool is_tdp = true);
+  void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~Core();
 };

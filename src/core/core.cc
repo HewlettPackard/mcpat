@@ -44,7 +44,7 @@
 #include <string>
 //#include "globalvar.h"
 
-Core::Core(const ParseXML *XML_interface,
+void Core::set_params(const ParseXML *XML_interface,
            int ithCore_,
            InputParameter *interface_ip_){
   /*
@@ -52,98 +52,45 @@ Core::Core(const ParseXML *XML_interface,
    */
 
   XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
-      ifu=0; mmu=0; rnu=0; l2cache=0;
 
   bool exit_flag = true;
 
-  double pipeline_area_per_unit;
   //  interface_ip.wire_is_mat_type = 2;
   //  interface_ip.wire_os_mat_type = 2;
   //  interface_ip.wt               =Global_30;
   set_core_param();
 
   if (XML->sys.Private_L2) {
-    l2cache = new SharedCache();
-    l2cache->set_params(XML, ithCore, &interface_ip);
-    l2cache->set_stats(XML);
-    l2cache->computeArea();
+    l2cache.set_params(XML, ithCore, &interface_ip);
   }
 
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
-  ifu = new InstFetchU();
-  ifu->set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  ifu->computeArea();
-  ifu->set_stats(XML);
+  ifu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
+
   lsu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  lsu.computeArea();
-  mmu = new MemManU();
-  mmu->set_params(XML, ithCore, &interface_ip, coredynp);
-  mmu->computeArea();
-  mmu->set_stats(XML);
+  lsu.computeArea(); //done on purpose because the exu unit is dependent on the lsu.lsq_height which is set in compute area
+  mmu.set_params(XML, ithCore, &interface_ip, coredynp);
+
   exu.set_params(
       XML, ithCore, &interface_ip, lsu.lsq_height, coredynp, exit_flag);
-  exu.computeArea();
-  exu.set_stats(XML);
-  exu.computeStaticPower();
+  
   undiffCore.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  undiffCore.computeArea();
+
   // undiffCore.computeArea();
   // undiffCore.computeDynamicPower();
   
   if (coredynp.core_ty == OOO) {
-    rnu = new RENAMINGU();
-    rnu->set_params(XML, ithCore, &interface_ip, coredynp);
-    rnu->computeArea();
-    rnu->set_stats(XML);
+    rnu.set_params(XML, ithCore, &interface_ip, coredynp);
   }
   corepipe.set_params(&interface_ip, coredynp);
-  corepipe.computeArea();
   
 
-  if (coredynp.core_ty == OOO) {
-    pipeline_area_per_unit =
-        (corepipe.area.get_area() * coredynp.num_pipelines) / 5.0;
-    if (rnu->exist) {
-      rnu->area.set_area(rnu->area.get_area() + pipeline_area_per_unit);
-    }
-  } else {
-    pipeline_area_per_unit =
-        (corepipe.area.get_area() * coredynp.num_pipelines) / 4.0;
-  }
+
 
   // area.set_area(area.get_area()+ corepipe.area.get_area());
-  if (ifu->exist) {
-    ifu->area.set_area(ifu->area.get_area() + pipeline_area_per_unit);
-    area.set_area(area.get_area() + ifu->area.get_area());
-  }
-  if (lsu.exist) {
-    lsu.area.set_area(lsu.area.get_area() + pipeline_area_per_unit);
-    area.set_area(area.get_area() + lsu.area.get_area());
-  }
-  if (exu.exist) {
-    exu.area.set_area(exu.area.get_area() + pipeline_area_per_unit);
-    area.set_area(area.get_area() + exu.area.get_area());
-  }
-  if (mmu->exist) {
-    mmu->area.set_area(mmu->area.get_area() + pipeline_area_per_unit);
-    area.set_area(area.get_area() + mmu->area.get_area());
-  }
 
-  if (coredynp.core_ty == OOO) {
-    if (rnu->exist) {
 
-      area.set_area(area.get_area() + rnu->area.get_area());
-    }
-  }
-
-  if (undiffCore.exist) {
-    area.set_area(area.get_area() + undiffCore.area.get_area());
-  }
-
-  if (XML->sys.Private_L2) {
-    area.set_area(area.get_area() + l2cache->area.get_area());
-  }
   //  //clock power
   //  clockNetwork.init_wire_external(is_default, &interface_ip);
   //  clockNetwork.clk_area           =area*1.1;//10% of placement overhead.
@@ -153,7 +100,70 @@ Core::Core(const ParseXML *XML_interface,
   //  clockNetwork.optimize_wire();
 }
 
-void Core::computeEnergy(bool is_tdp) {
+void Core::computeArea(){
+  if (coredynp.core_ty == OOO) {
+    rnu.computeArea();
+    rnu.set_stats(XML);
+  }
+  corepipe.computeArea();
+
+   if (coredynp.core_ty == OOO) {
+    pipeline_area_per_unit =
+        (corepipe.area.get_area() * coredynp.num_pipelines) / 5.0;
+    if (rnu.exist) {
+      rnu.area.set_area(rnu.area.get_area() + pipeline_area_per_unit);
+    }
+  } else {
+    pipeline_area_per_unit =
+        (corepipe.area.get_area() * coredynp.num_pipelines) / 4.0;
+  }
+
+  if (coredynp.core_ty == OOO) {
+    if (rnu.exist) {
+
+      area.set_area(area.get_area() + rnu.area.get_area());
+    }
+  }
+
+  if (XML->sys.Private_L2) {
+    l2cache.set_stats(XML);
+    l2cache.computeArea();
+    area.set_area(area.get_area() + l2cache.area.get_area());
+  }
+  ifu.set_stats(XML);
+  ifu.computeArea();
+  if (ifu.exist) {
+    ifu.area.set_area(ifu.area.get_area() + pipeline_area_per_unit);
+    area.set_area(area.get_area() + ifu.area.get_area());
+  }
+  
+  if (lsu.exist) {
+    lsu.area.set_area(lsu.area.get_area() + pipeline_area_per_unit);
+    area.set_area(area.get_area() + lsu.area.get_area());
+  }
+
+  mmu.computeArea();
+  mmu.set_stats(XML);
+  if (mmu.exist) {
+    mmu.area.set_area(mmu.area.get_area() + pipeline_area_per_unit);
+    area.set_area(area.get_area() + mmu.area.get_area());
+  }
+  exu.computeArea();
+  exu.set_stats(XML);
+    exu.computeStaticPower();
+  if (exu.exist) {
+    exu.area.set_area(exu.area.get_area() + pipeline_area_per_unit);
+    area.set_area(area.get_area() + exu.area.get_area());
+  }
+
+  undiffCore.computeArea();
+  if (undiffCore.exist) {
+    area.set_area(area.get_area() + undiffCore.area.get_area());
+  }
+}
+
+
+void Core::computeDynamicPower(bool is_tdp) {
   /*
    * When computing TDP, power = energy_per_cycle (the value computed in this
    * function) * clock_rate (in the display_energy function) When computing
@@ -165,14 +175,14 @@ void Core::computeEnergy(bool is_tdp) {
   double rtp_pipeline_coe;
   double num_units = 4.0;
   if (is_tdp) {
-    ifu->computeDynamicPower(is_tdp);
+    ifu.computeDynamicPower(is_tdp);
     lsu.computeDynamicPower(is_tdp);
-    mmu->computeDynamicPower(is_tdp);
+    mmu.computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeStaticPower(is_tdp);
+      rnu.computeStaticPower(is_tdp);
       set_pppm(
           pppm_t,
           coredynp.num_pipelines / num_units,
@@ -180,26 +190,26 @@ void Core::computeEnergy(bool is_tdp) {
           coredynp.num_pipelines / num_units,
           coredynp.num_pipelines /
               num_units); // User need to feed a duty cycle to improve accuracy
-      if (rnu->exist) {
-        rnu->power = rnu->power + corepipe.power * pppm_t;
-        power = power + rnu->power;
+      if (rnu.exist) {
+        rnu.power = rnu.power + corepipe.power * pppm_t;
+        power = power + rnu.power;
       }
     }
 
-    if (ifu->exist) {
+    if (ifu.exist) {
       set_pppm(pppm_t,
                coredynp.num_pipelines / num_units * coredynp.IFU_duty_cycle,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
       //			cout << "IFU = " <<
-      // ifu->power.readOp.dynamic*clockRate  << " W" << endl;
-      ifu->power = ifu->power + corepipe.power * pppm_t;
+      // ifu.power.readOp.dynamic*clockRate  << " W" << endl;
+      ifu.power = ifu.power + corepipe.power * pppm_t;
       //			cout << "IFU = " <<
-      // ifu->power.readOp.dynamic*clockRate  << " W" << endl;
+      // ifu.power.readOp.dynamic*clockRate  << " W" << endl;
       // cout << "1/4 pipe = " <<
       // corepipe.power.readOp.dynamic*clockRate/num_units  << " W" << endl;
-      power = power + ifu->power;
+      power = power + ifu.power;
       //			cout << "core = " <<
       // power.readOp.dynamic*clockRate  << " W" << endl;
     }
@@ -229,17 +239,17 @@ void Core::computeEnergy(bool is_tdp) {
       //			cout << "core = " <<
       // power.readOp.dynamic*clockRate  << " W" << endl;
     }
-    if (mmu->exist) {
+    if (mmu.exist) {
       set_pppm(pppm_t,
                coredynp.num_pipelines / num_units *
                    (0.5 + 0.5 * coredynp.LSU_duty_cycle),
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      mmu->power = mmu->power + corepipe.power * pppm_t;
+      mmu.power = mmu.power + corepipe.power * pppm_t;
       //			cout << "MMU = " <<
-      // mmu->power.readOp.dynamic*clockRate  << " W" << endl;
-      power = power + mmu->power;
+      // mmu.power.readOp.dynamic*clockRate  << " W" << endl;
+      power = power + mmu.power;
       //			cout << "core = " <<
       // power.readOp.dynamic*clockRate  << " W" << endl;
     }
@@ -248,21 +258,21 @@ void Core::computeEnergy(bool is_tdp) {
 
     if (XML->sys.Private_L2) {
 
-      l2cache->computeStaticPower(true);
-      set_pppm(pppm_t, l2cache->cachep.clockRate / clockRate, 1, 1, 1);
-      // l2cache->power = l2cache->power*pppm_t;
-      power = power + l2cache->power * pppm_t;
+      l2cache.computeStaticPower(true);
+      set_pppm(pppm_t, l2cache.cachep.clockRate / clockRate, 1, 1, 1);
+      // l2cache.power = l2cache.power*pppm_t;
+      power = power + l2cache.power * pppm_t;
     }
 
   } else {
-    ifu->computeDynamicPower(is_tdp);
+    ifu.computeDynamicPower(is_tdp);
     lsu.computeDynamicPower(is_tdp);
-    mmu->computeDynamicPower(is_tdp);
+    mmu.computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
     if (coredynp.core_ty == OOO) {
       num_units = 5.0;
-      rnu->computeStaticPower(is_tdp);
+      rnu.computeStaticPower(is_tdp);
       if (XML->sys.homogeneous_cores == 1) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            XML->sys.total_cycles * XML->sys.number_of_cores;
@@ -274,16 +284,16 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      if (rnu->exist) {
-        rnu->rt_power = rnu->rt_power + corepipe.power * pppm_t;
+      if (rnu.exist) {
+        rnu.rt_power = rnu.rt_power + corepipe.power * pppm_t;
 
-        rt_power = rt_power + rnu->rt_power;
+        rt_power = rt_power + rnu.rt_power;
       }
     } else {
       num_units = 4.0;
     }
 
-    if (ifu->exist) {
+    if (ifu.exist) {
       if (XML->sys.homogeneous_cores == 1) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            coredynp.IFU_duty_cycle * XML->sys.total_cycles *
@@ -297,8 +307,8 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      ifu->rt_power = ifu->rt_power + corepipe.power * pppm_t;
-      rt_power = rt_power + ifu->rt_power;
+      ifu.rt_power = ifu.rt_power + corepipe.power * pppm_t;
+      rt_power = rt_power + ifu.rt_power;
     }
     if (lsu.exist) {
       if (XML->sys.homogeneous_cores == 1) {
@@ -335,7 +345,7 @@ void Core::computeEnergy(bool is_tdp) {
       exu.rt_power = exu.rt_power + corepipe.power * pppm_t;
       rt_power = rt_power + exu.rt_power;
     }
-    if (mmu->exist) {
+    if (mmu.exist) {
       if (XML->sys.homogeneous_cores == 1) {
         rtp_pipeline_coe = coredynp.pipeline_duty_cycle *
                            (0.5 + 0.5 * coredynp.LSU_duty_cycle) *
@@ -350,18 +360,18 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      mmu->rt_power = mmu->rt_power + corepipe.power * pppm_t;
-      rt_power = rt_power + mmu->rt_power;
+      mmu.rt_power = mmu.rt_power + corepipe.power * pppm_t;
+      rt_power = rt_power + mmu.rt_power;
     }
 
     rt_power = rt_power + undiffCore.power;
     //		cout << "EXE = " << exu.power.readOp.dynamic*clockRate  << " W"
     //<< endl;
     if (XML->sys.Private_L2) {
-      l2cache->computeStaticPower();
-      // set_pppm(pppm_t,1/l2cache->cachep.executionTime, 1,1,1);
-      // l2cache->rt_power = l2cache->rt_power*pppm_t;
-      rt_power = rt_power + l2cache->rt_power;
+      l2cache.computeStaticPower();
+      // set_pppm(pppm_t,1/l2cache.cachep.executionTime, 1,1,1);
+      // l2cache.rt_power = l2cache.rt_power*pppm_t;
+      rt_power = rt_power + l2cache.rt_power;
     }
   }
 }
@@ -394,59 +404,59 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
          << "Runtime Dynamic = " << rt_power.readOp.dynamic / executionTime
          << " W" << endl;
     cout << endl;
-    if (ifu->exist) {
+    if (ifu.exist) {
       cout << indent_str << "Instruction Fetch Unit:" << endl;
-      cout << indent_str_next << "Area = " << ifu->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << ifu.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << ifu->power.readOp.dynamic * clockRate << " W"
+           << "Peak Dynamic = " << ifu.power.readOp.dynamic * clockRate << " W"
            << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? ifu->power.readOp.longer_channel_leakage
-                            : ifu->power.readOp.leakage)
+           << (long_channel ? ifu.power.readOp.longer_channel_leakage
+                            : ifu.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? ifu->power.readOp.power_gated_with_long_channel_leakage
-                     : ifu->power.readOp.power_gated_leakage)
+                     ? ifu.power.readOp.power_gated_with_long_channel_leakage
+                     : ifu.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next
-           << "Gate Leakage = " << ifu->power.readOp.gate_leakage << " W"
+           << "Gate Leakage = " << ifu.power.readOp.gate_leakage << " W"
            << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << ifu->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << ifu.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
       if (plevel > 2) {
-        ifu->displayEnergy(indent + 4, plevel, is_tdp);
+        ifu.displayEnergy(indent + 4, plevel, is_tdp);
       }
     }
     if (coredynp.core_ty == OOO) {
-      if (rnu->exist) {
+      if (rnu.exist) {
         cout << indent_str << "Renaming Unit:" << endl;
-        cout << indent_str_next << "Area = " << rnu->area.get_area() * 1e-6
+        cout << indent_str_next << "Area = " << rnu.area.get_area() * 1e-6
              << " mm^2" << endl;
         cout << indent_str_next
-             << "Peak Dynamic = " << rnu->power.readOp.dynamic * clockRate
+             << "Peak Dynamic = " << rnu.power.readOp.dynamic * clockRate
              << " W" << endl;
         cout << indent_str_next << "Subthreshold Leakage = "
-             << (long_channel ? rnu->power.readOp.longer_channel_leakage
-                              : rnu->power.readOp.leakage)
+             << (long_channel ? rnu.power.readOp.longer_channel_leakage
+                              : rnu.power.readOp.leakage)
              << " W" << endl;
         if (power_gating)
           cout << indent_str_next << "Subthreshold Leakage with power gating = "
                << (long_channel
-                       ? rnu->power.readOp.power_gated_with_long_channel_leakage
-                       : rnu->power.readOp.power_gated_leakage)
+                       ? rnu.power.readOp.power_gated_with_long_channel_leakage
+                       : rnu.power.readOp.power_gated_leakage)
                << " W" << endl;
         cout << indent_str_next
-             << "Gate Leakage = " << rnu->power.readOp.gate_leakage << " W"
+             << "Gate Leakage = " << rnu.power.readOp.gate_leakage << " W"
              << endl;
         cout << indent_str_next << "Runtime Dynamic = "
-             << rnu->rt_power.readOp.dynamic / executionTime << " W" << endl;
+             << rnu.rt_power.readOp.dynamic / executionTime << " W" << endl;
         cout << endl;
         if (plevel > 2) {
-          rnu->display(indent + 4, plevel, is_tdp);
+          rnu.display(indent + 4, plevel, is_tdp);
         }
       }
     }
@@ -477,28 +487,28 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
         lsu.display(indent + 4, plevel, is_tdp);
       }
     }
-    if (mmu->exist) {
+    if (mmu.exist) {
       cout << indent_str << "Memory Management Unit:" << endl;
-      cout << indent_str_next << "Area = " << mmu->area.get_area() * 1e-6
+      cout << indent_str_next << "Area = " << mmu.area.get_area() * 1e-6
            << " mm^2" << endl;
       cout << indent_str_next
-           << "Peak Dynamic = " << mmu->power.readOp.dynamic * clockRate << " W"
+           << "Peak Dynamic = " << mmu.power.readOp.dynamic * clockRate << " W"
            << endl;
       cout << indent_str_next << "Subthreshold Leakage = "
-           << (long_channel ? mmu->power.readOp.longer_channel_leakage
-                            : mmu->power.readOp.leakage)
+           << (long_channel ? mmu.power.readOp.longer_channel_leakage
+                            : mmu.power.readOp.leakage)
            << " W" << endl;
       if (power_gating)
         cout << indent_str_next << "Subthreshold Leakage with power gating = "
              << (long_channel
-                     ? mmu->power.readOp.power_gated_with_long_channel_leakage
-                     : mmu->power.readOp.power_gated_leakage)
+                     ? mmu.power.readOp.power_gated_with_long_channel_leakage
+                     : mmu.power.readOp.power_gated_leakage)
              << " W" << endl;
       cout << indent_str_next << "Runtime Dynamic = "
-           << mmu->rt_power.readOp.dynamic / executionTime << " W" << endl;
+           << mmu.rt_power.readOp.dynamic / executionTime << " W" << endl;
       cout << endl;
       if (plevel > 2) {
-        mmu->displayEnergy(indent + 4, plevel, is_tdp);
+        mmu.displayEnergy(indent + 4, plevel, is_tdp);
       }
     }
     if (exu.exist) {
@@ -552,17 +562,17 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     //		}
     if (XML->sys.Private_L2) {
 
-      l2cache->display(4, true);
+      l2cache.display(4, true);
     }
 
   } else {
     //		cout << indent_str_next << "Instruction Fetch Unit    Peak Dynamic =
     //"
-    //<< ifu->rt_power.readOp.dynamic*clockRate << " W" << endl; 		cout
+    //<< ifu.rt_power.readOp.dynamic*clockRate << " W" << endl; 		cout
     //<< indent_str_next << "Instruction Fetch Unit    Subthreshold Leakage = "
-    // << ifu->rt_power.readOp.leakage <<" W" << endl; 		cout <<
+    // << ifu.rt_power.readOp.leakage <<" W" << endl; 		cout <<
     // indent_str_next << "Instruction Fetch Unit    Gate Leakage = " <<
-    // ifu->rt_power.readOp.gate_leakage << " W" << endl; 		cout <<
+    // ifu.rt_power.readOp.gate_leakage << " W" << endl; 		cout <<
     // indent_str_next
     //<< "Load Store Unit   Peak Dynamic = " <<
     // lsu.rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
@@ -572,11 +582,11 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
     // << "Load Store Unit   Gate Leakage = " <<
     // lsu.rt_power.readOp.gate_leakage
     //<< " W" << endl; 		cout << indent_str_next << "Memory Management Unit
-    // Peak Dynamic = " << mmu->rt_power.readOp.dynamic*clockRate  << " W" <<
+    // Peak Dynamic = " << mmu.rt_power.readOp.dynamic*clockRate  << " W" <<
     // endl; 		cout << indent_str_next << "Memory Management Unit Subthreshold
-    // Leakage = " << mmu->rt_power.readOp.leakage  << " W" << endl; 		cout
+    // Leakage = " << mmu.rt_power.readOp.leakage  << " W" << endl; 		cout
     // << indent_str_next << "Memory Management Unit   Gate Leakage = " <<
-    // mmu->rt_power.readOp.gate_leakage  << " W" << endl; 		cout <<
+    // mmu.rt_power.readOp.gate_leakage  << " W" << endl; 		cout <<
     // indent_str_next << "Execution Unit   Peak Dynamic = " <<
     // exu.rt_power.readOp.dynamic*clockRate  << " W" << endl; 		cout
     // << indent_str_next << "Execution Unit   Subthreshold Leakage = " <<
@@ -590,23 +600,6 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 
 Core ::~Core() {
 
-  if (ifu) {
-    delete ifu;
-    ifu = 0;
-  }
-  if (rnu) {
-    delete rnu;
-    rnu = 0;
-  }
-  if (mmu) {
-    delete mmu;
-    mmu = 0;
-  }
-
-  if (l2cache) {
-    delete l2cache;
-    l2cache = 0;
-  }
 }
 
 void Core::set_core_param() {

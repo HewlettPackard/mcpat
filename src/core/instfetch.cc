@@ -438,7 +438,7 @@ void InstFetchU::computeDynamicPower(bool is_tdp) {
   if (!exist)
     return;
   if (!init_stats) {
-    std::cerr << "[ InstFetchU ] Error: must set params before calling "
+    std::cerr << "[ InstFetchU ] Error: must set stats before calling "
                  "computeDynamicPower()\n";
     exit(1);
   }  
