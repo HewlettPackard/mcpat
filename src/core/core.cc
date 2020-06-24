@@ -46,12 +46,13 @@
 
 Core::Core(const ParseXML *XML_interface,
            int ithCore_,
-           InputParameter *interface_ip_)
-    : XML(XML_interface), ithCore(ithCore_), interface_ip(*interface_ip_),
-      ifu(0), mmu(0), rnu(0), corepipe(0), undiffCore(0), l2cache(0) {
+           InputParameter *interface_ip_){
   /*
    * initialize, compute and optimize individual components.
    */
+
+  XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
+      ifu=0; mmu=0; rnu=0; corepipe=0; undiffCore=0; l2cache=0;
 
   bool exit_flag = true;
 
@@ -159,7 +160,7 @@ void Core::computeEnergy(bool is_tdp) {
   double num_units = 4.0;
   if (is_tdp) {
     ifu->computeDynamicPower(is_tdp);
-    lsu.computePower(is_tdp);
+    lsu.computeDynamicPower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
@@ -249,7 +250,7 @@ void Core::computeEnergy(bool is_tdp) {
 
   } else {
     ifu->computeDynamicPower(is_tdp);
-    lsu.computePower(is_tdp);
+    lsu.computeDynamicPower(is_tdp);
     mmu->computeDynamicPower(is_tdp);
     exu.computeDynamicPower(is_tdp);
 
