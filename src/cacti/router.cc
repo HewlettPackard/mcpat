@@ -31,6 +31,34 @@
 
 #include "router.h"
 
+Router::Router() {
+  flit_size = 0.0;
+  deviceType = nullptr;
+  I = 0.0;
+  O = 0.0;
+  M = 0.0;
+
+  vc_buffer_size = 0;
+  vc_count = 0;
+  min_w_pmos = 0;
+  double technology = 0;
+
+  Vdd = 0.0;
+
+  /*Crossbar parameters. Transmisson gate is employed for connector*/
+  NTtr = 0.0;
+  PTtr = 0.0;
+  wt = 0.0;
+  ht = 0.0;
+  NTi = 0.0;
+  PTi = 0.0;
+
+  NTid = 0.0;
+  PTid = 0.0;
+  NTod = 0.0;
+  PTod = 0.0;
+}
+
 Router::Router(double flit_size_,
                double vc_buf, /* vc size = vc_buffer_size * flit_size */
                double vc_c,
@@ -39,6 +67,44 @@ Router::Router(double flit_size_,
                double O_,
                double M_)
     : flit_size(flit_size_), deviceType(dt), I(I_), O(O_), M(M_) {
+  vc_buffer_size = vc_buf;
+  vc_count = vc_c;
+  min_w_pmos = deviceType->n_to_p_eff_curr_drv_ratio * g_tp.min_w_nmos_;
+  double technology = g_ip->F_sz_um;
+
+  Vdd = dt->Vdd;
+
+  /*Crossbar parameters. Transmisson gate is employed for connector*/
+  NTtr = 10 * technology * 1e-6 / 2; /*Transmission gate's nmos tr. length*/
+  PTtr = 20 * technology * 1e-6 / 2; /* pmos tr. length*/
+  wt = 15 * technology * 1e-6 / 2;   /*track width*/
+  ht = 15 * technology * 1e-6 / 2;   /*track height*/
+  //  I = 5; /*Number of crossbar input ports*/
+  //  O = 5; /*Number of crossbar output ports*/
+  NTi = 12.5 * technology * 1e-6 / 2;
+  PTi = 25 * technology * 1e-6 / 2;
+
+  NTid = 60 * technology * 1e-6 / 2;  // m
+  PTid = 120 * technology * 1e-6 / 2; // m
+  NTod = 60 * technology * 1e-6 / 2;  // m
+  PTod = 120 * technology * 1e-6 / 2; // m
+
+  calc_router_parameters();
+}
+
+void Router::init(double flit_size_,
+                  double vc_buf, /* vc size = vc_buffer_size * flit_size */
+                  double vc_c,
+                  TechnologyParameter::DeviceType *dt,
+                  double I_,
+                  double O_,
+                  double M_) {
+  flit_size = flit_size_;
+  deviceType = dt;
+  I = I_;
+  O = O_;
+  M = M_;
+
   vc_buffer_size = vc_buf;
   vc_count = vc_c;
   min_w_pmos = deviceType->n_to_p_eff_curr_drv_ratio * g_tp.min_w_nmos_;

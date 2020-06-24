@@ -35,8 +35,8 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
 #include "parameter.h"
+#include "selection_logic.h"
 
 #include <vector>
 
@@ -83,6 +83,17 @@ private:
   void computeFrontEndTDP();
   void computeReadBufferTDP();
   void computeWriteBufferTDP();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &frontendBuffer;
+    ar &readBuffer;
+    ar &writeBuffer;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __MC_FRONTEND_H__

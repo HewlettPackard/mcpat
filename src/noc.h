@@ -31,24 +31,30 @@
 
 #ifndef NOC_H_
 #define NOC_H_
+
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
 #include "interconnect.h"
-#include "logic.h"
 #include "parameter.h"
 #include "router.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class NoC : public Component {
 public:
-  ParseXML *XML;
   int ithNoC;
   InputParameter interface_ip;
   double link_len;
   double executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
-  Router *router;
-  interconnect *link_bus;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
+  Router router;
+  interconnect link_bus;
   NoCParam nocdynp;
   uca_org_t local_result;
   statsDef tdp_stats;
@@ -60,21 +66,54 @@ public:
   bool router_exist;
   string name, link_name;
   double M_traffic_pattern;
-  NoC(ParseXML *XML_interface,
-      int ithNoC_,
-      InputParameter *interface_ip_,
-      double M_traffic_pattern_ = 0.6,
-      double link_len_ = 0);
-  void set_noc_param();
-  void computeEnergy(bool is_tdp = true);
-  void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  NoC();
+  void set_params(const ParseXML *XML,
+                  int ithNoC_,
+                  InputParameter *interface_ip_,
+                  double M_traffic_pattern_ = 0.6,
+                  double link_len_ = 0);
+  void set_stats(const ParseXML *XML);
+  void computeArea();
+  void computePower(bool cp = false);
+  void computeRuntimeDynamicPower();
   void init_link_bus(double link_len_);
-  void init_router();
+  void display(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
+  // TODO
   void computeEnergy_link_bus(bool is_tdp = true);
   void displayEnergy_link_bus(uint32_t indent = 0,
                               int plevel = 100,
                               bool is_tdp = true);
   ~NoC();
+
+private:
+  bool embedded;
+  bool init_stats;
+  bool init_params;
+  bool set_area;
+  bool long_channel;
+  bool power_gating;
+
+  unsigned int total_accesses;
+
+  void set_noc_param(const ParseXML *XML);
+  void init_router();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &name;
+    ar &link_name;
+    ar &router;
+    ar &link_bus;
+    ar &router_exist;
+    ar &link_bus_exist;
+    ar &link_bus_tot_per_Router;
+    // ar &link_bus_tot_per_Router.area;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif /* NOC_H_ */

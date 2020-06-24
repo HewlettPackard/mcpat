@@ -38,7 +38,6 @@
 #include "basic_components.h"
 #include "const.h"
 #include "io.h"
-#include "logic.h"
 #include "parameter.h"
 
 #include <algorithm>
@@ -105,9 +104,6 @@ void FlashController::computeArea() {
   // Area estimation based on Cadence ChipEstimate @ 65nm: NANDFLASH-CTRL from
   // CAST
   SerDer_area = 0.36 / 8 * (ip.F_sz_um / 0.065) * (ip.F_sz_um / 0.065);
-  NMOS_sizing = g_tp.min_w_nmos_;
-  PMOS_sizing = g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r;
-  number_channel = 1 + (fcp.num_channels - 1) * 0.2;
   area.set_area((ctrl_area + (fcp.withPHY ? SerDer_area : 0)) * 1e6 *
                 number_channel);
 }
@@ -263,6 +259,7 @@ void FlashController::set_params(const ParseXML *XML,
   fcp.num_mcs = XML->sys.flashc.number_mcs;
   fcp.type = XML->sys.flashc.type;
   fcp.withPHY = XML->sys.flashc.withPHY;
+  double pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
 
   long_channel = XML->sys.longer_channel_device;
   power_gating = XML->sys.power_gating;
@@ -279,6 +276,9 @@ void FlashController::set_params(const ParseXML *XML,
     ip.specific_vcc_min = true;
     ip.user_defined_vcc_min = XML->sys.flashc.power_gating_vcc;
   }
+  NMOS_sizing = g_tp.min_w_nmos_;
+  PMOS_sizing = g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r;
+  number_channel = 1 + (fcp.num_channels - 1) * 0.2;
   init_params = true;
 }
 

@@ -35,6 +35,10 @@
 #include "XML_Parse.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 const double cdb_overhead = 1.1;
@@ -44,8 +48,6 @@ enum FU_type { FPU, ALU, MUL };
 enum Renaming_type { RAMbased, CAMbased };
 
 enum Scheduler_type { PhysicalRegFile, ReservationStation };
-
-enum cache_level { L2, L3, L1Directory, L2Directory };
 
 enum MemoryCtrl_type {
   MC,    // memory controller
@@ -90,6 +92,16 @@ public:
                                    const statsComponents &y);
   friend statsComponents operator*(const statsComponents &x,
                                    double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &access;
+    ar &hit;
+    ar &miss;
+  }
 };
 
 class statsDef {
@@ -107,6 +119,16 @@ public:
 
   friend statsDef operator+(const statsDef &x, const statsDef &y);
   friend statsDef operator*(const statsDef &x, double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &readAc;
+    ar &writeAc;
+    ar &searchAc;
+  }
 };
 
 double longer_channel_device_reduction(enum Device_ty device_ty = Core_device,
@@ -161,23 +183,6 @@ public:
   double vdd;
   double power_gating_vcc;
   ~CoreDynParam(){};
-};
-
-class CacheDynParam {
-public:
-  CacheDynParam(){};
-  CacheDynParam(ParseXML *XML_interface, int ithCache_);
-  string name;
-  enum Dir_type dir_ty;
-  double clockRate, executionTime;
-  double capacity, blockW, assoc, nbanks;
-  double throughput, latency;
-  double duty_cycle, dir_duty_cycle;
-  // double duty_cycle;
-  int missb_size, fu_size, prefetchb_size, wbb_size;
-  double vdd;
-  double power_gating_vcc;
-  ~CacheDynParam(){};
 };
 
 class MCParam {

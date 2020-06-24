@@ -2,18 +2,18 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "Create a separate build directory")
 endif()
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.12)
 
 project(mcpat DESCRIPTION "Power Timing Area Calculator"
               LANGUAGES CXX)
 
 find_package(Boost 1.56 REQUIRED COMPONENTS
-             program_options)
+             program_options
+             serialization)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 find_package(Threads REQUIRED)
-
 
 set (MCPAT_VERSION_MAJOR 1)
 set (MCPAT_VERSION_MINOR 3)

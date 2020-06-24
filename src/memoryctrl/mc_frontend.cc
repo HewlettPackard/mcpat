@@ -36,7 +36,6 @@
 #include "basic_components.h"
 #include "const.h"
 #include "io.h"
-#include "logic.h"
 #include "parameter.h"
 
 #include <algorithm>

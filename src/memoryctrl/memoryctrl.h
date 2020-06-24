@@ -35,12 +35,15 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
 #include "mc_backend.h"
 #include "mc_frontend.h"
 #include "mc_phy.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 class MemoryController : public Component {
@@ -72,5 +75,17 @@ private:
   bool set_area;
 
   void set_mc_param(const ParseXML *XML);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &frontend;
+    ar &transecEngine;
+    ar &PHY;
+    ar &set_area;
+    Component::serialize(ar, version);
+  }
 };
 #endif /* __MEMORYCTRL_H__ */

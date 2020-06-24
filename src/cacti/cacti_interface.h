@@ -34,6 +34,10 @@
 
 #include "const.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <iostream>
 #include <list>
 #include <map>
@@ -86,6 +90,19 @@ public:
                                    const powerComponents &y);
   friend powerComponents operator*(const powerComponents &x,
                                    double const *const y);
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &dynamic;
+    ar &leakage;
+    ar &gate_leakage;
+    ar &short_circuit;
+    ar &longer_channel_leakage;
+    ar &power_gated_leakage;
+    ar &power_gated_with_long_channel_leakage;
+  }
 };
 
 class powerDef {
@@ -103,6 +120,16 @@ public:
 
   friend powerDef operator+(const powerDef &x, const powerDef &y);
   friend powerDef operator*(const powerDef &x, double const *const y);
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &readOp;
+    ar &writeOp;
+    ar &searchOp;
+  }
 };
 
 enum Wire_type {
@@ -391,6 +418,8 @@ class uca_org_t {
 public:
   mem_array *tag_array2;
   mem_array *data_array2;
+  powerDef ta2_power; // Hack for serialization
+  powerDef da2_power; // Hack for serialization
   double access_time;
   double cycle_time;
   double area;
@@ -417,6 +446,17 @@ public:
   void adjust_area(); // for McPAT only to adjust routing overhead
   void cleanup();
   ~uca_org_t();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power;
+    ar &area;
+    ar &ta2_power;
+    ar &da2_power;
+  }
 };
 
 void reconfigure(InputParameter *local_interface, uca_org_t *fin_res);
@@ -609,12 +649,20 @@ public:
   double subarray_length;
   double subarray_height;
 
-  double delay_route_to_bank, delay_input_htree,
-      delay_row_predecode_driver_and_block, delay_row_decoder, delay_bitlines,
-      delay_sense_amp, delay_subarray_output_driver, delay_dout_htree,
-      delay_comparator, delay_matchlines;
+  double delay_route_to_bank;
+  double delay_input_htree;
+  double delay_row_predecode_driver_and_block;
+  double delay_row_decoder;
+  double delay_bitlines;
+  double delay_sense_amp;
+  double delay_subarray_output_driver;
+  double delay_dout_htree;
+  double delay_comparator;
+  double delay_matchlines;
 
-  double all_banks_height, all_banks_width, area_efficiency;
+  double all_banks_height;
+  double all_banks_width;
+  double area_efficiency;
 
   powerDef power_routing_to_bank;
   powerDef power_addr_input_htree;
@@ -652,9 +700,14 @@ public:
   enum Wire_type wt;
 
   // dram stats
-  double activate_energy, read_energy, write_energy, precharge_energy,
-      refresh_power, leak_power_subbank_closed_page,
-      leak_power_subbank_open_page, leak_power_request_and_reply_networks;
+  double activate_energy;
+  double read_energy;
+  double write_energy;
+  double precharge_energy;
+  double refresh_power;
+  double leak_power_subbank_closed_page;
+  double leak_power_subbank_open_page;
+  double leak_power_request_and_reply_networks;
 
   double precharge_delay;
 
@@ -665,10 +718,14 @@ public:
 
   double sram_sleep_tx_width, wl_sleep_tx_width, cl_sleep_tx_width;
   double sram_sleep_tx_area, wl_sleep_tx_area, cl_sleep_tx_area;
-  double sram_sleep_wakeup_latency, wl_sleep_wakeup_latency,
-      cl_sleep_wakeup_latency, bl_floating_wakeup_latency;
-  double sram_sleep_wakeup_energy, wl_sleep_wakeup_energy,
-      cl_sleep_wakeup_energy, bl_floating_wakeup_energy;
+  double sram_sleep_wakeup_latency;
+  double wl_sleep_wakeup_latency;
+  double cl_sleep_wakeup_latency;
+  double bl_floating_wakeup_latency;
+  double sram_sleep_wakeup_energy;
+  double wl_sleep_wakeup_energy;
+  double cl_sleep_wakeup_energy;
+  double bl_floating_wakeup_energy;
 
   int num_active_mats;
   int num_submarray_mats;

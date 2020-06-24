@@ -46,26 +46,25 @@
 
 class interconnect : public Component {
 public:
-  interconnect(string name_,
-               enum Device_ty device_ty_,
-               double base_w,
-               double base_h,
-               int data_w,
-               double len,
-               const InputParameter *configure_interface,
-               int start_wiring_level_,
-               bool pipelinable_ = false,
-               double route_over_perc_ = 0.5,
-               bool opt_local_ = true,
-               enum Core_type core_ty_ = Inorder,
-               enum Wire_type wire_model = Global,
-               double width_s = 1.0,
-               double space_s = 1.0,
-               TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
-
+  interconnect();
+  void init(string name_,
+            enum Device_ty device_ty_,
+            double base_w,
+            double base_h,
+            int data_w,
+            double len,
+            const InputParameter *configure_interface,
+            int start_wiring_level_,
+            bool pipelinable_ = false,
+            double route_over_perc_ = 0.5,
+            bool opt_local_ = true,
+            enum Core_type core_ty_ = Inorder,
+            enum Wire_type wire_model = Global,
+            double width_s = 1.0,
+            double space_s = 1.0,
+            TechnologyParameter::DeviceType *dt = &(g_tp.peri_global));
   ~interconnect(){};
 
-  void compute();
   string name;
   enum Device_ty device_ty;
   double in_rise_time, out_rise_time;
@@ -74,7 +73,7 @@ public:
   Area no_device_under_wire_area;
   void set_in_rise_time(double rt) { in_rise_time = rt; }
 
-  void leakage_feedback(double temperature);
+  // void leakage_feedback(double temperature);
   double max_unpipelined_link_delay;
   powerDef power_bit;
 
@@ -101,7 +100,20 @@ public:
   int num_pipe_stages;
 
 private:
+  void compute();
+
   TechnologyParameter::DeviceType *deviceType;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &power_bit;
+    ar &max_unpipelined_link_delay;
+    ar &no_device_under_wire_area;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif

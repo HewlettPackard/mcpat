@@ -1,3 +1,5 @@
+add_subdirectory(decoder)
+
 add_library(cacti
   Ucache.h
   arbiter.h
@@ -8,7 +10,6 @@ add_library(cacti
   component.h
   const.h
   crossbar.h
-  decoder.h
   htree2.h
   io.h
   mat.h
@@ -28,7 +29,6 @@ add_library(cacti
   cacti_interface.cc
   component.cc
   crossbar.cc
-  decoder.cc
   htree2.cc
   io.cc
   main.cc
@@ -43,3 +43,6 @@ add_library(cacti
   wire.cc
 )
 target_include_directories(cacti PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(cacti
+                      LINK_PUBLIC
+                      decoder)

@@ -42,10 +42,15 @@
 #include "wire.h"
 
 #include <assert.h>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <iostream>
 
 class Router : public Component {
 public:
+  Router();
   Router(double flit_size_,
          double vc_buf, /* vc size = vc_buffer_size * flit_size */
          double vc_count,
@@ -54,6 +59,14 @@ public:
          double O_ = 5,
          double M_ = 0.6);
   ~Router();
+
+  void init(double flit_size_,
+            double vc_buf, /* vc size = vc_buffer_size * flit_size */
+            double vc_count,
+            TechnologyParameter::DeviceType *dt = &(g_tp.peri_global),
+            double I_ = 5,
+            double O_ = 5,
+            double M_ = 0.6);
 
   void print_router();
 
@@ -103,6 +116,19 @@ private:
   void get_router_delay();
 
   double min_w_pmos;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &arbiter;
+    ar &crossbar;
+    ar &buffer;
+    ar &Component::power;
+    ar &Component::area;
+    // Component::serialize(ar, version);
+  }
 };
 
 #endif

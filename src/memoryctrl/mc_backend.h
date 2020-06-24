@@ -35,9 +35,12 @@
 #include "XML_Parse.h"
 #include "array.h"
 #include "basic_components.h"
-#include "logic.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <vector>
 
 class MCBackend : public Component {
@@ -67,6 +70,18 @@ private:
   bool power_gating;
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &tdp_stats;
+    ar &rtp_stats;
+    ar &stats_t;
+    ar &power_t;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __MC_BACKEND_H__
