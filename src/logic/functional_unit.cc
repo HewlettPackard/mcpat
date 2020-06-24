@@ -70,6 +70,17 @@ void FunctionalUnit::set_params(const ParseXML *XML,
   embedded = XML->sys.Embedded;
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
+  if (fu_type == FPU) {
+    num_fu = coredynp.num_fpus;
+  } else if (fu_type == ALU) {
+    num_fu = coredynp.num_alus;
+  } else if (fu_type == MUL) {
+    num_fu = coredynp.num_muls;
+  } else {
+    std::cout << "[ FunctionalUnit ] Error: Unknown Functional Unit Type"
+              << std::endl;
+    exit(1);
+  }
   init_params = true;
 }
 
@@ -83,7 +94,6 @@ void FunctionalUnit::set_stats(const ParseXML *XML) {
 void FunctionalUnit::computeArea() {
   if (embedded) {
     if (fu_type == FPU) {
-      num_fu = coredynp.num_fpus;
       // area_t = 8.47*1e6*g_tp.scaling_factor.logic_scaling_co_eff;//this is
       // um^2
       area_t = 4.47 * 1e6 *

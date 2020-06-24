@@ -833,7 +833,7 @@ void InstFetchU::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
 }
 
 InstFetchU ::~InstFetchU() {
-
-  if (!exist)
+  if (!exist) {
     return;
+  }
 }

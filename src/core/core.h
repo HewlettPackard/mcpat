@@ -103,7 +103,8 @@ public:
     ar &undiffCore;
     ar &l2cache;
     ar &pipeline_area_per_unit;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

@@ -231,8 +231,8 @@ void inst_decoder::leakage_feedback(double temperature) {
 inst_decoder::~inst_decoder() {
   local_result.cleanup();
 
-  delete pre_dec.blk1;
-  delete pre_dec.blk2;
-  delete pre_dec.drv1;
-  delete pre_dec.drv2;
+  // delete pre_dec.blk1;
+  // delete pre_dec.blk2;
+  // delete pre_dec.drv1;
+  // delete pre_dec.drv2;
 }
