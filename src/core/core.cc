@@ -65,13 +65,11 @@ void Core::set_params(const ParseXML *XML_interface,
 
   if (XML->sys.Private_L2) {
     l2cache.set_params(XML, ithCore, &interface_ip);
-    l2cache.set_stats(XML);
   }
 
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
   ifu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  ifu.set_stats(XML);
 
   lsu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
   if (!cp) {
@@ -79,11 +77,11 @@ void Core::set_params(const ParseXML *XML_interface,
                        // the lsu.lsq_height which is set in compute area
   }
   mmu.set_params(XML, ithCore, &interface_ip, coredynp);
-  mmu.set_stats(XML);
+  //mmu.set_stats(XML);
 
   exu.set_params(
       XML, ithCore, &interface_ip, lsu.lsq_height, coredynp, exit_flag);
-  exu.set_stats(XML);
+  //exu.set_stats(XML);
 
   undiffCore.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
 
@@ -92,7 +90,7 @@ void Core::set_params(const ParseXML *XML_interface,
 
   if (coredynp.core_ty == OOO) {
     rnu.set_params(XML, ithCore, &interface_ip, coredynp);
-    rnu.set_stats(XML);
+    //rnu.set_stats(XML);
   }
   corepipe.set_params(&interface_ip, coredynp);
 
@@ -107,10 +105,32 @@ void Core::set_params(const ParseXML *XML_interface,
   //  clockNetwork.optimize_wire();
 }
 
+void Core::set_stats(const ParseXML *XML_interface){
+  if (coredynp.core_ty == OOO) {
+    rnu.set_stats(XML);
+  }
+
+
+
+  if (XML->sys.Private_L2) {
+    l2cache.set_stats(XML);
+
+  }
+
+
+  ifu.set_stats(XML);
+
+
+  mmu.set_stats(XML);
+
+  exu.set_stats(XML);
+  exu.computeStaticPower();
+
+}
+
 void Core::computeArea() {
   if (coredynp.core_ty == OOO) {
     rnu.computeArea();
-    rnu.set_stats(XML);
   }
   corepipe.computeArea();
 
@@ -133,11 +153,10 @@ void Core::computeArea() {
   }
 
   if (XML->sys.Private_L2) {
-    l2cache.set_stats(XML);
     l2cache.computeArea();
     area.set_area(area.get_area() + l2cache.area.get_area());
+
   }
-  ifu.set_stats(XML);
   ifu.computeArea();
   if (ifu.exist) {
     ifu.area.set_area(ifu.area.get_area() + pipeline_area_per_unit);
@@ -150,13 +169,11 @@ void Core::computeArea() {
   }
 
   mmu.computeArea();
-  mmu.set_stats(XML);
   if (mmu.exist) {
     mmu.area.set_area(mmu.area.get_area() + pipeline_area_per_unit);
     area.set_area(area.get_area() + mmu.area.get_area());
   }
   exu.computeArea();
-  exu.set_stats(XML);
   exu.computeStaticPower();
   if (exu.exist) {
     exu.area.set_area(exu.area.get_area() + pipeline_area_per_unit);

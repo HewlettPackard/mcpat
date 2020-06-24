@@ -115,6 +115,7 @@ void Processor::init(const ParseXML *XML, bool cp) {
     if (!cp) {
       cores[i].computeArea();
     }
+    cores[i].set_stats(XML);
     cores[i].computeDynamicPower();
     cores[i].computeDynamicPower(false);
     if (procdynp.homoCore) {

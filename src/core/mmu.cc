@@ -178,7 +178,7 @@ void MemManU::computeDynamicPower(bool is_tdp) {
     return;
   }
   if (!init_stats) {
-    std::cerr << "[ MemManU ] Error: must set params before calling "
+    std::cerr << "[ MemManU ] Error: must set stats before calling "
                  "computeDynamicPower()\n";
     exit(1);
   }
