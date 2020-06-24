@@ -85,7 +85,8 @@ private:
     ar &dcache;
     ar &LSQ;
     ar &LoadQ;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

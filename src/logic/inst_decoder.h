@@ -80,13 +80,14 @@ private:
     ar &local_result;
     ar &device_ty;
     ar &core_ty;
-    ar &final_dec;
-    ar &pre_dec;
-    ar &predec_blk1;
-    ar &predec_blk2;
-    ar &predec_blk_drv1;
-    ar &predec_blk_drv2;
-    Component::serialize(ar, version);
+    // ar &final_dec;
+    // ar &pre_dec;
+    // ar &predec_blk1;
+    // ar &predec_blk2;
+    // ar &predec_blk_drv1;
+    // ar &predec_blk_drv2;
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

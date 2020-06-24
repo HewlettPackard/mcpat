@@ -105,7 +105,9 @@ private:
     ar &idcl;
     ar &fdcl;
     ar &exist;
-    Component::serialize(ar, version);
+    ar &set_area;
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

@@ -124,12 +124,12 @@ private:
     ar &min_number_gates_L2;
     ar &num_L1_active_nand2_path;
     ar &num_L1_active_nand3_path;
-    ar &w_L1_nand2_n[MAX_NUMBER_GATES_STAGE];
-    ar &w_L1_nand2_p[MAX_NUMBER_GATES_STAGE];
-    ar &w_L1_nand3_n[MAX_NUMBER_GATES_STAGE];
-    ar &w_L1_nand3_p[MAX_NUMBER_GATES_STAGE];
-    ar &w_L2_n[MAX_NUMBER_GATES_STAGE];
-    ar &w_L2_p[MAX_NUMBER_GATES_STAGE];
+    ar &w_L1_nand2_n;
+    ar &w_L1_nand2_p;
+    ar &w_L1_nand3_n;
+    ar &w_L1_nand3_p;
+    ar &w_L2_n;
+    ar &w_L2_p;
     ar &delay_nand2_path;
     ar &delay_nand3_path;
     ar &power_nand2_path;

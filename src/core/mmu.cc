@@ -174,10 +174,11 @@ void MemManU::computeStaticPower() {
 }
 
 void MemManU::computeDynamicPower(bool is_tdp) {
-  if (!exist)
+  if (!exist) {
     return;
+  }
   if (!init_stats) {
-    std::cerr << "[ MCFrontEnd ] Error: must set params before calling "
+    std::cerr << "[ MemManU ] Error: must set params before calling "
                  "computeDynamicPower()\n";
     exit(1);
   }

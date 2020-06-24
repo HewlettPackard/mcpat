@@ -45,13 +45,16 @@
 //#include "globalvar.h"
 
 void Core::set_params(const ParseXML *XML_interface,
-           int ithCore_,
-           InputParameter *interface_ip_){
+                      int ithCore_,
+                      InputParameter *interface_ip_,
+                      bool cp) {
   /*
    * initialize, compute and optimize individual components.
    */
 
-  XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
+  XML = XML_interface;
+  ithCore = ithCore_;
+  interface_ip = *interface_ip_;
 
   bool exit_flag = true;
 
@@ -62,34 +65,38 @@ void Core::set_params(const ParseXML *XML_interface,
 
   if (XML->sys.Private_L2) {
     l2cache.set_params(XML, ithCore, &interface_ip);
+    l2cache.set_stats(XML);
   }
 
   clockRate = coredynp.clockRate;
   executionTime = coredynp.executionTime;
   ifu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
+  ifu.set_stats(XML);
 
   lsu.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
-  lsu.computeArea(); //done on purpose because the exu unit is dependent on the lsu.lsq_height which is set in compute area
+  if (!cp) {
+    lsu.computeArea(); // done on purpose because the exu unit is dependent on
+                       // the lsu.lsq_height which is set in compute area
+  }
   mmu.set_params(XML, ithCore, &interface_ip, coredynp);
+  mmu.set_stats(XML);
 
   exu.set_params(
       XML, ithCore, &interface_ip, lsu.lsq_height, coredynp, exit_flag);
-  
+  exu.set_stats(XML);
+
   undiffCore.set_params(XML, ithCore, &interface_ip, coredynp, exit_flag);
 
   // undiffCore.computeArea();
   // undiffCore.computeDynamicPower();
-  
+
   if (coredynp.core_ty == OOO) {
     rnu.set_params(XML, ithCore, &interface_ip, coredynp);
+    rnu.set_stats(XML);
   }
   corepipe.set_params(&interface_ip, coredynp);
-  
-
-
 
   // area.set_area(area.get_area()+ corepipe.area.get_area());
-
 
   //  //clock power
   //  clockNetwork.init_wire_external(is_default, &interface_ip);
@@ -100,14 +107,14 @@ void Core::set_params(const ParseXML *XML_interface,
   //  clockNetwork.optimize_wire();
 }
 
-void Core::computeArea(){
+void Core::computeArea() {
   if (coredynp.core_ty == OOO) {
     rnu.computeArea();
     rnu.set_stats(XML);
   }
   corepipe.computeArea();
 
-   if (coredynp.core_ty == OOO) {
+  if (coredynp.core_ty == OOO) {
     pipeline_area_per_unit =
         (corepipe.area.get_area() * coredynp.num_pipelines) / 5.0;
     if (rnu.exist) {
@@ -136,7 +143,7 @@ void Core::computeArea(){
     ifu.area.set_area(ifu.area.get_area() + pipeline_area_per_unit);
     area.set_area(area.get_area() + ifu.area.get_area());
   }
-  
+
   if (lsu.exist) {
     lsu.area.set_area(lsu.area.get_area() + pipeline_area_per_unit);
     area.set_area(area.get_area() + lsu.area.get_area());
@@ -150,7 +157,7 @@ void Core::computeArea(){
   }
   exu.computeArea();
   exu.set_stats(XML);
-    exu.computeStaticPower();
+  exu.computeStaticPower();
   if (exu.exist) {
     exu.area.set_area(exu.area.get_area() + pipeline_area_per_unit);
     area.set_area(area.get_area() + exu.area.get_area());
@@ -161,7 +168,6 @@ void Core::computeArea(){
     area.set_area(area.get_area() + undiffCore.area.get_area());
   }
 }
-
 
 void Core::computeDynamicPower(bool is_tdp) {
   /*
@@ -598,9 +604,7 @@ void Core::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   }
 }
 
-Core ::~Core() {
-
-}
+Core ::~Core() {}
 
 void Core::set_core_param() {
   coredynp.opt_local = XML->sys.core[ithCore].opt_local;

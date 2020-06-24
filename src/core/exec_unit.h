@@ -97,7 +97,7 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &bypass;
+    ar &bypass.area;
     ar &int_bypass;
     ar &intTagBypass;
     ar &int_mul_bypass;
@@ -117,7 +117,8 @@ private:
     ar &clockRate;
     ar &exist;
     ar &ithCore;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

@@ -55,10 +55,10 @@ class Pipeline : public Component {
 public:
   Pipeline(){};
   void set_params(const InputParameter *configure_interface,
-           const CoreDynParam &dyn_p_,
-           enum Device_ty device_ty_ = Core_device,
-           bool _is_core_pipeline = true,
-           bool _is_default = true);
+                  const CoreDynParam &dyn_p_,
+                  enum Device_ty device_ty_ = Core_device,
+                  bool _is_core_pipeline = true,
+                  bool _is_default = true);
   InputParameter l_ip;
   uca_org_t local_result;
   CoreDynParam coredynp;

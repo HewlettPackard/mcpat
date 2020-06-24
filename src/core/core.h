@@ -52,8 +52,11 @@ public:
   const ParseXML *XML;
   int ithCore;
   InputParameter interface_ip;
-  double clockRate, executionTime;
-  double scktRatio, chip_PR_overhead, macro_PR_overhead;
+  double clockRate;
+  double executionTime;
+  double scktRatio;
+  double chip_PR_overhead;
+  double macro_PR_overhead;
   InstFetchU ifu;
   LoadStoreU lsu;
   MemManU mmu;
@@ -70,13 +73,38 @@ public:
   // clock_network	clockNetwork;
   Core(){};
   void set_params(const ParseXML *XML_interface,
-       int ithCore_,
-       InputParameter *interface_ip_);
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  bool cp = false);
   void computeArea();
   void set_core_param();
   void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~Core();
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &clockRate;
+    ar &executionTime;
+    ar &clockRate;
+    ar &executionTime;
+    ar &scktRatio;
+    ar &chip_PR_overhead;
+    ar &macro_PR_overhead;
+    ar &ifu;
+    ar &lsu;
+    ar &mmu;
+    ar &exu;
+    ar &rnu;
+    ar &corepipe;
+    ar &undiffCore;
+    ar &l2cache;
+    ar &pipeline_area_per_unit;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif /* CORE_H_ */

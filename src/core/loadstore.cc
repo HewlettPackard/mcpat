@@ -342,26 +342,70 @@ void LoadStoreU::computeArea() {
                        dcache.caches.local_result.area);
   area.set_area(area.get_area() + dcache.caches.local_result.area);
 
+  if (dcache.caches.local_result.tag_array2 != nullptr) {
+    dcache.caches.local_result.ta2_power =
+        dcache.caches.local_result.tag_array2->power;
+  }
+  if (dcache.caches.local_result.data_array2 != nullptr) {
+    dcache.caches.local_result.da2_power =
+        dcache.caches.local_result.data_array2->power;
+  }
+
   // dCache controllers
   // miss buffer
   dcache.missb.computeArea();
   dcache.area.set_area(dcache.area.get_area() + dcache.missb.local_result.area);
   area.set_area(area.get_area() + dcache.missb.local_result.area);
 
+  if (dcache.missb.local_result.tag_array2 != nullptr) {
+    dcache.missb.local_result.ta2_power =
+        dcache.missb.local_result.tag_array2->power;
+  }
+  if (dcache.missb.local_result.data_array2 != nullptr) {
+    dcache.missb.local_result.da2_power =
+        dcache.missb.local_result.data_array2->power;
+  }
+
   // fill buffer
   dcache.ifb.computeArea();
   dcache.area.set_area(dcache.area.get_area() + dcache.ifb.local_result.area);
   area.set_area(area.get_area() + dcache.ifb.local_result.area);
+
+  if (dcache.ifb.local_result.tag_array2 != nullptr) {
+    dcache.ifb.local_result.ta2_power =
+        dcache.ifb.local_result.tag_array2->power;
+  }
+  if (dcache.ifb.local_result.data_array2 != nullptr) {
+    dcache.ifb.local_result.da2_power =
+        dcache.ifb.local_result.data_array2->power;
+  }
 
   dcache.prefetchb.computeArea();
   dcache.area.set_area(dcache.area.get_area() +
                        dcache.prefetchb.local_result.area);
   area.set_area(area.get_area() + dcache.prefetchb.local_result.area);
 
+  if (dcache.prefetchb.local_result.tag_array2 != nullptr) {
+    dcache.prefetchb.local_result.ta2_power =
+        dcache.prefetchb.local_result.tag_array2->power;
+  }
+  if (dcache.prefetchb.local_result.data_array2 != nullptr) {
+    dcache.prefetchb.local_result.da2_power =
+        dcache.prefetchb.local_result.data_array2->power;
+  }
+
   if (cache_p == Write_back) {
     dcache.wbb.computeArea();
     dcache.area.set_area(dcache.area.get_area() + dcache.wbb.local_result.area);
     area.set_area(area.get_area() + dcache.wbb.local_result.area);
+    if (dcache.wbb.local_result.tag_array2 != nullptr) {
+      dcache.wbb.local_result.ta2_power =
+          dcache.wbb.local_result.tag_array2->power;
+    }
+    if (dcache.wbb.local_result.data_array2 != nullptr) {
+      dcache.wbb.local_result.da2_power =
+          dcache.wbb.local_result.data_array2->power;
+    }
   }
 
   /*
@@ -519,7 +563,7 @@ void LoadStoreU::computeDynamicPower(bool is_tdp) {
                .dynamic + // assuming D cache is in the fast model which read
                           // tag and data together
        dcache.caches.stats_t.writeAc.miss *
-           dcache.caches.local_result.tag_array2->power.readOp.dynamic +
+           dcache.caches.local_result.ta2_power.readOp.dynamic +
        dcache.caches.stats_t.writeAc.access *
            dcache.caches.local_result.power.writeOp.dynamic);
 

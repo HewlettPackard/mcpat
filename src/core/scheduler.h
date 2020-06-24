@@ -100,7 +100,8 @@ private:
     ar &ROB;
     ar &instruction_selection;
     ar &exist;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

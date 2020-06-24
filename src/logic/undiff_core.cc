@@ -32,31 +32,36 @@
 #include "undiff_core.h"
 
 void UndiffCore::set_params(const ParseXML *XML_interface,
-                       int ithCore_,
-                       InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_,
-                       bool exist_,
-                       bool embedded_)
+                            int ithCore_,
+                            InputParameter *interface_ip_,
+                            const CoreDynParam &dyn_p_,
+                            bool exist_,
+                            bool embedded_)
 // is_default(_is_default)
-{ 
-  XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
-      coredynp=dyn_p_; core_ty=coredynp.core_ty; embedded=XML->sys.Embedded;
-      pipeline_stage=coredynp.pipeline_stages;
-      num_hthreads=coredynp.num_hthreads; issue_width=coredynp.issueW;
-      exist=exist_;
+{
+  XML = XML_interface;
+  ithCore = ithCore_;
+  interface_ip = *interface_ip_;
+  coredynp = dyn_p_;
+  core_ty = coredynp.core_ty;
+  embedded = XML->sys.Embedded;
+  pipeline_stage = coredynp.pipeline_stages;
+  num_hthreads = coredynp.num_hthreads;
+  issue_width = coredynp.issueW;
+  exist = exist_;
   if (!exist)
-    return;  
+    return;
 }
 
-  void UndiffCore::computeArea(){
-      double undifferentiated_core = 0;
+void UndiffCore::computeArea() {
+  double undifferentiated_core = 0;
   double core_tx_density = 0;
   double pmos_to_nmos_sizing_r = pmos_to_nmos_sz_ratio();
   double undifferentiated_core_coe;
   // XML_interface=_XML_interface;
   uca_org_t result2;
   result2 = init_interface(&interface_ip);
-      // Compute undifferentiated core area at 90nm.
+  // Compute undifferentiated core area at 90nm.
   if (embedded == false) {
     // Based on the results of polynomial/log curve fitting based on
     // undifferentiated core of Niagara, Niagara2, Merom, Penyrn, Prescott,
@@ -94,7 +99,7 @@ void UndiffCore::set_params(const ParseXML *XML_interface,
   // undifferentiated_core 		    = 3*1e6;
   // undifferentiated_core			*=
   // g_tp.scaling_factor.logic_scaling_co_eff;//(g_ip->F_sz_um*g_ip->F_sz_um/0.09/0.09)*;
-    power.readOp.leakage = undifferentiated_core *
+  power.readOp.leakage = undifferentiated_core *
                          (core_tx_density)*cmos_Isub_leakage(
                              5 * g_tp.min_w_nmos_,
                              5 * g_tp.min_w_nmos_ * pmos_to_nmos_sizing_r,
@@ -121,7 +126,6 @@ void UndiffCore::set_params(const ParseXML *XML_interface,
 
   area.set_area(undifferentiated_core);
 
-  
   scktRatio = g_tp.sckt_co_eff;
   power.readOp.dynamic *= scktRatio;
   power.writeOp.dynamic *= scktRatio;
@@ -154,8 +158,7 @@ void UndiffCore::set_params(const ParseXML *XML_interface,
   //
   //		std::cout<<power.readOp.dynamic << "dynamic" <<std::endl;
   //		std::cout<<power.readOp.sc << "sc" << std::endl;
-  }
-
+}
 
 void UndiffCore::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
   string indent_str(indent, ' ');

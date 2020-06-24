@@ -89,7 +89,8 @@ private:
     ar &executionTime;
     ar &clockRate;
     ar &ithCore;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

@@ -108,26 +108,30 @@ void Processor::init(const ParseXML *XML, bool cp) {
   }
 
   for (i = 0; i < numCore; i++) {
-    cores.push_back(new Core());
-    cores[i]->set_params(XML, i, &interface_ip);
-    cores[i]->computeArea();
-    cores[i]->computeDynamicPower();
-    cores[i]->computeDynamicPower(false);
+    if (!cp) {
+      cores.push_back(Core());
+    }
+    cores[i].set_params(XML, i, &interface_ip, cp);
+    if (!cp) {
+      cores[i].computeArea();
+    }
+    cores[i].computeDynamicPower();
+    cores[i].computeDynamicPower(false);
     if (procdynp.homoCore) {
       core.area.set_area(core.area.get_area() +
-                         cores[i]->area.get_area() * procdynp.numCore);
+                         cores[i].area.get_area() * procdynp.numCore);
       set_pppm(pppm_t,
-               cores[i]->clockRate * procdynp.numCore,
+               cores[i].clockRate * procdynp.numCore,
                procdynp.numCore,
                procdynp.numCore,
                procdynp.numCore);
-      core.power = core.power + cores[i]->power * pppm_t;
+      core.power = core.power + cores[i].power * pppm_t;
       set_pppm(pppm_t,
-               1 / cores[i]->executionTime,
+               1 / cores[i].executionTime,
                procdynp.numCore,
                procdynp.numCore,
                procdynp.numCore);
-      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
+      core.rt_power = core.rt_power + cores[i].rt_power * pppm_t;
       area.set_area(area.get_area() +
                     core.area.get_area()); // placement and routing overhead is
                                            // 10%, core scales worse than cache
@@ -135,20 +139,20 @@ void Processor::init(const ParseXML *XML, bool cp) {
       power = power + core.power;
       rt_power = rt_power + core.rt_power;
     } else {
-      core.area.set_area(core.area.get_area() + cores[i]->area.get_area());
+      core.area.set_area(core.area.get_area() + cores[i].area.get_area());
       area.set_area(
           area.get_area() +
-          cores[i]->area.get_area()); // placement and routing overhead is 10%,
-                                      // core scales worse than cache 40% is
-                                      // accumulated from 90 to 22nm
+          cores[i].area.get_area()); // placement and routing overhead is 10%,
+                                     // core scales worse than cache 40% is
+                                     // accumulated from 90 to 22nm
 
-      set_pppm(pppm_t, cores[i]->clockRate, 1, 1, 1);
-      core.power = core.power + cores[i]->power * pppm_t;
-      power = power + cores[i]->power * pppm_t;
+      set_pppm(pppm_t, cores[i].clockRate, 1, 1, 1);
+      core.power = core.power + cores[i].power * pppm_t;
+      power = power + cores[i].power * pppm_t;
 
-      set_pppm(pppm_t, 1 / cores[i]->executionTime, 1, 1, 1);
-      core.rt_power = core.rt_power + cores[i]->rt_power * pppm_t;
-      rt_power = rt_power + cores[i]->rt_power * pppm_t;
+      set_pppm(pppm_t, 1 / cores[i].executionTime, 1, 1, 1);
+      core.rt_power = core.rt_power + cores[i].rt_power * pppm_t;
+      rt_power = rt_power + cores[i].rt_power * pppm_t;
     }
   }
 
@@ -992,7 +996,7 @@ void Processor::displayEnergy(uint32_t indent, int plevel, bool is_tdp) {
         << std::endl;
     if (plevel > 1) {
       for (i = 0; i < numCore; i++) {
-        cores[i]->displayEnergy(indent + 4, plevel, is_tdp);
+        cores[i].displayEnergy(indent + 4, plevel, is_tdp);
         std::cout
             << "**************************************************************"
                "***************************"
@@ -1196,9 +1200,4 @@ void Processor::set_proc_param() {
   interface_ip.add_ecc_b_ = true;
 }
 
-Processor::~Processor() {
-  while (!cores.empty()) {
-    delete cores.back();
-    cores.pop_back();
-  }
-};
+Processor::~Processor(){};

@@ -89,7 +89,8 @@ private:
     ar &itlb;
     ar &dtlb;
     ar &exist;
-    Component::serialize(ar, version);
+    ar &Component::area;
+    // Component::serialize(ar, version);
   }
 };
 

@@ -109,11 +109,8 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &power_t;
-    ar &stats_t;
-    ar &tdp_stats;
-    ar &rtp_stats;
     ar &area_t;
+    ar &set_area;
     Component::serialize(ar, version);
   }
 };
