@@ -59,7 +59,7 @@ public:
   MemManU *mmu;
   EXECU exu;
   RENAMINGU *rnu;
-  Pipeline *corepipe;
+  Pipeline corepipe;
   UndiffCore undiffCore;
   SharedCache *l2cache;
   CoreDynParam coredynp;

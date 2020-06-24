@@ -52,7 +52,7 @@ Core::Core(const ParseXML *XML_interface,
    */
 
   XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
-      ifu=0; mmu=0; rnu=0; corepipe=0; l2cache=0;
+      ifu=0; mmu=0; rnu=0; l2cache=0;
 
   bool exit_flag = true;
 
@@ -97,20 +97,22 @@ Core::Core(const ParseXML *XML_interface,
     rnu->computeArea();
     rnu->set_stats(XML);
   }
-  corepipe = new Pipeline(&interface_ip, coredynp);
+  corepipe.set_params(&interface_ip, coredynp);
+  corepipe.computeArea();
+  
 
   if (coredynp.core_ty == OOO) {
     pipeline_area_per_unit =
-        (corepipe->area.get_area() * coredynp.num_pipelines) / 5.0;
+        (corepipe.area.get_area() * coredynp.num_pipelines) / 5.0;
     if (rnu->exist) {
       rnu->area.set_area(rnu->area.get_area() + pipeline_area_per_unit);
     }
   } else {
     pipeline_area_per_unit =
-        (corepipe->area.get_area() * coredynp.num_pipelines) / 4.0;
+        (corepipe.area.get_area() * coredynp.num_pipelines) / 4.0;
   }
 
-  // area.set_area(area.get_area()+ corepipe->area.get_area());
+  // area.set_area(area.get_area()+ corepipe.area.get_area());
   if (ifu->exist) {
     ifu->area.set_area(ifu->area.get_area() + pipeline_area_per_unit);
     area.set_area(area.get_area() + ifu->area.get_area());
@@ -179,7 +181,7 @@ void Core::computeEnergy(bool is_tdp) {
           coredynp.num_pipelines /
               num_units); // User need to feed a duty cycle to improve accuracy
       if (rnu->exist) {
-        rnu->power = rnu->power + corepipe->power * pppm_t;
+        rnu->power = rnu->power + corepipe.power * pppm_t;
         power = power + rnu->power;
       }
     }
@@ -192,11 +194,11 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units);
       //			cout << "IFU = " <<
       // ifu->power.readOp.dynamic*clockRate  << " W" << endl;
-      ifu->power = ifu->power + corepipe->power * pppm_t;
+      ifu->power = ifu->power + corepipe.power * pppm_t;
       //			cout << "IFU = " <<
       // ifu->power.readOp.dynamic*clockRate  << " W" << endl;
       // cout << "1/4 pipe = " <<
-      // corepipe->power.readOp.dynamic*clockRate/num_units  << " W" << endl;
+      // corepipe.power.readOp.dynamic*clockRate/num_units  << " W" << endl;
       power = power + ifu->power;
       //			cout << "core = " <<
       // power.readOp.dynamic*clockRate  << " W" << endl;
@@ -207,7 +209,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      lsu.power = lsu.power + corepipe->power * pppm_t;
+      lsu.power = lsu.power + corepipe.power * pppm_t;
       //			cout << "LSU = " <<
       // lsu.power.readOp.dynamic*clockRate  << " W" << endl;
       power = power + lsu.power;
@@ -220,7 +222,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      exu.power = exu.power + corepipe->power * pppm_t;
+      exu.power = exu.power + corepipe.power * pppm_t;
       //			cout << "EXE = " <<
       // exu.power.readOp.dynamic*clockRate  << " W" << endl;
       power = power + exu.power;
@@ -234,7 +236,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      mmu->power = mmu->power + corepipe->power * pppm_t;
+      mmu->power = mmu->power + corepipe.power * pppm_t;
       //			cout << "MMU = " <<
       // mmu->power.readOp.dynamic*clockRate  << " W" << endl;
       power = power + mmu->power;
@@ -273,7 +275,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
       if (rnu->exist) {
-        rnu->rt_power = rnu->rt_power + corepipe->power * pppm_t;
+        rnu->rt_power = rnu->rt_power + corepipe.power * pppm_t;
 
         rt_power = rt_power + rnu->rt_power;
       }
@@ -295,7 +297,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      ifu->rt_power = ifu->rt_power + corepipe->power * pppm_t;
+      ifu->rt_power = ifu->rt_power + corepipe.power * pppm_t;
       rt_power = rt_power + ifu->rt_power;
     }
     if (lsu.exist) {
@@ -313,7 +315,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
 
-      lsu.rt_power = lsu.rt_power + corepipe->power * pppm_t;
+      lsu.rt_power = lsu.rt_power + corepipe.power * pppm_t;
       rt_power = rt_power + lsu.rt_power;
     }
     if (exu.exist) {
@@ -330,7 +332,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      exu.rt_power = exu.rt_power + corepipe->power * pppm_t;
+      exu.rt_power = exu.rt_power + corepipe.power * pppm_t;
       rt_power = rt_power + exu.rt_power;
     }
     if (mmu->exist) {
@@ -348,7 +350,7 @@ void Core::computeEnergy(bool is_tdp) {
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units,
                coredynp.num_pipelines / num_units);
-      mmu->rt_power = mmu->rt_power + corepipe->power * pppm_t;
+      mmu->rt_power = mmu->rt_power + corepipe.power * pppm_t;
       rt_power = rt_power + mmu->rt_power;
     }
 
@@ -601,10 +603,6 @@ Core ::~Core() {
     mmu = 0;
   }
 
-  if (corepipe) {
-    delete corepipe;
-    corepipe = 0;
-  }
   if (l2cache) {
     delete l2cache;
     l2cache = 0;
