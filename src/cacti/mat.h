@@ -34,7 +34,11 @@
 
 #include "component.h"
 #include "decoder.h"
+#include "driver.h"
 #include "powergating.h"
+#include "predec.h"
+#include "predec_blk.h"
+#include "predec_blk_drv.h"
 #include "subarray.h"
 #include "wire.h"
 

@@ -39,6 +39,11 @@
 #include "parameter.h"
 #include "selection_logic.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class SchedulerU : public Component {
 public:
   const ParseXML *XML;
@@ -75,6 +80,28 @@ public:
 private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &ithCore;
+    ar &clockRate;
+    ar &executionTime;
+    ar &scktRatio;
+    ar &chip_PR_overhead;
+    ar &macro_PR_overhead;
+    ar &Iw_height;
+    ar &fp_Iw_height;
+    ar &ROB_height;
+    ar &int_inst_window;
+    ar &fp_inst_window;
+    ar &ROB;
+    ar &instruction_selection;
+    ar &exist;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __SCHEDULER_H__

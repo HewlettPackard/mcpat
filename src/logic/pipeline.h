@@ -42,6 +42,10 @@
 #include "parameter.h"
 #include "xmlParser.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -58,7 +62,8 @@ public:
   uca_org_t local_result;
   CoreDynParam coredynp;
   enum Device_ty device_ty;
-  bool is_core_pipeline, is_default;
+  bool is_core_pipeline;
+  bool is_default;
   double num_piperegs;
   //	int pipeline_stages;
   //	int tot_stage_vector, per_stage_vector;
@@ -73,6 +78,24 @@ public:
   void compute_stage_vector();
   void compute();
   ~Pipeline() { local_result.cleanup(); };
+
+private:
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &local_result;
+    ar &device_ty;
+    ar &is_core_pipeline;
+    ar &is_default;
+    ar &num_piperegs;
+    ar &process_ind;
+    ar &WNANDn;
+    ar &WNANDp;
+    ar &load_per_pipeline_stage;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __PIPELINE_H__

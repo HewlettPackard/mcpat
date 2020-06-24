@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT
+ *                                McPAT/CACTI
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -28,77 +28,54 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-#ifndef __DFF_CELL_H__
-#define __DFF_CELL_H__
 
-#include "XML_Parse.h"
-#include "arch_const.h"
-#include "basic_circuit.h"
-#include "basic_components.h"
-#include "cacti_interface.h"
+#ifndef __PREDEC_H__
+#define __PREDEC_H__
+
+#include "area.h"
 #include "component.h"
-#include "const.h"
-#include "decoder.h"
 #include "parameter.h"
-#include "xmlParser.h"
+#include "powergating.h"
+#include "predec_blk.h"
+#include "predec_blk_drv.h"
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/utility.hpp>
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <iostream>
+#include <vector>
 
-class DFFCell : public Component {
+class Predec : public Component {
 public:
-  DFFCell(bool _is_dram,
-          double _WdecNANDn,
-          double _WdecNANDp,
-          double _cell_load,
-          const InputParameter *configure_interface);
-  InputParameter l_ip;
-  bool is_dram;
-  double cell_load;
-  double WdecNANDn;
-  double WdecNANDp;
-  double clock_cap;
-  int model;
-  int n_switch;
-  int n_keep_1;
-  int n_keep_0;
-  int n_clock;
-  powerDef e_switch;
-  powerDef e_keep_1;
-  powerDef e_keep_0;
-  powerDef e_clock;
+  Predec(){};
+  void set_params(PredecBlkDrv *drv1, PredecBlkDrv *drv2);
+  Predec(PredecBlkDrv *drv1, PredecBlkDrv *drv2);
 
-  double fpfp_node_cap(unsigned int fan_in, unsigned int fan_out);
-  void compute_DFF_cell(void);
+  double compute_delays(double inrisetime); // return outrisetime
+
+  void leakage_feedback(double temperature);
+  PredecBlk *blk1;
+  PredecBlk *blk2;
+  PredecBlkDrv *drv1;
+  PredecBlkDrv *drv2;
+
+  powerDef block_power;
+  powerDef driver_power;
 
 private:
+  // returns <delay, risetime>
+  pair<double, double>
+  get_max_delay_before_decoder(pair<double, double> input_pair1,
+                               pair<double, double> input_pair2);
   // Serialization
   friend class boost::serialization::access;
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &is_dram;
-    ar &cell_load;
-    ar &WdecNANDn;
-    ar &WdecNANDp;
-    ar &clock_cap;
-    ar &model;
-    ar &n_switch;
-    ar &n_keep_1;
-    ar &n_keep_0;
-    ar &n_clock;
-    ar &e_switch;
-    ar &e_keep_1;
-    ar &e_keep_0;
-    ar &e_clock;
+    ar &block_power;
+    ar &driver_power;
     Component::serialize(ar, version);
   }
 };
 
-#endif //__DFF_CELL_H__
+#endif // __PREDEC_H__

@@ -41,6 +41,11 @@
 #include "regfile.h"
 #include "scheduler.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class EXECU : public Component {
 public:
   const ParseXML *XML;
@@ -86,6 +91,34 @@ public:
 private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &bypass;
+    ar &int_bypass;
+    ar &intTagBypass;
+    ar &int_mul_bypass;
+    ar &intTag_mul_Bypass;
+    ar &fp_bypass;
+    ar &fpTagBypass;
+    ar &fp_u;
+    ar &exeu;
+    ar &mul;
+    ar &scheu;
+    ar &rfu;
+    ar &lsq_height;
+    ar &macro_PR_overhead;
+    ar &chip_PR_overhead;
+    ar &scktRatio;
+    ar &executionTime;
+    ar &clockRate;
+    ar &exist;
+    ar &ithCore;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __EXEC_U_H__

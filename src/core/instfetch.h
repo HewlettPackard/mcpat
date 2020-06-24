@@ -61,21 +61,47 @@ public:
   inst_decoder ID_misc;
   bool exist;
 
-  InstFetchU(){init_params = false; init_stats = false;};
+  InstFetchU() {
+    init_params = false;
+    init_stats = false;
+  };
   void set_stats(const ParseXML *XML_interface);
   void set_params(const ParseXML *XML_interface,
-             int ithCore_,
-             InputParameter *interface_ip_,
-             const CoreDynParam &dyn_p_,
-             bool exsit = true);
+                  int ithCore_,
+                  InputParameter *interface_ip_,
+                  const CoreDynParam &dyn_p_,
+                  bool exsit = true);
   void computeArea();
   void computeDynamicPower(bool is_tdp = true);
   void displayEnergy(uint32_t indent = 0, int plevel = 100, bool is_tdp = true);
   ~InstFetchU();
 
-  private:
+private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &cache_p;
+    ar &icache;
+    ar &IB;
+    ar &BTB;
+    ar &BPT;
+    ar &ID_inst;
+    ar &ID_operand;
+    ar &ID_misc;
+    ar &exist;
+    ar &macro_PR_overhead;
+    ar &chip_PR_overhead;
+    ar &scktRatio;
+    ar &executionTime;
+    ar &clockRate;
+    ar &ithCore;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __INST_FETCH_U_H__

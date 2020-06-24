@@ -10,8 +10,15 @@
 #include "const.h"
 #include "decoder.h"
 #include "parameter.h"
+#include "predec.h"
+#include "predec_blk.h"
+#include "predec_blk_drv.h"
 #include "xmlParser.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -58,6 +65,29 @@ public:
 
 private:
   bool init_params;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &is_default;
+    ar &opcode_length;
+    ar &num_decoders;
+    ar &x86;
+    ar &num_decoder_segments;
+    ar &num_decoded_signals;
+    ar &local_result;
+    ar &device_ty;
+    ar &core_ty;
+    ar &final_dec;
+    ar &pre_dec;
+    ar &predec_blk1;
+    ar &predec_blk2;
+    ar &predec_blk_drv1;
+    ar &predec_blk_drv2;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif //__INST_DECODER_H__

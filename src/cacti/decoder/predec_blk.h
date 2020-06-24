@@ -1,5 +1,5 @@
 /*****************************************************************************
- *                                McPAT
+ *                                McPAT/CACTI
  *                      SOFTWARE LICENSE AGREEMENT
  *            Copyright 2012 Hewlett-Packard Development Company, L.P.
  *                          All Rights Reserved
@@ -28,54 +28,79 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.”
  *
  ***************************************************************************/
-#ifndef __DFF_CELL_H__
-#define __DFF_CELL_H__
 
-#include "XML_Parse.h"
-#include "arch_const.h"
-#include "basic_circuit.h"
-#include "basic_components.h"
-#include "cacti_interface.h"
+#ifndef __PREDEC_BLK_H__
+#define __PREDEC_BLK_H__
+
+#include "area.h"
 #include "component.h"
-#include "const.h"
 #include "decoder.h"
 #include "parameter.h"
-#include "xmlParser.h"
+#include "powergating.h"
 
 #include <boost/serialization/assume_abstract.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/utility.hpp>
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <iostream>
+#include <vector>
 
-class DFFCell : public Component {
+class PredecBlk : public Component {
 public:
-  DFFCell(bool _is_dram,
-          double _WdecNANDn,
-          double _WdecNANDp,
-          double _cell_load,
-          const InputParameter *configure_interface);
-  InputParameter l_ip;
-  bool is_dram;
-  double cell_load;
-  double WdecNANDn;
-  double WdecNANDp;
-  double clock_cap;
-  int model;
-  int n_switch;
-  int n_keep_1;
-  int n_keep_0;
-  int n_clock;
-  powerDef e_switch;
-  powerDef e_keep_1;
-  powerDef e_keep_0;
-  powerDef e_clock;
+  PredecBlk(){};
+  PredecBlk(int num_dec_signals,
+            Decoder *dec,
+            double C_wire_predec_blk_out,
+            double R_wire_predec_blk_out,
+            int num_dec_per_predec,
+            bool is_dram_,
+            bool is_blk1);
+  void set_params(int num_dec_signals,
+                  Decoder *dec,
+                  double C_wire_predec_blk_out,
+                  double R_wire_predec_blk_out,
+                  int num_dec_per_predec,
+                  bool is_dram_,
+                  bool is_blk1);
 
-  double fpfp_node_cap(unsigned int fan_in, unsigned int fan_out);
-  void compute_DFF_cell(void);
+  Decoder *dec;
+  bool exist;
+  int number_input_addr_bits;
+  double C_ld_predec_blk_out;
+  double R_wire_predec_blk_out;
+  int branch_effort_nand2_gate_output;
+  int branch_effort_nand3_gate_output;
+  bool flag_two_unique_paths;
+  int flag_L2_gate;
+  int number_inputs_L1_gate;
+  int number_gates_L1_nand2_path;
+  int number_gates_L1_nand3_path;
+  int number_gates_L2;
+  int min_number_gates_L1;
+  int min_number_gates_L2;
+  int num_L1_active_nand2_path;
+  int num_L1_active_nand3_path;
+  double w_L1_nand2_n[MAX_NUMBER_GATES_STAGE];
+  double w_L1_nand2_p[MAX_NUMBER_GATES_STAGE];
+  double w_L1_nand3_n[MAX_NUMBER_GATES_STAGE];
+  double w_L1_nand3_p[MAX_NUMBER_GATES_STAGE];
+  double w_L2_n[MAX_NUMBER_GATES_STAGE];
+  double w_L2_p[MAX_NUMBER_GATES_STAGE];
+  double delay_nand2_path;
+  double delay_nand3_path;
+  powerDef power_nand2_path;
+  powerDef power_nand3_path;
+  powerDef power_L2;
+
+  bool is_dram_;
+
+  void compute_widths();
+  void compute_area();
+
+  void leakage_feedback(double temperature);
+
+  pair<double, double>
+  compute_delays(pair<double, double> inrisetime); // <nand2, nand3>
+  // return <outrise_nand2, outrise_nand3>
 
 private:
   // Serialization
@@ -83,22 +108,8 @@ private:
 
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
-    ar &is_dram;
-    ar &cell_load;
-    ar &WdecNANDn;
-    ar &WdecNANDp;
-    ar &clock_cap;
-    ar &model;
-    ar &n_switch;
-    ar &n_keep_1;
-    ar &n_keep_0;
-    ar &n_clock;
-    ar &e_switch;
-    ar &e_keep_1;
-    ar &e_keep_0;
-    ar &e_clock;
     Component::serialize(ar, version);
   }
 };
 
-#endif //__DFF_CELL_H__
+#endif //__PREDEC_BLK_H__

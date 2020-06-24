@@ -15,4 +15,4 @@ add_library(logic
   undiff_core.cc
 )
 target_include_directories(logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(logic LINK_PUBLIC cacti top)
+target_link_libraries(logic LINK_PUBLIC cacti top decoder)

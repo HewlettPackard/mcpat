@@ -43,13 +43,15 @@
 #include <string>
 
 void InstFetchU::set_params(const ParseXML *XML_interface,
-                       int ithCore_,
-                       InputParameter *interface_ip_,
-                       const CoreDynParam &dyn_p_,
-                       bool exist_){
-  XML=XML_interface; ithCore=ithCore_; interface_ip=*interface_ip_;
-  coredynp=dyn_p_;
-  exist=exist_;
+                            int ithCore_,
+                            InputParameter *interface_ip_,
+                            const CoreDynParam &dyn_p_,
+                            bool exist_) {
+  XML = XML_interface;
+  ithCore = ithCore_;
+  interface_ip = *interface_ip_;
+  coredynp = dyn_p_;
+  exist = exist_;
   if (!exist)
     return;
   int idx, tag, data, size, line, assoc, banks;
@@ -105,7 +107,7 @@ void InstFetchU::set_params(const ParseXML *XML_interface,
                            Core_device,
                            coredynp.opt_local,
                            coredynp.core_ty);
-  
+
   scktRatio = g_tp.sckt_co_eff;
   chip_PR_overhead = g_tp.chip_layout_overhead;
   macro_PR_overhead = g_tp.macro_layout_overhead;
@@ -275,10 +277,10 @@ void InstFetchU::set_params(const ParseXML *XML_interface,
   interface_ip.num_wr_ports = 0;
   interface_ip.num_se_rd_ports = 0;
   IB.set_params(&interface_ip,
-                   "InstBuffer",
-                   Core_device,
-                   coredynp.opt_local,
-                   coredynp.core_ty);
+                "InstBuffer",
+                Core_device,
+                coredynp.opt_local,
+                coredynp.core_ty);
   // output_data_csv(IB.IB.local_result);
 
   //	  inst_decoder.opcode_length = XML->sys.core[ithCore].opcode_width;
@@ -340,13 +342,12 @@ void InstFetchU::set_params(const ParseXML *XML_interface,
     interface_ip.num_wr_ports = coredynp.predictionW;
     interface_ip.num_se_rd_ports = 0;
     BTB.set_params(&interface_ip,
-                      "Branch Target Buffer",
-                      Core_device,
-                      coredynp.opt_local,
-                      coredynp.core_ty);
+                   "Branch Target Buffer",
+                   Core_device,
+                   coredynp.opt_local,
+                   coredynp.core_ty);
     /// cout<<"area="<<area<<endl;
     BPT.set_params(XML, ithCore, &interface_ip, coredynp);
-
   }
 
   ID_inst.set_params(is_default,
@@ -366,23 +367,23 @@ void InstFetchU::set_params(const ParseXML *XML_interface,
                         coredynp.core_ty);
 
   ID_misc.set_params(is_default,
-                             &interface_ip,
-                             8 /* Prefix field etc upto 14B*/,
-                             1,
-                             coredynp.x86,
-                             Core_device,
-                             coredynp.core_ty);
+                     &interface_ip,
+                     8 /* Prefix field etc upto 14B*/,
+                     1,
+                     coredynp.x86,
+                     Core_device,
+                     coredynp.core_ty);
   init_params = true;
 }
 
-void InstFetchU::set_stats(const ParseXML *XML_interface){
-    if (coredynp.predictionW > 0) {
-      BPT.set_stats(XML);
-    }
+void InstFetchU::set_stats(const ParseXML *XML_interface) {
+  if (coredynp.predictionW > 0) {
+    BPT.set_stats(XML);
+  }
   init_stats = true;
 }
 
-void InstFetchU::computeArea(){
+void InstFetchU::computeArea() {
   if (!init_params) {
     std::cerr << "[ InstFetchU ] Error: must set params before calling "
                  "computeArea()\n";
@@ -394,7 +395,7 @@ void InstFetchU::computeArea(){
                        icache.caches.local_result.area);
   area.set_area(area.get_area() + icache.caches.local_result.area);
 
-    icache.missb.computeArea();
+  icache.missb.computeArea();
   icache.area.set_area(icache.area.get_area() + icache.missb.local_result.area);
   area.set_area(area.get_area() + icache.missb.local_result.area);
 
@@ -402,19 +403,19 @@ void InstFetchU::computeArea(){
   icache.area.set_area(icache.area.get_area() + icache.ifb.local_result.area);
   area.set_area(area.get_area() + icache.ifb.local_result.area);
 
-    icache.prefetchb.computeArea();
+  icache.prefetchb.computeArea();
   icache.area.set_area(icache.area.get_area() +
                        icache.prefetchb.local_result.area);
   area.set_area(area.get_area() + icache.prefetchb.local_result.area);
 
-    IB.computeArea();
+  IB.computeArea();
   IB.area.set_area(IB.area.get_area() + IB.local_result.area);
   area.set_area(area.get_area() + IB.local_result.area);
 
   if (coredynp.predictionW > 0) {
-        BPT.computeArea();
+    BPT.computeArea();
     area.set_area(area.get_area() + BPT.area.get_area());
-        BTB.computeArea();
+    BTB.computeArea();
     BTB.area.set_area(BTB.area.get_area() + BTB.local_result.area);
     area.set_area(area.get_area() + BTB.local_result.area);
   }
@@ -422,9 +423,8 @@ void InstFetchU::computeArea(){
   ID_misc.computeArea();
   ID_operand.computeArea();
   ID_inst.computeArea();
-  //ID_inst.computeDynamicPower();
+  // ID_inst.computeDynamicPower();
 
-  
   // TODO: X86 decoder should decode the inst in cyclic mode under the control
   // of squencer. So the dynamic power should be multiplied by a few times.
   area.set_area(area.get_area() +
@@ -441,7 +441,7 @@ void InstFetchU::computeDynamicPower(bool is_tdp) {
     std::cerr << "[ InstFetchU ] Error: must set params before calling "
                  "computeDynamicPower()\n";
     exit(1);
-  }  
+  }
   if (is_tdp) {
     // init stats for Peak
     icache.caches.stats_t.readAc.access =
@@ -588,7 +588,7 @@ void InstFetchU::computeDynamicPower(bool is_tdp) {
     //    			(icache.missb.local_result.power +
     //    			icache.ifb.local_result.power +
     //    			icache.prefetchb.local_result.power)*pppm_Isub;
-    
+
     ID_misc.computeDynamicPower();
     ID_operand.computeDynamicPower();
     ID_inst.computeDynamicPower();

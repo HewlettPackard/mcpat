@@ -42,6 +42,10 @@
 #include "parameter.h"
 #include "xmlParser.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
 #include <cassert>
 #include <cmath>
 #include <cstring>
@@ -57,7 +61,13 @@ public:
                               bool _is_default = true);
   InputParameter l_ip;
   uca_org_t local_result;
-  double WNORn, WNORp, Wevalinvp, Wevalinvn, Wcompn, Wcompp, Wcomppreequ;
+  double WNORn;
+  double WNORp;
+  double Wevalinvp;
+  double Wevalinvn;
+  double Wcompn;
+  double Wcompp;
+  double Wcomppreequ;
   CoreDynParam coredynp;
   int compare_bits;
   bool is_default;
@@ -76,6 +86,25 @@ public:
   ~dep_resource_conflict_check() { local_result.cleanup(); }
 
   void leakage_feedback(double temperature);
+
+private:
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &local_result;
+    ar &WNORn;
+    ar &WNORp;
+    ar &Wevalinvp;
+    ar &Wevalinvn;
+    ar &Wcompn;
+    ar &Wcompp;
+    ar &Wcomppreequ;
+    ar &compare_bits;
+    ar &is_default;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __DEP_RESOURCE_CONFLICT_CHECK_H__

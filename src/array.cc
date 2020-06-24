@@ -239,11 +239,12 @@ void ArrayST::optimize_array() {
       // a result with best timing found
       if (throughput_overflow == true)
         std::cerr << "Warning: " << name
-             << " array structure cannot satisfy throughput constraint."
-             << std::endl;
+                  << " array structure cannot satisfy throughput constraint."
+                  << std::endl;
       if (latency_overflow == true)
         std::cerr << "Warning: " << name
-             << " array structure cannot satisfy latency constraint." << std::endl;
+                  << " array structure cannot satisfy latency constraint."
+                  << std::endl;
     }
 
     //	else

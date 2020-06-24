@@ -38,6 +38,11 @@
 #include "interconnect.h"
 #include "parameter.h"
 
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/utility.hpp>
+
 class BranchPredictor : public Component {
 public:
   const ParseXML *XML;
@@ -73,6 +78,27 @@ public:
 private:
   bool init_params;
   bool init_stats;
+
+  // Serialization
+  friend class boost::serialization::access;
+
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &ithCore;
+    ar &clockRate;
+    ar &executionTime;
+    ar &scktRatio;
+    ar &chip_PR_overhead;
+    ar &macro_PR_overhead;
+    ar &globalBPT;
+    ar &localBPT;
+    ar &L1_localBPT;
+    ar &L2_localBPT;
+    ar &chooser;
+    ar &RAS;
+    ar &exist;
+    Component::serialize(ar, version);
+  }
 };
 
 #endif // __BRANCH_PREDICTOR__
