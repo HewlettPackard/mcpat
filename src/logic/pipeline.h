@@ -53,7 +53,8 @@
 
 class Pipeline : public Component {
 public:
-  Pipeline(const InputParameter *configure_interface,
+  Pipeline(){};
+  void set_params(const InputParameter *configure_interface,
            const CoreDynParam &dyn_p_,
            enum Device_ty device_ty_ = Core_device,
            bool _is_core_pipeline = true,
@@ -75,8 +76,8 @@ public:
   // commitWidth, instruction_length; 	int  PC_width, opcode_length,
   // num_arch_reg_tag, data_width,num_phsical_reg_tag, address_width; 	bool
   // thread_clock_gated; 	bool in_order, multithreaded;
+  void computeArea();
   void compute_stage_vector();
-  void compute();
   ~Pipeline() { local_result.cleanup(); };
 
 private:

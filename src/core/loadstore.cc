@@ -391,7 +391,7 @@ void LoadStoreU::computeArea() {
   area.set_area(area.get_area() * cdb_overhead);
 }
 
-void LoadStoreU::computePower(bool is_tdp) {
+void LoadStoreU::computeDynamicPower(bool is_tdp) {
   if (!exist) {
     return;
   }
