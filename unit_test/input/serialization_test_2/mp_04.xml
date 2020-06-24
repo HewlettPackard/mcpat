@@ -1,0 +1,533 @@
+<?xml version="1.0" ?>
+<component id="root" name="root">
+  <component id="system" name="system">
+    <!--param, Private_L2, 1: Private; 0: shared/coherent-->
+    <param name="Private_L2" value="1"/>
+    <!--param, core_tech_node, Tech Process Node-->
+    <param name="core_tech_node" value="22"/>
+    <!--param, device_type, 0: High Performance Type; 1: Low Standby Power; 2: Low Operating Power-->
+    <param name="device_type" value="0"/>
+    <!--param, homogeneous_L1Directories, 1: Homogeneous L1 Directory; Heterogeneous L1 Directory statistics-->
+    <param name="homogeneous_L1Directories" value="1"/>
+    <!--param, homogeneous_L2Directories, 1: Homogeneous L2 Directory; Heterogeneous L2 Directory statistics-->
+    <param name="homogeneous_L2Directories" value="1"/>
+    <!--param, homogeneous_L2s, 1: Homogeneous L2; Heterogeneous L2 statistics-->
+    <param name="homogeneous_L2s" value="1"/>
+    <!--param, homogeneous_L3s, 1: Homogeneous L3; Heterogeneous L3 statistics-->
+    <param name="homogeneous_L3s" value="1"/>
+    <!--param, homogeneous_NoCs, 1: Homogeneous Network on Chip; Heterogeneous Network on Chip statistics-->
+    <param name="homogeneous_NoCs" value="1"/>
+    <!--param, homogeneous_ccs, 1: Homogeneous Cache Controller; Heterogeneous Cache Controller statistics-->
+    <param name="homogeneous_ccs" value="1"/>
+    <!--param, homogeneous_cores, 1: Homogeneous cores; 0: Heterogeneous core statistics-->
+    <param name="homogeneous_cores" value="1"/>
+    <!--param, interconnect_projection_type, 0: Aggressive Wire Technology; 1: Conservative Wire Technology-->
+    <param name="interconnect_projection_type" value="0"/>
+    <!--param, longer_channel_device, 0: No use; 1: Use when possible-->
+    <param name="longer_channel_device" value="1"/>
+    <!--param, machine_bits, n-Bit machine-->
+    <param name="machine_bits" value="64"/>
+    <!--param, number_cache_levels, -->
+    <param name="number_cache_levels" value="3"/>
+    <!--param, number_of_L1Directories, The number of L1 Directories-->
+    <param name="number_of_L1Directories" value="1"/>
+    <!--param, number_of_L2Directories, The number of L2 Directories-->
+    <param name="number_of_L2Directories" value="1"/>
+    <!--param, number_of_L2s, The number of L2s in each Cluster-->
+    <param name="number_of_L2s" value="1"/>
+    <!--param, number_of_L3s, Number of L3 Caches-->
+    <param name="number_of_L3s" value="1"/>
+    <!--param, number_of_NoCs, Number of NoCs-->
+    <param name="number_of_NoCs" value="1"/>
+    <!--param, number_of_cores, The number of cores-->
+    <param name="number_of_cores" value="1"/>
+    <!--param, physical_address_width, m-Bit physical address-->
+    <param name="physical_address_width" value="52"/>
+    <!--param, power_gating, 0: not enabled; 1: enabled-->
+    <param name="power_gating" value="1"/>
+    <!--param, target_core_clockrate, Core Clock Rate in MHz-->
+    <param name="target_core_clockrate" value="4000.0"/>
+    <!--param, temperature, System Temperature in Kelvin-->
+    <param name="temperature" value="380.0"/>
+    <!--param, virtual_address_width, n-Bit virtual address-->
+    <param name="virtual_address_width" value="64"/>
+    <!--param, virtual_memory_page_size, Virtual memory page size-->
+    <param name="virtual_memory_page_size" value="4096"/>
+    <!--stat, busy_cycles, Total Busy Cycles (Total - Idle)-->
+    <stat name="busy_cycles" value="10"/>
+    <!--stat, idle_cycles, Total Idle Cycles-->
+    <stat name="idle_cycles" value="0"/>
+    <!--stat, total_cycles, Total CPU Cycles-->
+    <stat name="total_cycles" value="10"/>
+    <component id="system.core0" name="core0">
+      <!--param, ALU_per_core, contains an adder, a shifter, and a logical unit-->
+      <param name="ALU_per_core" value="6"/>
+      <!--param, FPU_per_core, buffer between IF and ID stage-->
+      <param name="FPU_per_core" value="6"/>
+      <!--param, LSU_order, Load/Store Unit (LSU) Ordering-->
+      <param name="LSU_order" value="inorder"/>
+      <!--param, MUL_per_core, For MUL and Div-->
+      <param name="MUL_per_core" value="2"/>
+      <!--param, RAS_size, Branch Predictor RAS Size-->
+      <param name="RAS_size" value="16"/>
+      <!--param, ROB_size, Each in-flight instruction has an entry in ROB(cpu.numROBEntries)-->
+      <param name="ROB_size" value="192"/>
+      <!--param, archi_Regs_FRF_size, Number of Architectural Registers specified by the ISA:MMX + XMM-->
+      <param name="archi_Regs_FRF_size" value="32"/>
+      <!--param, archi_Regs_IRF_size, Number of Architectural Integer General PurposeRegisters specified by the ISA: X86-64 has 16GPR-->
+      <param name="archi_Regs_IRF_size" value="16"/>
+      <!--param, checkpoint_depth, RAM and CAM RAT contains checkpoints, checkpoint_depth=# of in_flight speculations; RAM-based RAT should not have more than 4 GCs (e.g., MIPS R10000).  McPAT assumes the exsistance of RRAT when the RAM-RAT having no GCs (e.g., Netburst) CAM-based RAT should have at least 1 GC and can have more than 8 GCs.-->
+      <param name="checkpoint_depth" value="0"/>
+      <!--param, clock_rate, Clock Rate in MHz-->
+      <param name="clock_rate" value="4000.0"/>
+      <!--param, commit_width, commit_width determines the number of ports of registerfiles (cpu.commitWidth)-->
+      <param name="commit_width" value="8"/>
+      <!--param, decode_width, decode_width determines the number of ports of therenaming table (both RAM and CAM) scheme (cpu.decodeWidth)-->
+      <param name="decode_width" value="8"/>
+      <!--param, decoded_stream_buffer_size, -->
+      <param name="decoded_stream_buffer_size" value="16"/>
+      <!--param, fetch_width, (cpu.fetchWidth)-->
+      <param name="fetch_width" value="8"/>
+      <!--param, fp_instruction_window_size, The instruction issue Q as in Alpha 21264; The RS as inIntel P6 (cpu.numIQEntries)-->
+      <param name="fp_instruction_window_size" value="64"/>
+      <!--param, fp_issue_width, Issue width of the Floating Poing Unit-->
+      <param name="fp_issue_width" value="4"/>
+      <!--param, instruction_buffer_size, buffer between ID and sche/exe stage-->
+      <param name="instruction_buffer_size" value="64"/>
+      <!--param, instruction_length, -->
+      <param name="instruction_length" value="32"/>
+      <!--param, instruction_window_scheme, 0 PHYREG based, 1 RSBASED. McPAT support 2 types of OoOcores, RS based and physical reg based-->
+      <param name="instruction_window_scheme" value="0"/>
+      <!--param, instruction_window_size, (cpu.numIQEntries)-->
+      <param name="instruction_window_size" value="64"/>
+      <!--param, issue_width, (cpu.issueWidth)-->
+      <param name="issue_width" value="8"/>
+      <!--param, load_buffer_size, By default, in-order cores do not have load buffers (cpu.LQEntries)-->
+      <param name="load_buffer_size" value="32"/>
+      <!--param, machine_type, Specifies the machine type inorder/OoO; 1inorder; 0 OOO-->
+      <param name="machine_type" value="0"/>
+      <!--param, memory_ports, max_allowed_in_flight_memo_instructions determines the # of ports of load and store buffer as well as the ports of Dcache which is connected to LSU. Dual-pumped Dcache can be used to save the extra read/write ports. Number of ports refer to sustain-able concurrent memory accesses-->
+      <param name="memory_ports" value="2"/>
+      <!--param, micro_opcode_width, -->
+      <param name="micro_opcode_width" value="8"/>
+      <!--param, number_hardware_threads, number_instruction_fetch_ports(icache ports) is always 1in single-thread processor, it only may be more than one inSMT processors. BTB ports always equals to fetch ports sincebranch information in consecutive branch instructions in thesame fetch group can be read out from BTB once.(cpu.numThreads)-->
+      <param name="number_hardware_threads" value="1"/>
+      <!--param, number_instruction_fetch_ports, fetch_width determines the size of cachelines of L1cache block-->
+      <param name="number_instruction_fetch_ports" value="1"/>
+      <!--param, number_of_BPT, Number of Branch Predictor Tables (BPT)-->
+      <param name="number_of_BPT" value="1"/>
+      <!--param, number_of_BTB, Number of Branch Target Buffers (BTB)-->
+      <param name="number_of_BTB" value="1"/>
+      <!--param, opcode_width, -->
+      <param name="opcode_width" value="16"/>
+      <!--param, opt_local, for cores with unknown timing, set to 0 toforce off the opt flag-->
+      <param name="opt_local" value="0"/>
+      <!--param, peak_issue_width, issue_width determines the number of ports of Issuewindow and other logic as in the complexity effectiveprocessors paper; issue_width==dispatch_width(cpu.issueWidth)-->
+      <param name="peak_issue_width" value="8"/>
+      <!--param, phy_Regs_FRF_size, Number of Physical FP Registers (cpu.numPhysFloatRegs)-->
+      <param name="phy_Regs_FRF_size" value="256"/>
+      <!--param, phy_Regs_IRF_size, Number of Physical Integer Registers (cpu.numPhysIntRegs)-->
+      <param name="phy_Regs_IRF_size" value="256"/>
+      <!--param, pipeline_depth, pipeline depth of int and fp, if pipeline is shared,the second number is the average cycles of fp ops issue andexe unit-->
+      <param name="pipeline_depth" value="31,31"/>
+      <!--param, pipelines_per_core, Current version of McPAT does not distinguish int andfloating point pipelines. Theses parameters are reserved forfuture use. integer_pipeline and floating_pipelines, if thefloating_pipelines is 0, then the pipeline is shared-->
+      <param name="pipelines_per_core" value="1,1"/>
+      <!--param, power_gating_vcc, "-1" means using default power gating virtual powersupply voltage constrained by technology and computedautomatically-->
+      <param name="power_gating_vcc" value="-1"/>
+      <!--param, prediction_width, number of branch instructions can be predictedsimultaneously-->
+      <param name="prediction_width" value="1"/>
+      <!--param, register_windows_size, How many windows in the windowed register file, sun processors; no register windowing is used when this number is 0. In OoO cores, loads and stores can be issued whether inorder(Pentium Pro) or (OoO)out-of-order(Alpha), They will always try to execute out-of-order though.-->
+      <param name="register_windows_size" value="0"/>
+      <!--param, rename_scheme, can be RAM based(0) or CAM based(1) rename scheme RAM-based scheme will have free list, status table; CAM-based scheme have the valid bit in the data field of the CAM-->
+      <param name="rename_scheme" value="0"/>
+      <!--param, store_buffer_size, Store Queue Entries (cpu.SQEntries)-->
+      <param name="store_buffer_size" value="32"/>
+      <!--param, vdd, 0 means using ITRS default vdd-->
+      <param name="vdd" value="1.0"/>
+      <!--param, x86, -->
+      <param name="x86" value="1"/>
+      <!--stat, ALU_cdb_duty_cycle, -->
+      <stat name="ALU_cdb_duty_cycle" value="1"/>
+      <!--stat, ALU_duty_cycle, -->
+      <stat name="ALU_duty_cycle" value="1"/>
+      <!--stat, FPU_cdb_duty_cycle, -->
+      <stat name="FPU_cdb_duty_cycle" value="0.3"/>
+      <!--stat, FPU_duty_cycle, -->
+      <stat name="FPU_duty_cycle" value="0.3"/>
+      <!--stat, IFU_duty_cycle, -->
+      <stat name="IFU_duty_cycle" value="0.25"/>
+      <!--stat, LSU_duty_cycle, -->
+      <stat name="LSU_duty_cycle" value="0.25"/>
+      <!--stat, MUL_cdb_duty_cycle, -->
+      <stat name="MUL_cdb_duty_cycle" value="0.3"/>
+      <!--stat, MUL_duty_cycle, -->
+      <stat name="MUL_duty_cycle" value="0.3"/>
+      <!--stat, MemManU_D_duty_cycle, -->
+      <stat name="MemManU_D_duty_cycle" value="0.25"/>
+      <!--stat, MemManU_I_duty_cycle, -->
+      <stat name="MemManU_I_duty_cycle" value="0.25"/>
+      <!--stat, ROB_reads, cpu.rob.rob_reads-->
+      <stat name="ROB_reads" value="14"/>
+      <!--stat, ROB_writes, cpu.rob.rob_writes-->
+      <stat name="ROB_writes" value="4"/>
+      <!--stat, branch_instructions, cpu.branchPred.condPredicted-->
+      <stat name="branch_instructions" value="0"/>
+      <!--stat, branch_mispredictions, cpu.branchPred.condIncorrect-->
+      <stat name="branch_mispredictions" value="0"/>
+      <!--stat, busy_cycles, cpu.numCycles - cpu.idleCycles-->
+      <stat name="busy_cycles" value="10"/>
+      <!--stat, cdb_alu_accesses, cpu.iq.int_alu_accesses-->
+      <stat name="cdb_alu_accesses" value="0"/>
+      <!--stat, cdb_fpu_accesses, cpu.iq.fp_alu_accesses-->
+      <stat name="cdb_fpu_accesses" value="0"/>
+      <!--stat, cdb_mul_accesses, cpu.iq.fp_alu_accesses-->
+      <stat name="cdb_mul_accesses" value="0"/>
+      <!--stat, committed_fp_instructions, cpu.commit.fp_insts-->
+      <stat name="committed_fp_instructions" value="0"/>
+      <!--stat, committed_instructions, cpu.commit.committedOps-->
+      <stat name="committed_instructions" value="4"/>
+      <!--stat, committed_int_instructions, cpu.commit.int_insts-->
+      <stat name="committed_int_instructions" value="4"/>
+      <!--stat, context_switches, cpu.workload.num_syscalls-->
+      <stat name="context_switches" value="0"/>
+      <!--stat, float_regfile_reads, cpu.fp_regfile_reads-->
+      <stat name="float_regfile_reads" value="0"/>
+      <!--stat, float_regfile_writes, cpu.fp_regfile_writes-->
+      <stat name="float_regfile_writes" value="0"/>
+      <!--stat, fp_inst_window_reads, cpu.iq.fp_inst_queue_reads-->
+      <stat name="fp_inst_window_reads" value="0"/>
+      <!--stat, fp_inst_window_wakeup_accesses, cpu.iq.fp_inst_queue_wakeup_accesses-->
+      <stat name="fp_inst_window_wakeup_accesses" value="0"/>
+      <!--stat, fp_inst_window_writes, cpu.iq.fp_inst_queue_writes-->
+      <stat name="fp_inst_window_writes" value="0"/>
+      <!--stat, fp_instructions, cpu.iq.FU_type_0::FloatAdd + cpu.iq.FU_type_0::FloatCmp+ cpu.iq.FU_type_0::FloatCvt + cpu.iq.FU_type_0::FloatMult +cpu.iq.FU_type_0::FloatDiv + cpu.iq.FU_type_0::FloatSqrt-->
+      <stat name="fp_instructions" value="0"/>
+      <!--stat, fp_rename_reads, cpu.rename.fp_rename_lookups-->
+      <stat name="fp_rename_reads" value="0"/>
+      <!--stat, fp_rename_writes, cpu.rename.RenamedOperands * cpu.rename.fp_rename_lookups / cpu.rename.RenameLookups-->
+      <stat name="fp_rename_writes" value="0"/>
+      <!--stat, fpu_accesses, cpu.iq.fp_alu_accesses-->
+      <stat name="fpu_accesses" value="0"/>
+      <!--stat, function_calls, cpu.commit.function_calls-->
+      <stat name="function_calls" value="0"/>
+      <!--stat, ialu_accesses, cpu.iq.int_alu_accesses-->
+      <stat name="ialu_accesses" value="0"/>
+      <!--stat, idle_cycles, cpu.idleCycles-->
+      <stat name="idle_cycles" value="1"/>
+      <!--stat, inst_window_reads, cpu.iq.int_inst_queue_reads-->
+      <stat name="inst_window_reads" value="10"/>
+      <!--stat, inst_window_wakeup_accesses, cpu.iq.int_inst_queue_wakeup_accesses-->
+      <stat name="inst_window_wakeup_accesses" value="0"/>
+      <!--stat, inst_window_writes, cpu.iq.int_inst_queue_writes-->
+      <stat name="inst_window_writes" value="0"/>
+      <!--stat, int_instructions, iq.FU_type_0::No_OpClass + iq.FU_type_0::IntAlu +iq.FU_type_0::IntMult + iq.FU_type_0::IntDiv +iq.FU_type_0::IprAccess-->
+      <stat name="int_instructions" value="1"/>
+      <!--stat, int_regfile_reads, cpu.int_regfile_reads-->
+      <stat name="int_regfile_reads" value="0"/>
+      <!--stat, int_regfile_writes, cpu.int_regfile_writes-->
+      <stat name="int_regfile_writes" value="0"/>
+      <!--stat, load_instructions, cpu.iq.FU_type_0::MemRead + cpu.iq.FU_type_0::InstPrefetch-->
+      <stat name="load_instructions" value="0"/>
+      <!--stat, mul_accesses, cpu.iq.fu_full::FloatMult-->
+      <stat name="mul_accesses" value="0"/>
+      <!--stat, pipeline_duty_cycle, <=1, runtime_ipc/peak_ipc; averaged for all cores ifhomogeneous-->
+      <stat name="pipeline_duty_cycle" value="0.2"/>
+      <!--stat, rename_reads, lookup in renaming logic (cpu.rename.int_rename_lookups)-->
+      <stat name="rename_reads" value="0"/>
+      <!--stat, rename_writes, cpu.rename.RenamedOperands * cpu.rename.int_rename_lookups / cpu.rename.RenameLookups-->
+      <stat name="rename_writes" value="0"/>
+      <!--stat, store_instructions, cpu.iq.FU_type_0::MemWrite-->
+      <stat name="store_instructions" value="0"/>
+      <!--stat, total_cycles, cpu.numCycles-->
+      <stat name="total_cycles" value="11"/>
+      <!--stat, total_instructions, cpu.iq.iqInstsIssued-->
+      <stat name="total_instructions" value="1"/>
+      <component id="system.core0.predictor" name="PBT">
+        <!--param, chooser_predictor_bits, Bits per entry in the chooser-->
+        <param name="chooser_predictor_bits" value="2"/>
+        <!--param, chooser_predictor_entries, Number of entries in the Chooser-->
+        <param name="chooser_predictor_entries" value="8192"/>
+        <!--param, global_predictor_bits, Bits per entry in Global Predictor-->
+        <param name="global_predictor_bits" value="2"/>
+        <!--param, global_predictor_entries, Global Predictor Entries-->
+        <param name="global_predictor_entries" value="8192"/>
+        <!--param, local_predictor_entries, Number of Entries in Local Predictor-->
+        <param name="local_predictor_entries" value="2048"/>
+        <!--param, local_predictor_size, Local Predictor Size-->
+        <param name="local_predictor_size" value="2048"/>
+      </component>
+      <component id="system.core0.itlb" name="itlb">
+        <!--param, number_entries, TLB Size; tlb.size-->
+        <param name="number_entries" value="64"/>
+        <!--stat, conflicts, Conflicts to entries in the TLB-->
+        <stat name="conflicts" value="0"/>
+        <!--stat, total_accesses, Total Acceses; dtb_walker_cache.tags.data_accesses-->
+        <stat name="total_accesses" value="0"/>
+        <!--stat, total_misses, Total Misses; dtb_walker_cache.tags.data_accesses-->
+        <stat name="total_misses" value="0"/>
+      </component>
+      <component id="system.core0.icache" name="icache">
+        <!--param, buffer_sizes, Cache controller buffer sizes:miss_buffer_size(MSHR), fill_buffer_size,prefetch_buffer_size, wb_buffer_size-->
+        <param name="buffer_sizes" value="4,4,4,4"/>
+        <!--param, icache_config, Cache Capacity, Block Width,Associativity, Bank, Throughput w.r.t. core clock, Latencyw.r.t. core clock, Output Width, Cache Policy: 0 no write orwrite-though with non-write allocate; 1 write-back withwrite-allocate-->
+        <param name="icache_config" value="32768,64,2,1,1,2,64,0"/>
+        <!--stat, conflicts, Cache Replacements-->
+        <stat name="conflicts" value="0"/>
+        <!--stat, read_accesses, Cache Read Accesses Total-->
+        <stat name="read_accesses" value="0"/>
+        <!--stat, read_misses, Cache Read Req Misses Total-->
+        <stat name="read_misses" value="0"/>
+      </component>
+      <component id="system.core0.dtlb" name="dtlb">
+        <!--param, number_entries, TLB Size; tlb.size-->
+        <param name="number_entries" value="64"/>
+        <!--stat, conflicts, Conflicts to entries in the TLB-->
+        <stat name="conflicts" value="0"/>
+        <!--stat, total_accesses, Total Acceses; dtb_walker_cache.tags.data_accesses-->
+        <stat name="total_accesses" value="0"/>
+        <!--stat, total_misses, Total Misses; dtb_walker_cache.tags.data_accesses-->
+        <stat name="total_misses" value="0"/>
+      </component>
+      <component id="system.core0.dcache" name="dcache">
+        <!--param, buffer_sizes, Cache controller buffer sizes:miss_buffer_size(MSHR), fill_buffer_size,prefetch_buffer_size, wb_buffer_size-->
+        <param name="buffer_sizes" value="4,4,4,4"/>
+        <!--param, dcache_config, Cache Capacity, Block Width,Associativity, Bank, Throughput w.r.t. core clock, Latencyw.r.t. core clock, Output Width, Cache Policy: 0 no write orwrite-though with non-write allocate; 1 write-back withwrite-allocate-->
+        <param name="dcache_config" value="65536,64,2,1,1,2,64,0"/>
+        <!--stat, conflicts, Cache Replacements-->
+        <stat name="conflicts" value="0"/>
+        <!--stat, read_accesses, Cache Read Accesses Total-->
+        <stat name="read_accesses" value="0"/>
+        <!--stat, read_misses, Cache Read Req Misses Total-->
+        <stat name="read_misses" value="0"/>
+        <!--stat, write_accesses, Cache Write Accesses Total-->
+        <stat name="write_accesses" value="3"/>
+        <!--stat, write_misses, Cache Write Req Misses Total-->
+        <stat name="write_misses" value="0"/>
+      </component>
+      <component id="system.core0.BTB" name="BTB">
+        <!--param, BTB_config, Should be 4096 + 1024 all the buffer related are optional the parameters are capacity,block_width,associativity,bank, throughput w.r.t. core clock, latency w.r.t. core clock-->
+        <param name="BTB_config" value="4096,16,2,1,1,3"/>
+        <!--stat, read_accesses, Lookups into BTB; branchPred.BTBLookups-->
+        <stat name="read_accesses" value="0"/>
+        <!--stat, write_accesses, Number of Updates to the CAM; commit.branches-->
+        <stat name="write_accesses" value="0"/>
+      </component>
+    </component>
+    <component id="system.L1Directory0" name="L1Directory0">
+      <!--param, Dir_config, cam based shadowed tag. 1 directory cache-->
+      <param name="Dir_config" value="512,4,0,1,1, 1"/>
+      <!--param, Directory_type, -->
+      <param name="Directory_type" value="0"/>
+      <!--param, buffer_sizes, the parameters are capacity,block_width,associativity,bank, throughput w.r.t. core clock, latency w.r.t.core clock, all the buffer related are optional-->
+      <param name="buffer_sizes" value="16, 16, 16, 16"/>
+      <!--param, clockrate, Clock rate in MHz-->
+      <param name="clockrate" value="1000"/>
+      <!--param, device_type, -->
+      <param name="device_type" value="0"/>
+      <!--param, ports, number of r, w, and rw search ports-->
+      <param name="ports" value="1,1,1"/>
+      <!--stat, conflicts, Conflicts-->
+      <stat name="conflicts" value="0"/>
+      <!--stat, read_accesses, Read Accesses to the directory controller-->
+      <stat name="read_accesses" value="0"/>
+      <!--stat, read_misses, Read Misses-->
+      <stat name="read_misses" value="0"/>
+      <!--stat, write_accesses, Write Accesses to the directory controller-->
+      <stat name="write_accesses" value="0"/>
+      <!--stat, write_misses, Write Misses-->
+      <stat name="write_misses" value="0"/>
+    </component>
+    <component id="system.L2Directory0" name="L2Directory0">
+      <!--param, Dir_config, cam based shadowed tag. 1 directory cache-->
+      <param name="Dir_config" value="512,4,0,1,1, 1"/>
+      <!--param, Directory_type, -->
+      <param name="Directory_type" value="0"/>
+      <!--param, buffer_sizes, the parameters are capacity,block_width,associativity,bank, throughput w.r.t. core clock, latency w.r.t.core clock, all the buffer related are optional-->
+      <param name="buffer_sizes" value="16, 16, 16, 16"/>
+      <!--param, clockrate, Clock rate in MHz-->
+      <param name="clockrate" value="1000"/>
+      <!--param, device_type, -->
+      <param name="device_type" value="0"/>
+      <!--param, ports, number of r, w, and rw search ports-->
+      <param name="ports" value="1,1,1"/>
+      <!--stat, conflicts, Conflicts-->
+      <stat name="conflicts" value="0"/>
+      <!--stat, read_accesses, Read Accesses to the directory controller-->
+      <stat name="read_accesses" value="0"/>
+      <!--stat, read_misses, Read Misses-->
+      <stat name="read_misses" value="0"/>
+      <!--stat, write_accesses, Write Accesses to the directory controller-->
+      <stat name="write_accesses" value="0"/>
+      <!--stat, write_misses, Write Misses-->
+      <stat name="write_misses" value="0"/>
+    </component>
+    <component id="system.L20" name="L20">
+      <!--param, buffer_sizes, Cache controller buffer sizes: miss_buffer_size(MSHR), fill_buffer_size, prefetch_buffer_size, wb_buffer_size-->
+      <param name="buffer_sizes" value="20,20,20,20"/>
+      <!--param, clockrate, Clock rate in MHz-->
+      <param name="clockrate" value="4000.0"/>
+      <!--param, config, Cache Capacity, Block Width, Associativity, Bank, Throughput w.r.t. core clock, Latency w.r.t. core clock, Output Width, Cache Policy: 0 no write or write-though with non-write allocate; 1 write-back with write-allocate-->
+      <param name="config" value="262144,64,8,1,1,20,64,0"/>
+      <!--param, device_type, 0: HP, 1: LP-->
+      <param name="device_type" value="0"/>
+      <!--param, ports, Number of R, W, RW ports-->
+      <param name="ports" value="1,1,1"/>
+      <!--param, power_gating_vcc, -1 means default power gating-->
+      <param name="power_gating_vcc" value="-1"/>
+      <!--param, vdd, Voltage-->
+      <param name="vdd" value="1.0"/>
+      <!--stat, conflicts, Cache Replacements-->
+      <stat name="conflicts" value="0"/>
+      <!--stat, duty_cycle, -->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, read_accesses, Cache Read Accesses Total-->
+      <stat name="read_accesses" value="0"/>
+      <!--stat, read_misses, Cache Read Req Misses Total-->
+      <stat name="read_misses" value="0"/>
+      <!--stat, write_accesses, Cache Write Accesses Total-->
+      <stat name="write_accesses" value="0"/>
+      <!--stat, write_misses, Cache Write Req Misses Total-->
+      <stat name="write_misses" value="0"/>
+    </component>
+    <component id="system.L30" name="L30">
+      <!--param, buffer_sizes, Cache controller buffer sizes: miss_buffer_size(MSHR), fill_buffer_size, prefetch_buffer_size, wb_buffer_size-->
+      <param name="buffer_sizes" value="30,30,30,30"/>
+      <!--param, clockrate, Clock rate in MHz-->
+      <param name="clockrate" value="4000.0"/>
+      <!--param, config, Cache Capacity, Block Width, Associativity, Bank, Throughput w.r.t. core clock, Latency w.r.t. core clock, Output Width, Cache Policy: 0 no write or write-though with non-write allocate; 1 write-back with write-allocate-->
+      <param name="config" value="16777216,64,16,1,1,20,64,0"/>
+      <!--param, device_type, 0: HP, 1: LP-->
+      <param name="device_type" value="0"/>
+      <!--param, ports, Number of R, W, RW ports-->
+      <param name="ports" value="1,1,1"/>
+      <!--param, power_gating_vcc, -1 means default power gating-->
+      <param name="power_gating_vcc" value="-1"/>
+      <!--param, vdd, Voltage-->
+      <param name="vdd" value="1.0"/>
+      <!--stat, conflicts, Cache Replacements-->
+      <stat name="conflicts" value="0"/>
+      <!--stat, duty_cycle, -->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, read_accesses, Cache Read Accesses Total-->
+      <stat name="read_accesses" value="0"/>
+      <!--stat, read_misses, Cache Read Req Misses Total-->
+      <stat name="read_misses" value="0"/>
+      <!--stat, write_accesses, Cache Write Accesses Total-->
+      <stat name="write_accesses" value="0"/>
+      <!--stat, write_misses, Cache Write Req Misses Total-->
+      <stat name="write_misses" value="0"/>
+    </component>
+    <component id="system.NoC0" name="noc0">
+      <!--param, chip_coverage, When multiple NOC present, one NOC will cover part of the whole chip. chip_coverage <=1-->
+      <param name="chip_coverage" value="1.0"/>
+      <!--param, clockrate, Clock rate in MHz-->
+      <param name="clockrate" value="4000.0"/>
+      <!--param, flit_bits, -->
+      <param name="flit_bits" value="256"/>
+      <!--param, has_global_link, 1 has global link, 0 does not have global link-->
+      <param name="has_global_link" value="0"/>
+      <!--param, horizontal_nodes, Vertical Nodes in NoC; Comes from chip layout-->
+      <param name="horizontal_nodes" value="1"/>
+      <!--param, input_ports, -->
+      <param name="input_ports" value="2"/>
+      <!--param, link_latency, Link latency w.r.t clock-->
+      <param name="link_latency" value="1"/>
+      <!--param, link_routing_over_percentage, Links can route over other components or occupy whole area.  by default, 50% of the NoC global links routes over other components-->
+      <param name="link_routing_over_percentage" value="0.5"/>
+      <!--param, link_throughput, Link throughput w.r.t clock-->
+      <param name="link_throughput" value="1"/>
+      <!--param, output_ports, For bus the I/O ports should be 1-->
+      <param name="output_ports" value="2"/>
+      <!--param, power_gating_vcc, "-1" means using default power gating virtual power supply voltage constrained by technology and computed automatically-->
+      <param name="power_gating_vcc" value="-1"/>
+      <!--param, type, 0:bus, 1:NoC , for bus no matter how many nodes sharing the bus at each time only one node can send req-->
+      <param name="type" value="1"/>
+      <!--param, vdd, 0 means using ITRS default vdd-->
+      <param name="vdd" value="1.0"/>
+      <!--param, vertical_nodes, Horizontal Nodes in NoC; Comes from chip layout-->
+      <param name="vertical_nodes" value="1"/>
+      <!--stat, duty_cycle, -->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, total_accesses, This is the number of total accesses within the whole network not for each router (pkt_count::total & bus in key)-->
+      <stat name="total_accesses" value="0"/>
+    </component>
+    <component id="system.mc" name="mc">
+      <!--param, IO_buffer_size_per_channel, -->
+      <param name="IO_buffer_size_per_channel" value="64"/>
+      <!--param, addressbus_width, -->
+      <param name="addressbus_width" value="52"/>
+      <!--param, block_size, B-->
+      <param name="block_size" value="64"/>
+      <!--param, databus_width, -->
+      <param name="databus_width" value="128"/>
+      <!--param, mc_clock, DIMM IO bus clock rate MHz-->
+      <param name="mc_clock" value="2500"/>
+      <!--param, memory_channels_per_mc, -->
+      <param name="memory_channels_per_mc" value="2"/>
+      <!--param, number_mcs, -->
+      <param name="number_mcs" value="4"/>
+      <!--param, number_ranks, -->
+      <param name="number_ranks" value="2"/>
+      <!--param, peak_transfer_rate, MB/S-->
+      <param name="peak_transfer_rate" value="914.285714"/>
+      <!--param, power_gating_vcc, "-1" means using default power gating virtual powersupply voltage constrained by technology and computedautomatically-->
+      <param name="power_gating_vcc" value="-1"/>
+      <!--param, req_window_size_per_channel, -->
+      <param name="req_window_size_per_channel" value="32"/>
+      <!--param, type, 1: low power; 0 high performance-->
+      <param name="type" value="0"/>
+      <!--param, vdd, 0 means using ITRS default vdd-->
+      <param name="vdd" value="1.5"/>
+      <!--param, withPHY, -->
+      <param name="withPHY" value="0"/>
+      <!--stat, memory_accesses, mem_ctrls.writeReqs + mem_ctrls.readReqs-->
+      <stat name="memory_accesses" value="0"/>
+      <!--stat, memory_reads, mem_ctrls.readReqs-->
+      <stat name="memory_reads" value="0"/>
+      <!--stat, memory_writes, mem_ctrls.writeReqs-->
+      <stat name="memory_writes" value="0"/>
+    </component>
+    <component id="system.niu" name="niu">
+      <!--param, clockrate, Clock Rate in MHz-->
+      <param name="clockrate" value="350"/>
+      <!--param, number_units, unlike PCIe and memory controllers, each Ethernetcontroller only have one port-->
+      <param name="number_units" value="0"/>
+      <!--param, type, 1: low power; 0 high performance-->
+      <param name="type" value="0"/>
+      <!--stat, duty_cycle, achievable max load lteq 1.0-->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, total_load_perc, ratio of total achived load to total achivable bandwidth-->
+      <stat name="total_load_perc" value="0.0"/>
+    </component>
+    <component id="system.pcie" name="pcie">
+      <!--param, clockrate, Clock Rate in MHz-->
+      <param name="clockrate" value="350"/>
+      <!--param, num_channels, Possible values: 2 ,4 ,8 ,16 ,32-->
+      <param name="num_channels" value="8"/>
+      <!--param, number_units, -->
+      <param name="number_units" value="0"/>
+      <!--param, type, 1: low power; 0 high performance-->
+      <param name="type" value="0"/>
+      <!--param, withPHY, -->
+      <param name="withPHY" value="1"/>
+      <!--stat, duty_cycle, achievable max load <= 1.0-->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, total_load_perc, Percentage of total achived load to total achivable bandwidth-->
+      <stat name="total_load_perc" value="0.0"/>
+    </component>
+    <component id="system.flashc" name="flashc">
+      <!--param, number_flashcs, Number of Flash Controllers-->
+      <param name="number_flashcs" value="0"/>
+      <!--param, peak_transfer_rate, TODO: Find Units-->
+      <param name="peak_transfer_rate" value="200"/>
+      <!--param, type, 1: low power; 0 high performance-->
+      <param name="type" value="1"/>
+      <!--param, withPHY, -->
+      <param name="withPHY" value="1"/>
+      <!--stat, duty_cycle, achievable max load <= 1.0-->
+      <stat name="duty_cycle" value="1.0"/>
+      <!--stat, total_load_perc, Percentage of total achived load to total achivablebandwidth-->
+      <stat name="total_load_perc" value="0.0"/>
+    </component>
+  </component>
+</component>
