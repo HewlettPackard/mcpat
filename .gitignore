@@ -30,3 +30,17 @@
 # McPAT custom
 mcpat
 obj_opt/
+
+# vim
+.*.swo
+.*.swp
+
+# Unit-Test
+unit_test/output
+
+# CMake
+build*
+
+# Profiling
+gmon.out
+profile*.txt
