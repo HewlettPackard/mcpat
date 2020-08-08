@@ -110,7 +110,7 @@ Sleep_tx::Sleep_tx(
 
 }
 
-double Sleep_tx::compute_penalty()
+void Sleep_tx::compute_penalty()
 {
 	//V_delta = VDD - VCCmin nothing to do with threshold of sleep tx. Although it might be OK to use sleep tx to control the V_delta
 	double c_load;
